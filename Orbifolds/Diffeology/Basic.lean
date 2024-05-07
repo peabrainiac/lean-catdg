@@ -4,22 +4,40 @@ import Mathlib.Topology.Algebra.Module.FiniteDimension
 
 open TopologicalSpace
 
+open Topology
+
 set_option autoImplicit false
 
-class DiffeologicalSpace (X : Type*) extends TopologicalSpace X where
+/-- A diffeology on `X`, given by the smooth functions (or "plots") from ℝⁿ to `X`. -/
+class DiffeologicalSpace (X : Type*) where
   plots (n : ℕ) : Set ((Fin n → ℝ) → X)
   constant_plots {n : ℕ} (x : X) : (fun _ => x) ∈ plots n
   plot_reparam {n m : ℕ} {p : (Fin m → ℝ) → X} {f : (Fin n → ℝ) → (Fin m → ℝ)} :
     p ∈ plots m → (ContDiff ℝ ⊤ f) → (p ∘ f ∈ plots n)
-  isOpen_iff_preimages_plots {u : Set X} :
-    TopologicalSpace.IsOpen u ↔ ∀ {n : ℕ}, ∀ p ∈ plots n, TopologicalSpace.IsOpen (p ⁻¹' u)
+  dTopology : TopologicalSpace X := {
+    IsOpen := fun u => ∀ {n : ℕ}, ∀ p ∈ plots n, TopologicalSpace.IsOpen (p ⁻¹' u)
+    isOpen_univ := fun _ _ => isOpen_univ
+    isOpen_inter := fun _ _ hs ht _ p hp =>
+      Set.preimage_inter.symm ▸ (IsOpen.inter (hs p hp) (ht p hp))
+    isOpen_sUnion := fun _ hs _ p hp =>
+      Set.preimage_sUnion ▸ isOpen_biUnion fun u hu => hs u hu p hp
+  }
+  isOpen_iff_preimages_plots {u : Set X} : dTopology.IsOpen u ↔
+      ∀ {n : ℕ}, ∀ p ∈ plots n, TopologicalSpace.IsOpen (p ⁻¹' u) := by rfl
 
 variable {X Y Z : Type*} [DiffeologicalSpace X] [DiffeologicalSpace Y] [DiffeologicalSpace Z]
 
 section Defs
 
+/-- D-topoloy of a diffeological space. This is a definition rather than an instance
+because the D-topology might not agree with already registered topologies like the one
+on normed spaces.-/
+def DTop : TopologicalSpace X := DiffeologicalSpace.dTopology
+
 def IsPlot {n : ℕ} (p : (Fin n → ℝ) → X) : Prop := p ∈ DiffeologicalSpace.plots n
 
+/-- A function between diffeological spaces is smooth iff composition with it preserves
+smoothness of plots. -/
 def DSmooth (f : X → Y) : Prop := ∀ (n : ℕ) (p : (Fin n → ℝ) → X), IsPlot p → IsPlot (f ∘ p)
 
 notation (name := IsPlot_of) "IsPlot[" d "]" => @IsPlot _ d
@@ -29,17 +47,17 @@ notation (name := DSmooth_of) "DSmooth[" d₁ ", " d₂ "]" => @DSmooth _ _ d₁
 end Defs
 
 lemma isOpen_iff_preimages_plots {u : Set X} :
-    IsOpen u ↔ ∀ (n : ℕ) (p : (Fin n → ℝ) → X), IsPlot p → IsOpen (p ⁻¹' u) := by exact
+    IsOpen[DTop] u ↔ ∀ (n : ℕ) (p : (Fin n → ℝ) → X), IsPlot p → IsOpen (p ⁻¹' u) := by exact
   DiffeologicalSpace.isOpen_iff_preimages_plots
 
 @[ext]
 protected theorem DiffeologicalSpace.ext {d₁ d₂ : DiffeologicalSpace X}
     (h : IsPlot[d₁] = IsPlot[d₂]) : d₁ = d₂ := by
-  cases' d₁ with t₁ p₁ _ _ h₁; cases' d₂ with t₂ p₂ _ _ h₂
+  cases' d₁ with p₁ _ _ t₁ h₁; cases' d₂ with p₂ _ _ t₂ h₂
   congr 1; ext s
   exact ((show p₁ = p₂ by exact h) ▸ @h₁ s).trans (@h₂ s).symm
 
-protected theorem DSmooth.continuous {f : X → Y} (hf : DSmooth f) : Continuous f := by
+protected theorem DSmooth.continuous {f : X → Y} (hf : DSmooth f) : Continuous[DTop,DTop] f := by
   simp_rw [continuous_def,isOpen_iff_preimages_plots (X:=X),isOpen_iff_preimages_plots (X:=Y)]
   exact fun u hu n p hp => hu n (f ∘ p) (hf n p hp)
 
@@ -63,6 +81,7 @@ instance {X : Type*} [NormedAddCommGroup X] [NormedSpace ℝ X] [FiniteDimension
   plots _ := {p | ContDiff ℝ ⊤ p}
   constant_plots _ := contDiff_const
   plot_reparam := ContDiff.comp
+  dTopology := inferInstance
   isOpen_iff_preimages_plots := by
     refine' fun {u} => ⟨fun hu _ _ hp => IsOpen.preimage (hp.continuous) hu, fun h => _⟩
     let f := FiniteDimensional.continuousLinearEquiv_finrank_pi X

@@ -2,6 +2,8 @@ import Orbifolds.Diffeology.Basic
 
 open Function Set
 
+open Topology
+
 /-!
 # Diffeomorphisms
 Diffeomorphisms between diffeological spaces.
@@ -32,7 +34,7 @@ instance : EquivLike (X ᵈ≃ Y) X Y where
   coe_injective' _ _ h _ := toEquiv_injective (DFunLike.ext' h)
 
 @[continuity]
-protected theorem continuous (h : X ᵈ≃ Y) : Continuous h := h.dsmooth_toFun.continuous
+protected theorem continuous (h : X ᵈ≃ Y) : Continuous[DTop,DTop] h := h.dsmooth_toFun.continuous
 
 protected theorem dsmooth (h : X ᵈ≃ Y) : DSmooth h := h.dsmooth_toFun
 
@@ -141,15 +143,19 @@ theorem symm_image_image (h : X ᵈ≃ Y) (s : Set X) : h.symm '' (h '' s) = s :
   h.toEquiv.symm_image_image s
 
 /-- A diffeomorphism is a homeomorphism with respect to the D-topologies. -/
-def toHomeomorph (h : X ᵈ≃ Y) : X ≃ₜ Y :=
-  ⟨h.toEquiv, h.continuous, h.symm.continuous⟩
+def toHomeomorph (h : X ᵈ≃ Y) : @Homeomorph X Y DTop DTop := by
+  letI : TopologicalSpace X := DTop
+  letI : TopologicalSpace Y := DTop
+  exact ⟨h.toEquiv,h.continuous,h.symm.continuous⟩
 
 @[simp]
-theorem toHomeomorph_toEquiv (h : X ᵈ≃ Y) : h.toHomeomorph.toEquiv = h.toEquiv :=
+theorem toHomeomorph_toEquiv (h : X ᵈ≃ Y) :
+    @Homeomorph.toEquiv _ _ DTop DTop h.toHomeomorph = h.toEquiv :=
   rfl
 
 @[simp]
-theorem symm_toHomeomorph (h : X ᵈ≃ Y) : h.symm.toHomeomorph = h.toHomeomorph.symm :=
+theorem symm_toHomeomorph (h : X ᵈ≃ Y) :
+    h.symm.toHomeomorph = @Homeomorph.symm _ _ DTop DTop h.toHomeomorph :=
   rfl
 
 @[simp]
@@ -157,7 +163,8 @@ theorem coe_toHomeomorph (h : X ᵈ≃ Y) : ⇑h.toHomeomorph = h :=
   rfl
 
 @[simp]
-theorem coe_toHomeomorph_symm (h : X ᵈ≃ Y) : ⇑h.toHomeomorph.symm = h.symm :=
+theorem coe_toHomeomorph_symm (h : X ᵈ≃ Y) :
+    ⇑(@Homeomorph.symm _ _ DTop DTop h.toHomeomorph) = h.symm :=
   rfl
 
 @[simp]
