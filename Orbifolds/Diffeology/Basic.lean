@@ -39,6 +39,18 @@ protected theorem DiffeologicalSpace.ext {d₁ d₂ : DiffeologicalSpace X}
   congr 1; ext s
   exact ((show p₁ = p₂ by exact h) ▸ @h₁ s).trans (@h₂ s).symm
 
+protected theorem DSmooth.continuous {f : X → Y} (hf : DSmooth f) : Continuous f := by
+  simp_rw [continuous_def,isOpen_iff_preimages_plots (X:=X),isOpen_iff_preimages_plots (X:=Y)]
+  exact fun u hu n p hp => hu n (f ∘ p) (hf n p hp)
+
+@[simp] theorem dsmooth_id : DSmooth (@id X) := by simp [DSmooth]
+
+theorem DSmooth.comp {f : X → Y} {g : Y → Z} (hg : DSmooth g) (hf : DSmooth f) :
+    DSmooth (g ∘ f) :=
+  fun _ _ hp => hg _ _ (hf _ _ hp)
+
+section FiniteDimensionalNormedSpace
+
 /-- A choice of linear homeomorphism from `X` to some `Fin n → ℝ`.
 TODO: generalise and move to other file. -/
 noncomputable def FiniteDimensional.continuousLinearEquiv_finrank_pi (X : Type*)
@@ -57,32 +69,25 @@ instance {X : Type*} [NormedAddCommGroup X] [NormedSpace ℝ X] [FiniteDimension
     rw [←f.preimage_symm_preimage u]
     exact f.continuous.isOpen_preimage _ (h _ f.symm.contDiff)
 
-protected theorem DSmooth.continuous {f : X → Y} (hf : DSmooth f) : Continuous f := by
-  simp_rw [continuous_def,isOpen_iff_preimages_plots (X:=X),isOpen_iff_preimages_plots (X:=Y)]
-  exact fun u hu n p hp => hu n (f ∘ p) (hf n p hp)
-
-@[simp] theorem dsmooth_id : DSmooth (@id X) := by simp [DSmooth]
-
-theorem DSmooth.comp {f : X → Y} {g : Y → Z} (hg : DSmooth g) (hf : DSmooth f) :
-    DSmooth (g ∘ f) :=
-  fun _ _ hp => hg _ _ (hf _ _ hp)
-
 theorem dsmooth_iff_isPlot {n : ℕ} {p : (Fin n → ℝ) → X} : DSmooth p ↔ IsPlot p := by
   rw [DSmooth]
   exact ⟨fun h => h n id contDiff_id,fun hp n f hf => DiffeologicalSpace.plot_reparam hp hf⟩
 
-protected theorem ContDiff.dsmooth {X Y : Type*} [NormedAddCommGroup X] [NormedSpace ℝ X]
-    [FiniteDimensional ℝ X] [NormedAddCommGroup Y] [NormedSpace ℝ Y] [FiniteDimensional ℝ Y]
-    {f : X → Y} (hf: ContDiff ℝ ⊤ f) : DSmooth f :=
+variable {X Y : Type*} [NormedAddCommGroup X] [NormedSpace ℝ X] [FiniteDimensional ℝ X]
+  [NormedAddCommGroup Y] [NormedSpace ℝ Y] [FiniteDimensional ℝ Y]
+
+protected theorem ContDiff.dsmooth {f : X → Y} (hf: ContDiff ℝ ⊤ f) : DSmooth f :=
   fun _ _ hp => hf.comp hp
 
-theorem dsmooth_iff_contDiff {X Y : Type*} [NormedAddCommGroup X] [NormedSpace ℝ X]
-    [FiniteDimensional ℝ X] [NormedAddCommGroup Y] [NormedSpace ℝ Y] [FiniteDimensional ℝ Y]
-    {f : X → Y} : DSmooth f ↔ ContDiff ℝ ⊤ f := by
-  refine' ⟨fun hf => _,ContDiff.dsmooth⟩
+protected theorem DSmooth.contDiff {f : X → Y} (hf : DSmooth f) : ContDiff ℝ ⊤ f := by
   let g := FiniteDimensional.continuousLinearEquiv_finrank_pi X
   rw [←Function.comp_id f,←g.symm_comp_self]
   exact (hf _ _ (dsmooth_iff_isPlot.1 g.symm.contDiff.dsmooth)).comp g.contDiff
+
+theorem dsmooth_iff_contDiff {f : X → Y} : DSmooth f ↔ ContDiff ℝ ⊤ f :=
+  ⟨DSmooth.contDiff,ContDiff.dsmooth⟩
+
+end FiniteDimensionalNormedSpace
 
 section Reflexive
 
@@ -95,7 +100,12 @@ class ReflexiveDiffeologicalSpace (X : Type*) [DiffeologicalSpace X] : Prop wher
   isPlot_if : ∀ {n : ℕ} (p : (Fin n → ℝ) → X),
     (∀ f : X → ℝ, DSmooth f → DSmooth (f ∘ p)) → IsPlot p
 
--- TODO: show that finite-dimensional vector spaces are reflexive in this sense
+instance {X : Type*} [NormedAddCommGroup X] [NormedSpace ℝ X] [FiniteDimensional ℝ X] :
+    ReflexiveDiffeologicalSpace X where
+  isPlot_if := fun {n} p hp => by
+    let Φ := FiniteDimensional.continuousLinearEquiv_finrank_pi X
+    refine' Φ.comp_contDiff_iff.1 (contDiff_pi.2 fun i => _)
+    exact (hp _ (((ContinuousLinearMap.proj i).contDiff).comp Φ.contDiff).dsmooth).contDiff
 
 end Reflexive
 
