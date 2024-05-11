@@ -38,6 +38,7 @@ def IsPlot {n : ℕ} (p : (Fin n → ℝ) → X) : Prop := p ∈ DiffeologicalSp
 
 /-- A function between diffeological spaces is smooth iff composition with it preserves
 smoothness of plots. -/
+@[fun_prop]
 def DSmooth (f : X → Y) : Prop := ∀ (n : ℕ) (p : (Fin n → ℝ) → X), IsPlot p → IsPlot (f ∘ p)
 
 notation (name := IsPlot_of) "IsPlot[" d "]" => @IsPlot _ d
@@ -72,11 +73,25 @@ protected theorem DSmooth.continuous {f : X → Y} (hf : DSmooth f) : Continuous
   simp_rw [continuous_def,isOpen_iff_preimages_plots (X:=X),isOpen_iff_preimages_plots (X:=Y)]
   exact fun u hu n p hp => hu n (f ∘ p) (hf n p hp)
 
-@[simp] theorem dsmooth_id : DSmooth (@id X) := by simp [DSmooth]
+theorem dsmooth_def {f : X → Y} : DSmooth f ↔
+    ∀ (n : ℕ) (p : (Fin n → ℝ) → X), IsPlot p → IsPlot (f ∘ p) := by rfl
+
+theorem dsmooth_id : DSmooth (@id X) := by simp [DSmooth]
+
+@[fun_prop]
+theorem dsmooth_id' : DSmooth fun x : X => x := dsmooth_id
 
 theorem DSmooth.comp {f : X → Y} {g : Y → Z} (hg : DSmooth g) (hf : DSmooth f) :
     DSmooth (g ∘ f) :=
   fun _ _ hp => hg _ _ (hf _ _ hp)
+
+@[fun_prop]
+theorem DSmooth.comp' {f : X → Y} {g : Y → Z} (hg : DSmooth g) (hf : DSmooth f) :
+    DSmooth (fun x => g (f x)) := hg.comp hf
+
+@[fun_prop]
+theorem dsmooth_const {y : Y} : DSmooth fun _ : X => y :=
+  fun _ _ _ => isPlot_const
 
 section FiniteDimensionalNormedSpace
 
@@ -111,9 +126,20 @@ class ContDiffCompatible (X : Type*) [NormedAddCommGroup X] [NormedSpace ℝ X]
     [DiffeologicalSpace X] : Prop where
   isPlot_iff {n : ℕ} {p : (Fin n → ℝ) → X} : IsPlot p ↔ ContDiff ℝ ⊤ p
 
+/-- Technical condition saying that the topology on a type agrees with the D-topology.
+Necessary because the D-topologies on for example products and subspaces don't agree with
+the product and subspace topologies. -/
+class DTopCompatible (X : Type*) [t : TopologicalSpace X] [DiffeologicalSpace X] : Prop where
+  dTop_eq : DTop = t
+
+theorem dTop_eq {X : Type*} [t : TopologicalSpace X] [DiffeologicalSpace X] [DTopCompatible X] :
+    DTop = t := DTopCompatible.dTop_eq
+
 instance : DiffeologicalSpace ℝ := euclideanDiffeology
 
 instance : ContDiffCompatible ℝ := ⟨Iff.rfl⟩
+
+instance : DTopCompatible ℝ := ⟨by ext s; rw [isOpen_iff_preimages_plots]⟩
 
 instance Pi.diffeologicalSpace {ι : Type*} {Y : ι → Type*}
     [(i : ι) → DiffeologicalSpace (Y i)] : DiffeologicalSpace ((i : ι) → Y i) where
