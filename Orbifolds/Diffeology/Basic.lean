@@ -1,6 +1,7 @@
 import Mathlib.Topology.Sets.Opens
 import Mathlib.Analysis.Calculus.ContDiff.Basic
 import Mathlib.Topology.Algebra.Module.FiniteDimension
+import Mathlib.Analysis.InnerProductSpace.PiL2
 
 open TopologicalSpace
 
@@ -62,7 +63,7 @@ lemma isPlot_reparam {n m : ℕ} {p : (Fin m → ℝ) → X} {f : (Fin n → ℝ
   DiffeologicalSpace.plot_reparam hp hf
 
 lemma isOpen_iff_preimages_plots {u : Set X} :
-    IsOpen[DTop] u ↔ ∀ (n : ℕ) (p : (Fin n → ℝ) → X), IsPlot p → IsOpen (p ⁻¹' u) := by exact
+    IsOpen[DTop] u ↔ ∀ (n : ℕ) (p : (Fin n → ℝ) → X), IsPlot p → IsOpen (p ⁻¹' u) :=
   DiffeologicalSpace.isOpen_iff_preimages_plots
 
 protected lemma IsPlot.continuous {n : ℕ} {p : (Fin n → ℝ) → X} (hp : IsPlot p) :
@@ -132,14 +133,29 @@ the product and subspace topologies. -/
 class DTopCompatible (X : Type*) [t : TopologicalSpace X] [DiffeologicalSpace X] : Prop where
   dTop_eq : DTop = t
 
-theorem dTop_eq {X : Type*} [t : TopologicalSpace X] [DiffeologicalSpace X] [DTopCompatible X] :
+theorem dTop_eq (X : Type*) [t : TopologicalSpace X] [DiffeologicalSpace X] [DTopCompatible X] :
     DTop = t := DTopCompatible.dTop_eq
+
+/-- A smooth function between spaces that are equipped with the D-topology is continuous. -/
+protected theorem DSmooth.continuous' {X Y : Type*} [TopologicalSpace X] [DiffeologicalSpace X]
+    [DTopCompatible X] [TopologicalSpace Y] [DiffeologicalSpace Y]
+    [DTopCompatible Y] {f : X → Y} (hf : DSmooth f) : Continuous f :=
+  dTop_eq X ▸ dTop_eq Y ▸ hf.continuous
 
 instance : DiffeologicalSpace ℝ := euclideanDiffeology
 
 instance : ContDiffCompatible ℝ := ⟨Iff.rfl⟩
 
 instance : DTopCompatible ℝ := ⟨by ext s; rw [isOpen_iff_preimages_plots]⟩
+
+noncomputable instance {ι : Type*} [Fintype ι] : DiffeologicalSpace (EuclideanSpace ℝ ι) :=
+  euclideanDiffeology
+
+instance {ι : Type*} [Fintype ι] : ContDiffCompatible (EuclideanSpace ℝ ι) :=
+  ⟨Iff.rfl⟩
+
+instance {ι : Type*} [Fintype ι] : DTopCompatible (EuclideanSpace ℝ ι) :=
+  ⟨by ext s; rw [isOpen_iff_preimages_plots]⟩
 
 instance Pi.diffeologicalSpace {ι : Type*} {Y : ι → Type*}
     [(i : ι) → DiffeologicalSpace (Y i)] : DiffeologicalSpace ((i : ι) → Y i) where
@@ -153,10 +169,14 @@ instance {ι : Type*} [Fintype ι] {Y : ι → Type*} [(i : ι) → NormedAddCom
     [(i : ι) → ContDiffCompatible (Y i)] : ContDiffCompatible ((i : ι) → Y i) :=
   ⟨by simp_rw [contDiff_pi,←ContDiffCompatible.isPlot_iff]; rfl⟩
 
-theorem isPlot_iff_dsmooth {n : ℕ} {p : (Fin n → ℝ) → X} : IsPlot p ↔ DSmooth p := by
-  rw [DSmooth]
-  exact ⟨fun hp n f hf => isPlot_reparam hp (contDiff_pi.2 hf),
-    fun h => h n id (contDiff_pi.1 contDiff_id)⟩
+protected theorem IsPlot.dsmooth {n : ℕ} {p : (Fin n → ℝ) → X} (hp : IsPlot p) : DSmooth p :=
+  fun _ _ hf => isPlot_reparam hp (contDiff_pi.2 hf)
+
+protected theorem DSmooth.isPlot {n : ℕ} {p : (Fin n → ℝ) → X} (hp : DSmooth p) : IsPlot p :=
+  hp n id (contDiff_pi.1 contDiff_id)
+
+theorem isPlot_iff_dsmooth {n : ℕ} {p : (Fin n → ℝ) → X} : IsPlot p ↔ DSmooth p :=
+  ⟨IsPlot.dsmooth,DSmooth.isPlot⟩
 
 variable {X Y : Type*} [NormedAddCommGroup X] [NormedSpace ℝ X] [DiffeologicalSpace X]
   [ContDiffCompatible X] [NormedAddCommGroup Y] [NormedSpace ℝ Y] [DiffeologicalSpace Y]
