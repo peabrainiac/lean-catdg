@@ -191,8 +191,9 @@ end DDiffeomorph
 
 namespace ContinuousLinearEquiv
 
-variable (E E' : Type*) [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimensional ℝ E]
-  [NormedAddCommGroup E'] [NormedSpace ℝ E'] [FiniteDimensional ℝ E'] (e : E ≃L[ℝ] E')
+variable (E E' : Type*) [NormedAddCommGroup E] [NormedSpace ℝ E] [DiffeologicalSpace E]
+  [ContDiffCompatible E] [NormedAddCommGroup E'] [NormedSpace ℝ E'] [DiffeologicalSpace E']
+  [ContDiffCompatible E'] (e : E ≃L[ℝ] E')
 
 /-- A continuous linear equivalence between (for now just finite-dimensional) normed spaces
 is a diffeomorphism. -/

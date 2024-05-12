@@ -13,7 +13,12 @@ instance instDiffeologicalSpaceSubtype {X : Type*} [DiffeologicalSpace X] {p : X
     DiffeologicalSpace (Subtype p) :=
   DiffeologicalSpace.induced ((↑) : _ → X) inferInstance
 
--- `Pi.diffeologicalSpace` is currently already defined in `Orbifolds.Diffeology.Basic`.
+instance Pi.diffeologicalSpace {ι : Type*} {Y : ι → Type*}
+    [(i : ι) → DiffeologicalSpace (Y i)] : DiffeologicalSpace ((i : ι) → Y i) where
+  plots n := {p | ∀ i, IsPlot ((fun y => y i) ∘ p)}
+  constant_plots _ i := isPlot_const
+  plot_reparam {n m p f} := fun hp hf i => by
+    exact Function.comp.assoc _ _ _ ▸ isPlot_reparam (hp i) hf
 
 end Constructions
 
@@ -39,6 +44,11 @@ instance [Fintype ι] [(i : ι) → TopologicalSpace (Y i)] [(i : ι) → Locall
   ext s; rw [isOpen_pi_iff',isOpen_iff_preimages_plots]
   refine' ⟨fun h => _, fun h n p hp => _⟩
   all_goals sorry⟩
+
+instance {ι : Type*} [Fintype ι] {Y : ι → Type*} [(i : ι) → NormedAddCommGroup (Y i)]
+    [(i : ι) → NormedSpace ℝ (Y i)] [(i : ι) → DiffeologicalSpace (Y i)]
+    [(i : ι) → ContDiffCompatible (Y i)] : ContDiffCompatible ((i : ι) → Y i) :=
+  ⟨by simp_rw [contDiff_pi,←ContDiffCompatible.isPlot_iff]; rfl⟩
 
 end Pi
 
@@ -88,38 +98,55 @@ theorem Induction.codRestrict {f : X → Y} (hf : Induction f) {s : Set Y} (hs :
     Induction (s.codRestrict f hs) :=
   by sorry
 
-/-- The D-topology is also characterised by the smooth maps `u → X` for open `u`.
-TODO: this is probably easier using `EuclideanSpace ℝ (Fin n)` as the test spaces instead of
-`Fin n → ℝ`, since the proof uses `PartialHomeomorph.contDiff_univBall` which works
-only in inner product spaces. Since I've been thinking about switching to
-`EuclideanSpace ℝ (Fin n)` anyways, I've decided to wait with this until then. -/
+/-- TODO: move to Mathlib.Topology.Constructions -/
+theorem IsOpenMap.subtype_mk {X Y : Type*} [TopologicalSpace X] [TopologicalSpace Y]
+    {s : Set X} {f : Y → X} (hf : IsOpenMap f) (hfs : ∀ x, f x ∈ s) :
+    IsOpenMap fun x => (⟨f x, hfs x⟩ : Subtype s) := fun u hu => by
+  convert (hf u hu).preimage continuous_subtype_val
+  exact Set.ext fun x => exists_congr fun x' => and_congr_right' Subtype.ext_iff
+
+/-- TODO: move to Mathlib.Topology.Constructions -/
+theorem IsOpen.isOpenMap_subtype_map {X Y : Type*} [TopologicalSpace X] [TopologicalSpace Y]
+    {s : Set X} {t : Set Y} {f : X → Y} (hs : IsOpen s) (hf : IsOpenMap f)
+    (hst : ∀ x, s x → t (f x)) : IsOpenMap (Subtype.map f hst) :=
+  (hf.comp hs.isOpenMap_subtype_val).subtype_mk _
+
+/-- TODO: move to Mathlib.Topology.Constructions -/
+theorem IsOpen.isOpenMap_inclusion {X : Type*} [TopologicalSpace X] {s t : Set X}
+    (hs : IsOpen s) (h : s ⊆ t) : IsOpenMap (inclusion h) :=
+  hs.isOpenMap_subtype_map IsOpenMap.id h
+
+/-- TODO: move to Mathlib.Topology.Constructions -/
+theorem IsOpenMap.codRestrict {X Y : Type*} [TopologicalSpace X] [TopologicalSpace Y]
+    {f : X → Y} {s : Set Y} (hf : IsOpenMap f) (hs : ∀ a, f a ∈ s) :
+    IsOpenMap (s.codRestrict f hs) :=
+  hf.subtype_mk hs
+
+/-- The D-topology is also characterised by the smooth maps `u → X` for open `u`. -/
 lemma isOpen_iff_preimages_plots' {s : Set X} : IsOpen[DTop] s ↔
-    ∀ (n : ℕ) (u : Set (Fin n → ℝ)) (p : u → X), IsOpen u → DSmooth p → IsOpen (p ⁻¹' s) := by
+    ∀ (n : ℕ) (u : Set (Eucl n)) (p : u → X), IsOpen u → DSmooth p → IsOpen (p ⁻¹' s) := by
   rw [isOpen_iff_preimages_plots]
   refine' ⟨fun hs n u p hu hp => _,fun hs n p hp => _⟩
   · refine' isOpen_iff_mem_nhds.2 fun x hx => _
     let ⟨ε,hε⟩ := Metric.isOpen_iff.1 hu x x.2
-    let e' : (Fin n → ℝ) ≃ₜ _ := (EuclideanSpace.equiv _ _).toHomeomorph.symm.trans <|
-      (Homeomorph.Set.univ _).symm.trans <|
-        (PartialHomeomorph.univBall_source (P := EuclideanSpace ℝ (Fin n)) _ _ ▸
-          (PartialHomeomorph.univBall_target (P := EuclideanSpace ℝ (Fin n)) _ hε.1 ▸
-            (PartialHomeomorph.univBall (P := EuclideanSpace ℝ (Fin n)) x.1 ε).toHomeomorphSourceTarget))
-    have he' : DSmooth e' := by
-      simp [e',Homeomorph.trans]
-      refine' DSmooth.comp _ (EuclideanSpace.equiv (Fin n) ℝ).symm.contDiff.dsmooth
-      refine' DSmooth.comp _ (DSmooth.subtype_mk dsmooth_id _)
-      have h := (PartialHomeomorph.contDiff_univBall (n := ⊤) (E := EuclideanSpace ℝ (Fin n))
-        (c := x.1) (r := ε)).dsmooth
-      have h' := h.restrict (show MapsTo (β := EuclideanSpace _ _) _ univ (Metric.ball x.1 ε) by
-        sorry)
-      sorry
-    --have := hs n (p ∘ inclusion hε.2 ∘ e) (hp.comp ((dsmooth_inclusion hε.2).comp he)).isPlot
-    sorry
+    let e : Eucl n ≃ₜ Metric.ball x.1 ε := (Homeomorph.Set.univ _).symm.trans <|
+      PartialHomeomorph.univUnitBall.toHomeomorphSourceTarget.trans
+        (PartialHomeomorph.unitBallBall x.1 ε hε.1).toHomeomorphSourceTarget
+    have he : DSmooth e :=
+      (((PartialHomeomorph.contDiff_unitBallBall hε.1).dsmooth.restrict
+        (PartialHomeomorph.unitBallBall x.1 ε hε.1).map_source').comp
+          (PartialHomeomorph.contDiff_univUnitBall.dsmooth.restrict
+            PartialHomeomorph.univUnitBall.map_source')).comp (dsmooth_id.subtype_mk _)
+    have h := hs n _ (hp.comp ((dsmooth_inclusion hε.2).comp he)).isPlot
+    simp_rw [preimage_comp, Homeomorph.isOpen_preimage] at h
+    apply Metric.isOpen_ball.isOpenMap_inclusion hε.2 _ at h
+    rw [image_preimage_eq_inter_range] at h
+    exact mem_nhds_iff.2 ⟨_,inter_subset_left _ _,h,hx,by simp [hε.1]⟩
   · let e := Homeomorph.Set.univ (Fin n → ℝ)
     rw [←e.isOpen_preimage,←preimage_comp]
     exact hs n _ (p ∘ e) isOpen_univ (hp.dsmooth.comp dsmooth_subtype_val)
 
-/-- On open subsets, the D-topology and subspace toplogy agree. -/
+/-- On open subsets, the D-topology and subspace topology agree. -/
 protected theorem IsOpen.dTopCompatible [TopologicalSpace X] [DTopCompatible X] (hs : IsOpen s) :
     DTopCompatible s := ⟨by
   ext t; refine' ⟨fun ht => _,fun ht => _⟩
