@@ -76,7 +76,7 @@ protected theorem DSmooth.continuous {f : X → Y} (hf : DSmooth f) : Continuous
   simp_rw [continuous_def,isOpen_iff_preimages_plots (X:=X),isOpen_iff_preimages_plots (X:=Y)]
   exact fun u hu n p hp => hu n (f ∘ p) (hf n p hp)
 
-theorem dsmooth_def {f : X → Y} : DSmooth f ↔
+theorem dsmooth_iff {f : X → Y} : DSmooth f ↔
     ∀ (n : ℕ) (p : Eucl n → X), IsPlot p → IsPlot (f ∘ p) := by rfl
 
 theorem dsmooth_id : DSmooth (@id X) := by simp [DSmooth]

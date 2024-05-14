@@ -28,7 +28,7 @@ variable {ι : Type*} {Y : ι → Type*} [(i : ι) → DiffeologicalSpace (Y i)]
   {X : Type*} [DiffeologicalSpace X] {f : X → ((i : ι) → Y i)}
 
 theorem dsmooth_pi_iff : DSmooth f ↔ ∀ i, DSmooth fun x => f x i := by
-  simp only [dsmooth_def,@forall_comm ι _ _]; rfl
+  simp only [dsmooth_iff,@forall_comm ι _ _]; rfl
 
 @[fun_prop]
 theorem dsmooth_pi (h : ∀ i, DSmooth fun a => f a i) : DSmooth f :=
@@ -159,5 +159,24 @@ protected theorem IsOpen.dTopCompatible [TopologicalSpace X] [DTopCompatible X] 
     ext x; simp_rw [mem_preimage, mem_image, Subtype.exists, exists_and_right, exists_eq_right]; rfl
   · refine' @IsOpen.preimage s X DTop _ _ _ _ (hs.isOpenMap_subtype_val t ht)
     exact dTop_eq X ▸ dsmooth_subtype_val.continuous⟩
+
+instance [TopologicalSpace X] [DTopCompatible X] [h : Fact (IsOpen s)] : DTopCompatible s :=
+  h.out.dTopCompatible
+
+/-- Smoothness can also be characterised as preserving smooth maps `u → X` for open `u`.-/
+theorem dsmooth_iff' {f : X → Y} : DSmooth f ↔
+    ∀ (n : ℕ) (u : Set (Eucl n)) (p : u → X), IsOpen u → DSmooth p → DSmooth (f ∘ p) := by
+  refine' ⟨fun hf n u p _ hp => hf.comp hp,fun hf n p hp => _⟩
+  rw [←Function.comp_id (f ∘ p),←(Homeomorph.Set.univ _).self_comp_symm,←Function.comp.assoc]
+  exact ((hf n _ _ isOpen_univ (hp.dsmooth.comp dsmooth_subtype_val)).comp
+    (dsmooth_id.subtype_mk _)).isPlot
+
+/-- The locality axiom of diffeologies: any map that is locally a plot is also a plot itself.
+I did not make it part of the `DiffeologicalSpace`-structure because I erroneously thougth that
+it would also follow as a theorem, but it does not - the `sorry` cannot currently be filled. -/
+theorem isPlot_iff_locally_dsmooth {n : ℕ} {p : Eucl n → X} : DSmooth p ↔
+    ∀ x : Eucl n, ∃ u ∈ 𝓝 x,  DSmooth (u.restrict p) := by
+  refine' ⟨fun hp x => ⟨_,Filter.univ_mem,hp.comp dsmooth_subtype_val⟩, fun h m f hf => _⟩
+  sorry
 
 end Subtype
