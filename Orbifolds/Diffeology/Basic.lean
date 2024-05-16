@@ -17,11 +17,9 @@ class DiffeologicalSpace (X : Type*) where
   constant_plots {n : ℕ} (x : X) : (fun _ => x) ∈ plots n
   plot_reparam {n m : ℕ} {p : Eucl m → X} {f : Eucl n → Eucl m} :
     p ∈ plots m → (ContDiff ℝ ⊤ f) → (p ∘ f ∈ plots n)
-  locality {n : ℕ} {u : Set (Eucl n)} {hu : IsOpen u} {p : Eucl n → X} :
-    (∀ x ∈ u, ∃ v ⊆ u, x ∈ v ∧ IsOpen v ∧ ∀ {m : ℕ} {f : Eucl m → Eucl n},
-      (hfv : ∀ x, f x ∈ v) → ContDiff ℝ ⊤ f → p ∘ f ∈ plots m) →
-        ∀ {m : ℕ} {f : Eucl m → Eucl n}, (hfu : ∀ x, f x ∈ u) →
-          ContDiff ℝ ⊤ f → p ∘ f ∈ plots m
+  locality {n : ℕ} {p : Eucl n → X} : (∀ x : Eucl n, ∃ u : Set (Eucl n), x ∈ u ∧ IsOpen u ∧
+    ∀ {m : ℕ} {f : Eucl m → Eucl n}, (hfu : ∀ x, f x ∈ u) → ContDiff ℝ ⊤ f → p ∘ f ∈ plots m) →
+      p ∈ plots n
   dTopology : TopologicalSpace X := {
     IsOpen := fun u => ∀ {n : ℕ}, ∀ p ∈ plots n, TopologicalSpace.IsOpen (p ⁻¹' u)
     isOpen_univ := fun _ _ => isOpen_univ
@@ -113,20 +111,16 @@ def euclideanDiffeology {X : Type*} [NormedAddCommGroup X] [NormedSpace ℝ X]
   plots _ := {p | ContDiff ℝ ⊤ p}
   constant_plots _ := contDiff_const
   plot_reparam := ContDiff.comp
-  locality {n u _ p} := fun hp m f hfu hf => by
-    refine' contDiffOn_univ.1 <| ContDiffOn.comp (s := Set.univ) (t := u) (fun x hx => _)
-      hf.contDiffOn (by simp [Set.range_subset_iff.2 hfu])
-    have ⟨v,_,hxv,hv,hv'⟩ := hp x hx
-    let ⟨ε,hε,hε'⟩ := Metric.isOpen_iff.1 hv x hxv
-    have h := hv' (f := PartialHomeomorph.univBall x ε)
-      (fun x' => by
-        have h := (PartialHomeomorph.univBall x ε).map_source (x := x')
-        rw [PartialHomeomorph.univBall_source, PartialHomeomorph.univBall_target x hε] at h
-        exact Set.mem_of_mem_of_subset (h (Set.mem_univ _)) hε') <|
-      PartialHomeomorph.contDiff_univBall
+  locality {n p} := fun hp => by
+    refine' contDiff_iff_contDiffAt.2 fun x => _
+    let ⟨u,hxu,hu,hu'⟩ := hp x
+    let ⟨ε,hε,hε'⟩ := Metric.isOpen_iff.1 hu x hxu
+    have h := hu' (f := PartialHomeomorph.univBall x ε) (fun x' => by
+      have h := (PartialHomeomorph.univBall x ε).map_source (x := x')
+      rw [PartialHomeomorph.univBall_source, PartialHomeomorph.univBall_target x hε] at h
+      exact Set.mem_of_mem_of_subset (h (Set.mem_univ _)) hε') PartialHomeomorph.contDiff_univBall
     have h' := h.comp_contDiffOn (PartialHomeomorph.contDiffOn_univBall_symm (c := x) (r := ε))
-    refine' (h'.congr _ x (Metric.mem_ball_self hε)).mono_of_mem <| mem_nhdsWithin.2
-      ⟨_,Metric.isOpen_ball,Metric.mem_ball_self hε,Set.inter_subset_left _ _⟩
+    refine' ContDiffOn.contDiffAt (h'.congr _) (Metric.ball_mem_nhds _ hε)
     rw [Function.comp.assoc,←PartialHomeomorph.coe_trans]
     refine' Set.EqOn.comp_left _
     convert (PartialHomeomorph.symm_trans_self (PartialHomeomorph.univBall x ε)).2.symm

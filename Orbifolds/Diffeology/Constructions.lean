@@ -19,6 +19,7 @@ instance Pi.diffeologicalSpace {ι : Type*} {Y : ι → Type*}
   constant_plots _ i := isPlot_const
   plot_reparam {n m p f} := fun hp hf i => by
     exact Function.comp.assoc _ _ _ ▸ isPlot_reparam (hp i) hf
+  locality := by sorry
 
 end Constructions
 
@@ -180,3 +181,30 @@ theorem isPlot_iff_locally_dsmooth {n : ℕ} {p : Eucl n → X} : DSmooth p ↔
   sorry
 
 end Subtype
+
+section Coinduced
+
+open IsLocallyConstant PartialHomeomorph in
+def DiffeologicalSpace.coinduced {X Y : Type*} (f : X → Y) (dX : DiffeologicalSpace X) :
+    DiffeologicalSpace Y where
+  plots n := {p | (∃ y, p = fun _ => y) ∨
+    ∀ x : Eucl n, ∃ u : Set (Eucl n), x ∈ u ∧ IsOpen u ∧ ∃ p' : u → X, DSmooth p' ∧ p ∘ (↑) = f ∘ p'}
+  constant_plots x := Or.inl ⟨x,rfl⟩
+  plot_reparam {n m p g} := fun hp hg => Or.rec (fun ⟨y,hy⟩ => Or.inl ⟨y,hy ▸ rfl⟩)
+    (fun h => Or.inr fun x => (by
+      let ⟨u,hxu,hu,p',hp',hp''⟩ := h (g x)
+      refine' ⟨g ⁻¹' u,hxu,hu.preimage hg.continuous,p' ∘ u.restrictPreimage g,
+        hp'.comp hg.dsmooth.restrictPreimage,_⟩
+      simp_rw [←Function.comp.assoc,←hp'',Function.comp.assoc]; rfl)) hp
+  locality {n p} := fun h => by
+    dsimp
+    sorry
+
+variable {X Y : Type*} [dX : DiffeologicalSpace X] [dY : DiffeologicalSpace Y]
+
+def Subduction (f : X → Y) : Prop := Function.Surjective f ∧ dY = dX.coinduced f
+
+protected theorem Subduction.dsmooth {f : X → Y} (hf : Subduction f) : DSmooth f :=
+  fun n p hp => by rw [hf.2]; sorry
+
+end Coinduced
