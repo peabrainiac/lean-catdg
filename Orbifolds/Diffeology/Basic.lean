@@ -287,7 +287,7 @@ def gciGenerateFrom (X : Type*) : GaloisInsertion generateFrom (@toPlots X) wher
 instance : CompleteLattice (DiffeologicalSpace X) := (gciGenerateFrom X).liftCompleteLattice
 
 @[mono]
-theorem generateFrom_mono {g₁ g₂ :Set ((n : ℕ) × (Eucl n → X))} (h : g₁ ⊆ g₂) :
+theorem generateFrom_mono {g₁ g₂ : Set ((n : ℕ) × (Eucl n → X))} (h : g₁ ⊆ g₂) :
     generateFrom g₁ ≤ generateFrom g₂ :=
   (gc_generateFrom _).monotone_l h
 
@@ -301,6 +301,62 @@ theorem leftInverse_generateFrom :
 
 theorem generateFrom_surjective : Function.Surjective (@generateFrom X) :=
   (gciGenerateFrom X).l_surjective
+
+theorem generateFrom_union (g₁ g₂ : Set ((n : ℕ) × (Eucl n → X))) :
+    generateFrom (g₁ ∪ g₂) = generateFrom g₁ ⊔ generateFrom g₂ :=
+  (gc_generateFrom X).l_sup
+
+theorem generateFrom_iUnion {ι : Type*} {g : ι → Set ((n : ℕ) × (Eucl n → X))} :
+    generateFrom (⋃ i, g i) = ⨆ i, generateFrom (g i) :=
+  (gc_generateFrom X).l_iSup
+
+theorem generateFrom_sUnion {G : Set (Set ((n : ℕ) × (Eucl n → X)))} :
+    generateFrom (⋃₀ G) = ⨆ s ∈ G, generateFrom s :=
+  (gc_generateFrom X).l_sSup
+
+theorem toPlots_inf (d₁ d₂ : DiffeologicalSpace X) :
+    (d₁ ⊓ d₂).toPlots = d₁.toPlots ∩ d₂.toPlots := rfl
+
+theorem toPlots_iInf {ι : Type*} {D : ι → DiffeologicalSpace X} :
+    (⨅ i, D i).toPlots = ⋂ i, (D i).toPlots :=
+  (gc_generateFrom X).u_iInf
+
+theorem toPlots_sInf {D : Set (DiffeologicalSpace X)} : (sInf D).toPlots = ⋂ d ∈ D, d.toPlots :=
+  (gc_generateFrom X).u_sInf
+
+theorem generateFrom_union_toPlots (d₁ d₂ : DiffeologicalSpace X) :
+    generateFrom (d₁.toPlots ∪ d₂.toPlots) = d₁ ⊔ d₂ :=
+  (gciGenerateFrom X).l_sup_u _ _
+
+theorem generateFrom_iUnion_toPlots {ι : Type*} (D : ι → DiffeologicalSpace X) :
+    generateFrom (⋃ i, (D i).toPlots) = ⨆ i, D i :=
+  (gciGenerateFrom X).l_iSup_u _
+
+theorem generateFrom_inter_toPlots (d₁ d₂ : DiffeologicalSpace X) :
+    generateFrom (d₁.toPlots ∩ d₂.toPlots) = d₁ ⊓ d₂ :=
+  (gciGenerateFrom X).l_inf_u _ _
+
+theorem generateFrom_iInter_toPlots {ι : Type*} (D : ι → DiffeologicalSpace X) :
+    generateFrom (⋂ i, (D i).toPlots) = ⨅ i, D i :=
+  (gciGenerateFrom X).l_iInf_u _
+
+theorem generateFrom_iInter_of_generateFrom_eq_self {ι : Type*}
+    (G : ι → Set ((n : ℕ) × (Eucl n → X)))
+    (hG : ∀ i, (generateFrom (G i)).toPlots = G i) :
+    generateFrom (⋂ i, G i) = ⨅ i, generateFrom (G i) :=
+  (gciGenerateFrom X).l_iInf_of_ul_eq_self G hG
+
+theorem isPlot_inf_iff {d₁ d₂ : DiffeologicalSpace X} {n : ℕ} {p : Eucl n → X} :
+    IsPlot[d₁ ⊓ d₂] p ↔ IsPlot[d₁] p ∧ IsPlot[d₂] p :=
+  Set.ext_iff.1 (toPlots_inf d₁ d₂) ⟨n,p⟩
+
+theorem isPlot_iInf_iff {ι : Type*} {D : ι → DiffeologicalSpace X} {n : ℕ} {p : Eucl n → X} :
+    IsPlot[⨅ i, D i] p ↔ ∀ i, IsPlot[D i] p :=
+  (Set.ext_iff.1 (toPlots_iInf (D := D)) ⟨n,p⟩).trans Set.mem_iInter
+
+theorem isPlot_sInf_iff {D : Set (DiffeologicalSpace X)} {n : ℕ} {p : Eucl n → X} :
+    IsPlot[sInf D] p ↔ ∀ d ∈ D, IsPlot[d] p :=
+  (Set.ext_iff.1 (toPlots_sInf (D := D)) ⟨n,p⟩).trans Set.mem_iInter₂
 
 end DiffeologicalSpace
 

@@ -1,4 +1,4 @@
-import Orbifolds.Diffeology.Maps
+import Orbifolds.Diffeology.Induced
 import Mathlib.Analysis.InnerProductSpace.Calculus
 
 set_option autoImplicit false
@@ -182,10 +182,11 @@ theorem isPlot_iff_locally_dsmooth {n : ℕ} {p : Eucl n → X} : DSmooth p ↔
 
 end Subtype
 
+-- TODO: rework all of this
 section Coinduced
 
 open IsLocallyConstant PartialHomeomorph in
-def DiffeologicalSpace.coinduced {X Y : Type*} (f : X → Y) (dX : DiffeologicalSpace X) :
+def DiffeologicalSpace.coinduced' {X Y : Type*} (f : X → Y) (dX : DiffeologicalSpace X) :
     DiffeologicalSpace Y where
   plots n := {p | (∃ y, p = fun _ => y) ∨
     ∀ x : Eucl n, ∃ u : Set (Eucl n), x ∈ u ∧ IsOpen u ∧ ∃ p' : u → X, DSmooth p' ∧ p ∘ (↑) = f ∘ p'}
