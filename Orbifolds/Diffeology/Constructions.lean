@@ -62,8 +62,8 @@ theorem induction_subtype_val : Induction ((↑) : s → X) :=
   ⟨Subtype.coe_injective,rfl⟩
 
 theorem Induction.of_codRestrict {f : X → Y} {t : Set Y} (ht : ∀ x, f x ∈ t)
-    (h : Induction (t.codRestrict f ht)) : Induction f :=
-  by sorry
+    (hf : Induction (t.codRestrict f ht)) : Induction f :=
+  induction_subtype_val.comp hf
 
 theorem dsmooth_subtype_val : DSmooth ((↑) : s → X) :=
   induction_subtype_val.dsmooth
@@ -97,7 +97,7 @@ theorem DSmooth.restrictPreimage {f : X → Y} {s : Set Y} (h : DSmooth f) :
 
 theorem Induction.codRestrict {f : X → Y} (hf : Induction f) {s : Set Y} (hs : ∀ x, f x ∈ s) :
     Induction (s.codRestrict f hs) :=
-  by sorry
+  Induction.of_comp' (hf.dsmooth.codRestrict hs) dsmooth_subtype_val hf
 
 /-- TODO: move to Mathlib.Topology.Constructions -/
 theorem IsOpenMap.subtype_mk {X Y : Type*} [TopologicalSpace X] [TopologicalSpace Y]
@@ -201,11 +201,5 @@ def DiffeologicalSpace.coinduced' {X Y : Type*} (f : X → Y) (dX : Diffeologica
     dsimp
     sorry
 
-variable {X Y : Type*} [dX : DiffeologicalSpace X] [dY : DiffeologicalSpace Y]
-
-def Subduction (f : X → Y) : Prop := Function.Surjective f ∧ dY = dX.coinduced f
-
-protected theorem Subduction.dsmooth {f : X → Y} (hf : Subduction f) : DSmooth f :=
-  fun n p hp => by rw [hf.2]; sorry
 
 end Coinduced

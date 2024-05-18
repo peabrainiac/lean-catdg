@@ -186,7 +186,7 @@ theorem dsmooth_sSup_dom {D : Set (DiffeologicalSpace X)} :
 
 theorem dsmooth_sSup_rng {D : Set (DiffeologicalSpace Y)} (h : dY ∈ D) (hf : DSmooth[dX,dY] f) :
     DSmooth[dX,sSup D] f :=
-  dsmooth_iff_coinduced_le.2 <| le_sSup_of_le h <| dsmooth_iff_coinduced_le.1 hf
+  dsmooth_iff_coinduced_le.2 <| le_sSup_of_le h hf.coinduced_le
 
 theorem dsmooth_iSup_dom {ι : Type*} {D : ι → DiffeologicalSpace X} :
     DSmooth[iSup D,dY] f ↔ ∀ i, DSmooth[D i,dY] f := by
@@ -246,11 +246,29 @@ variable {X Y Z : Type*} [dX : DiffeologicalSpace X] [dY : DiffeologicalSpace Y]
 @[fun_prop]
 def Induction (f : X → Y) : Prop := Function.Injective f ∧ dX = dY.induced f
 
-protected theorem Induction.dsmooth {f : X → Y} (hf : Induction f) : DSmooth f :=
-  fun n p hp => by rw [hf.2] at hp; exact hp
+@[fun_prop]
+def Subduction (f : X → Y) : Prop := Function.Surjective f ∧ dY = dX.coinduced f
+
+notation (name := Induction_of) "Induction[" d₁ ", " d₂ "]" => @Induction _ _ d₁ d₂
+
+notation (name := Subduction_of) "Subduction[" d₁ ", " d₂ "]" => @Subduction _ _ d₁ d₂
+
+theorem Function.Injective.induction_induced {dY : DiffeologicalSpace Y} {f : X → Y}
+    (hf : Injective f) : Induction[dY.induced f,dY] f :=
+  ⟨hf,rfl⟩
+
+theorem Function.Surjective.subduction_coinduced {dX : DiffeologicalSpace X} {f : X → Y}
+    (hf : Surjective f) : Subduction[dX,dX.coinduced f] f :=
+  ⟨hf,rfl⟩
+
+protected theorem Induction.dsmooth {f : X → Y} (hf : Induction f) : DSmooth f := by
+  rw [dsmooth_iff_le_induced,hf.2]
+
+protected theorem Subduction.dsmooth {f : X → Y} (hf : Subduction f) : DSmooth f := by
+  rw [dsmooth_iff_coinduced_le,hf.2]
 
 @[fun_prop]
-theorem induction_id : Induction (@id X) := ⟨Function.injective_id,by ext; rfl⟩
+theorem induction_id : Induction (@id X) := ⟨Function.injective_id,(dX.induced_id).symm⟩
 
 theorem Induction.comp {f : X → Y} {g : Y → Z} (hg : Induction g) (hf : Induction f) :
     Induction (g ∘ f) :=
@@ -260,5 +278,67 @@ theorem Induction.comp {f : X → Y} {g : Y → Z} (hg : Induction g) (hf : Indu
 theorem Induction.comp' {f : X → Y} {g : Y → Z} (hg : Induction g) (hf : Induction f) :
     Induction fun x => g (f x) :=
   Induction.comp hg hf
+
+theorem Induction.of_comp {f : X → Y} {g : Y → Z} (hg : Induction g) (h : Induction (g ∘ f)) :
+    Induction f :=
+  ⟨h.1.of_comp,hg.2.symm ▸ h.2.trans (dZ.induced_compose).symm⟩
+
+theorem Induction.of_comp_iff {f : X → Y} {g : Y → Z} (hg : Induction g) :
+    Induction (g ∘ f) ↔ Induction f :=
+  ⟨hg.of_comp,hg.comp⟩
+
+theorem Induction.of_comp' {f : X → Y} {g : Y → Z} (hf : DSmooth f) (hg : DSmooth g)
+    (h : Induction (g ∘ f)) : Induction f := by
+  refine' ⟨h.1.of_comp,le_antisymm hf.le_induced _⟩
+  rw [h.2,←dZ.induced_compose]
+  exact dY.induced_mono hg.le_induced
+
+@[fun_prop]
+theorem subduction_id : Subduction (@id X) := ⟨Function.surjective_id,(dX.coinduced_id).symm⟩
+
+theorem Subduction.comp {f : X → Y} {g : Y → Z} (hg : Subduction g) (hf : Subduction f) :
+    Subduction (g ∘ f) :=
+  ⟨hg.1.comp hf.1,by rw [hg.2,hf.2,DiffeologicalSpace.coinduced_compose]⟩
+
+@[fun_prop]
+theorem Subduction.comp' {f : X → Y} {g : Y → Z} (hg : Subduction g) (hf : Subduction f) :
+    Subduction fun x => g (f x) :=
+  Subduction.comp hg hf
+
+theorem Subduction.of_comp {f : X → Y} {g : Y → Z} (hf : Subduction f) (h : Subduction (g ∘ f)) :
+    Subduction g :=
+  ⟨h.1.of_comp,hf.2.symm ▸ h.2.trans (dX.coinduced_compose).symm⟩
+
+theorem Subduction.of_comp_iff {f : X → Y} {g : Y → Z} (hf : Subduction f) :
+    Subduction (g ∘ f) ↔ Subduction g :=
+  ⟨hf.of_comp,fun hg => hg.comp hf⟩
+
+theorem Subduction.of_comp' {f : X → Y} {g : Y → Z} (hf : DSmooth f) (hg : DSmooth g)
+    (h : Subduction (g ∘ f)) : Subduction g := by
+  refine' ⟨h.1.of_comp,le_antisymm _ hg.coinduced_le⟩
+  rw [h.2,←dX.coinduced_compose]
+  exact DiffeologicalSpace.coinduced_mono hf.coinduced_le
+
+theorem Induction.dsmooth_iff {f : X → Y} {g : Y → Z} (hg : Induction g) :
+    DSmooth f ↔ DSmooth (g ∘ f) := by
+  refine' ⟨hg.dsmooth.comp,fun h => dsmooth_iff_le_induced.2 _⟩
+  rw [hg.2,dZ.induced_compose]; exact h.le_induced
+
+theorem Induction.isPlot_iff {f : X → Y} {n : ℕ} {p : Eucl n → X} (hf : Induction f) :
+    IsPlot p ↔ IsPlot (f ∘ p) := by
+  rw [isPlot_iff_dsmooth,isPlot_iff_dsmooth,hf.dsmooth_iff]
+
+theorem Subduction.dsmooth_iff {f : X → Y} {g : Y → Z} (hf : Subduction f) :
+    DSmooth g ↔ DSmooth (g ∘ f) := by
+  refine' ⟨fun hg => hg.comp hf.dsmooth,fun h => dsmooth_iff_coinduced_le.2 _⟩
+  rw [hf.2,dX.coinduced_compose]; exact h.coinduced_le
+
+theorem Function.LeftInverse.induction {f : X → Y} {g : Y → X} (h : LeftInverse f g)
+    (hf : DSmooth f) (hg : DSmooth g) : Induction g :=
+  Induction.of_comp' hg hf (h.comp_eq_id ▸ induction_id)
+
+theorem Function.LeftInverse.subduction {f : X → Y} {g : Y → X} (h : LeftInverse f g)
+    (hf : DSmooth f) (hg : DSmooth g) : Subduction f :=
+  Subduction.of_comp' hg hf (h.comp_eq_id ▸ subduction_id)
 
 end Inductions
