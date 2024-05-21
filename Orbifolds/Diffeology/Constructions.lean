@@ -1,6 +1,11 @@
 import Orbifolds.Diffeology.Induced
 import Mathlib.Analysis.InnerProductSpace.Calculus
 
+/-!
+# Constructions of diffeological spaces
+Mostly based on `Mathlib.Topology.Constructions`.
+-/
+
 set_option autoImplicit false
 
 open TopologicalSpace Set
@@ -12,6 +17,10 @@ section Constructions
 instance instDiffeologicalSpaceSubtype {X : Type*} [DiffeologicalSpace X] {p : X → Prop} :
     DiffeologicalSpace (Subtype p) :=
   DiffeologicalSpace.induced ((↑) : _ → X) inferInstance
+
+instance instDiffeologicalSpaceProd {X Y : Type*} [dX : DiffeologicalSpace X]
+    [dY : DiffeologicalSpace Y] : DiffeologicalSpace (X × Y) :=
+  dX.induced Prod.fst ⊓ dY.induced Prod.snd
 
 instance Pi.diffeologicalSpace {ι : Type*} {Y : ι → Type*}
     [(i : ι) → DiffeologicalSpace (Y i)] : DiffeologicalSpace ((i : ι) → Y i) where
@@ -278,3 +287,184 @@ theorem isPlot_coinduced_iff {X Y : Type*} {dX : DiffeologicalSpace X} {f : X �
   sorry
 
 end DTop
+
+section Prod
+
+variable {X Y Z W ε ζ: Type*} [DiffeologicalSpace X] [DiffeologicalSpace Y] [DiffeologicalSpace Z]
+  [DiffeologicalSpace W] [DiffeologicalSpace ε] [DiffeologicalSpace ζ]
+
+@[simp]
+theorem dsmooth_prod_mk {f : X → Y} {g : X → Z} :
+    DSmooth (fun x => (f x,g x)) ↔ DSmooth f ∧ DSmooth g :=
+  dsmooth_inf_rng
+
+theorem dsmooth_fst : DSmooth (@Prod.fst X Y) :=
+  (dsmooth_prod_mk.1 dsmooth_id).1
+
+@[fun_prop]
+theorem DSmooth.fst {f : X → Y × Z} (hf : DSmooth f) : DSmooth fun x => (f x).1 :=
+  dsmooth_fst.comp hf
+
+theorem DSmooth.fst' {f : X → Z} (hf : DSmooth f) : DSmooth fun x : X × Y => f x.fst :=
+  hf.comp dsmooth_fst
+
+theorem dsmooth_snd : DSmooth (@Prod.snd X Y) :=
+  (dsmooth_prod_mk.1 dsmooth_id).2
+
+@[fun_prop]
+theorem DSmooth.snd {f : X → Y × Z} (hf : DSmooth f) : DSmooth fun x => (f x).2 :=
+  dsmooth_snd.comp hf
+
+theorem DSmooth.snd' {f : Y → Z} (hf : DSmooth f) : DSmooth fun x : X × Y => f x.snd :=
+  hf.comp dsmooth_snd
+
+@[fun_prop]
+theorem DSmooth.prod_mk {f : Z → X} {g : Z → Y} (hf : DSmooth f) (hg : DSmooth g) :
+    DSmooth fun x => (f x, g x) :=
+  dsmooth_prod_mk.2 ⟨hf, hg⟩
+
+theorem DSmooth.Prod.mk (x : X) : DSmooth fun y : Y => (x, y) :=
+  dsmooth_const.prod_mk dsmooth_id
+
+theorem DSmooth.Prod.mk_left (y : Y) : DSmooth fun x : X => (x, y) :=
+  dsmooth_id.prod_mk dsmooth_const
+
+theorem DSmooth.comp₂ {g : X × Y → Z} (hg : DSmooth g) {e : W → X} (he : DSmooth e)
+    {f : W → Y} (hf : DSmooth f) : DSmooth fun w => g (e w, f w) :=
+  hg.comp <| he.prod_mk hf
+
+theorem DSmooth.comp₃ {g : X × Y × Z → ε} (hg : DSmooth g) {e : W → X} (he : DSmooth e)
+    {f : W → Y} (hf : DSmooth f) {k : W → Z} (hk : DSmooth k) :
+    DSmooth fun w => g (e w, f w, k w) :=
+  hg.comp₂ he <| hf.prod_mk hk
+
+theorem DSmooth.comp₄ {g : X × Y × Z × ζ → ε} (hg : DSmooth g) {e : W → X} (he : DSmooth e)
+    {f : W → Y} (hf : DSmooth f) {k : W → Z} (hk : DSmooth k) {l : W → ζ}
+    (hl : DSmooth l) : DSmooth fun w => g (e w, f w, k w, l w) :=
+  hg.comp₃ he hf <| hk.prod_mk hl
+
+theorem DSmooth.prod_map {f : Z → X} {g : W → Y} (hf : DSmooth f) (hg : DSmooth g) :
+    DSmooth fun p : Z × W => (f p.1, g p.2) :=
+  hf.fst'.prod_mk hg.snd'
+
+/-- A version of `dsmooth_inf_dom_left` for binary functions -/
+theorem dsmooth_inf_dom_left₂ {X Y Z} {f : X → Y → Z} {dX dX' : DiffeologicalSpace X}
+    {dY dY' : DiffeologicalSpace Y} {dZ : DiffeologicalSpace Z}
+    (h : by haveI := dX; haveI := dY; exact DSmooth fun p : X × Y => f p.1 p.2) : by
+    haveI := dX ⊓ dX'; haveI := dY ⊓ dY'; exact DSmooth fun p : X × Y => f p.1 p.2 := by
+  have ha := @dsmooth_inf_dom_left _ _ dX dX dX' id (@dsmooth_id _ (id _))
+  have hb := @dsmooth_inf_dom_left _ _ dY dY dY' id (@dsmooth_id _ (id _))
+  have h_dsmooth_id := @DSmooth.prod_map _ _ _ _ dX dY (dX ⊓ dX') (dY ⊓ dY') _ _ ha hb
+  exact @DSmooth.comp _ _ _ (id _) (id _) _ _ _ h h_dsmooth_id
+
+/-- A version of `dsmooth_inf_dom_right` for binary functions -/
+theorem dsmooth_inf_dom_right₂ {X Y Z} {f : X → Y → Z} {dX dX' : DiffeologicalSpace X}
+    {dY dY' : DiffeologicalSpace Y} {dZ : DiffeologicalSpace Z}
+    (h : by haveI := dX'; haveI := dY'; exact DSmooth fun p : X × Y => f p.1 p.2) : by
+    haveI := dX ⊓ dX'; haveI := dY ⊓ dY'; exact DSmooth fun p : X × Y => f p.1 p.2 := by
+  have ha := @dsmooth_inf_dom_right _ _ dX dX' dX' id (@dsmooth_id _ (id _))
+  have hb := @dsmooth_inf_dom_right _ _ dY dY' dY' id (@dsmooth_id _ (id _))
+  have h_dsmooth_id := @DSmooth.prod_map _ _ _ _ dX' dY' (dX ⊓ dX') (dY ⊓ dY') _ _ ha hb
+  exact @DSmooth.comp _ _ _ (id _) (id _) _ _ _ h h_dsmooth_id
+
+/-- A version of `dsmooth_sInf_dom` for binary functions -/
+theorem dsmooth_sInf_dom₂ {X Y Z} {f : X → Y → Z} {DX : Set (DiffeologicalSpace X)}
+    {DY : Set (DiffeologicalSpace Y)} {tX : DiffeologicalSpace X} {tY : DiffeologicalSpace Y}
+    {tc : DiffeologicalSpace Z} (hX : tX ∈ DX) (hY : tY ∈ DY)
+    (hf : DSmooth fun p : X × Y => f p.1 p.2) : by
+    haveI := sInf DX; haveI := sInf DY;
+      exact @DSmooth _ _ _ tc fun p : X × Y => f p.1 p.2 := by
+  have hX := dsmooth_sInf_dom hX dsmooth_id
+  have hY := dsmooth_sInf_dom hY dsmooth_id
+  have h_dsmooth_id := @DSmooth.prod_map _ _ _ _ tX tY (sInf DX) (sInf DY) _ _ hX hY
+  exact @DSmooth.comp _ _ _ (id _) (id _) _ _ _ hf h_dsmooth_id
+
+theorem dsmooth_swap : DSmooth (Prod.swap : X × Y → Y × X) :=
+  dsmooth_snd.prod_mk dsmooth_fst
+
+theorem DSmooth.uncurry_left {f : X → Y → Z} (x : X) (h : DSmooth (Function.uncurry f)) :
+    DSmooth (f x) :=
+  h.comp (DSmooth.Prod.mk _)
+
+theorem DSmooth.uncurry_right {f : X → Y → Z} (y : Y) (h : DSmooth (Function.uncurry f)) :
+    DSmooth fun a => f a y :=
+  h.comp (DSmooth.Prod.mk_left _)
+
+theorem dsmooth_curry {g : X × Y → Z} (x : X) (h : DSmooth g) : DSmooth (Function.curry g x) :=
+  DSmooth.uncurry_left x h
+
+/-- Smooth functions on products are smooth in their first argument -/
+theorem DSmooth.curry_left {f : X × Y → Z} (hf : DSmooth f) {y : Y} :
+    DSmooth fun x ↦ f (x, y) :=
+  hf.comp (dsmooth_id.prod_mk dsmooth_const)
+alias DSmooth.along_fst := DSmooth.curry_left
+
+/-- Smooth functions on products are smooth in their second argument -/
+theorem DSmooth.curry_right {f : X × Y → Z} (hf : DSmooth f) {x : X} :
+    DSmooth fun y ↦ f (x, y) :=
+  hf.comp (dsmooth_const.prod_mk dsmooth_id)
+alias DSmooth.along_snd := DSmooth.curry_right
+
+theorem IsPlot.prod {n} {p : Eucl n → X} {p' : Eucl n → Y} (hp : IsPlot p) (hp' : IsPlot p') :
+    IsPlot (fun x => (p x,p' x)) :=
+  (hp.dsmooth.prod_mk hp'.dsmooth).isPlot
+
+theorem isPlot_prod_iff {n} {p : Eucl n → X × Y} :
+    IsPlot p ↔ IsPlot (fun x => (p x).1) ∧ IsPlot (fun x => (p x).2) :=
+  ⟨fun hp => ⟨hp.dsmooth.fst.isPlot,hp.dsmooth.snd.isPlot⟩,fun h => h.1.prod h.2⟩
+
+/-- A product of induced diffeologies is induced by the product map. -/
+theorem DiffeologicalSpace.prod_induced_induced (f : X → Y) (g : Z → W) :
+    @instDiffeologicalSpaceProd X Z (induced f ‹_›) (induced g ‹_›) =
+      induced (fun p => (f p.1, g p.2)) instDiffeologicalSpaceProd := by
+  delta instDiffeologicalSpaceProd; simp_rw [induced_inf, induced_compose]; rfl
+
+/-- The first projection in a product of diffeological spaces is a subduction. -/
+theorem subduction_fst [Nonempty Y] : Subduction (@Prod.fst X Y) := by
+  let y : Y := Nonempty.some inferInstance
+  have h : Function.LeftInverse (@Prod.fst X Y) fun x => (x,y) := fun _ => rfl
+  exact h.subduction dsmooth_fst dsmooth_id.curry_left
+
+/-- The second projection in a product of diffeological spaces is a subduction. -/
+theorem subduction_snd [Nonempty X] : Subduction (@Prod.snd X Y) := by
+  let x : X := Nonempty.some inferInstance
+  have h : Function.LeftInverse (@Prod.snd X Y) fun y => (x,y) := fun _ => rfl
+  exact h.subduction dsmooth_snd dsmooth_id.curry_right
+
+theorem Induction.prod_map {f : X → Y} {g : Z → W} (hf : Induction f) (hg : Induction g) :
+    Induction (Prod.map f g) :=
+  ⟨hf.1.Prod_map hg.1,by rw [hf.2,hg.2,DiffeologicalSpace.prod_induced_induced f g]; rfl⟩
+
+@[simp]
+theorem induction_const_prod {x : X} {f : Y → Z} :
+    (Induction fun y => (x, f y)) ↔ Induction f := by
+  refine' and_congr ((Prod.mk.inj_left x).of_comp_iff f) _
+  simp_rw [instDiffeologicalSpaceProd, DiffeologicalSpace.induced_inf,
+    DiffeologicalSpace.induced_compose, Function.comp,
+    DiffeologicalSpace.induced_const, top_inf_eq]
+
+@[simp]
+theorem induction_prod_const {y : Y} {f : X → Z} :
+    (Induction fun x => (f x, y)) ↔ Induction f := by
+  refine' and_congr ((Prod.mk.inj_right y).of_comp_iff f) _
+  simp_rw [instDiffeologicalSpaceProd, DiffeologicalSpace.induced_inf,
+    DiffeologicalSpace.induced_compose, Function.comp,
+    DiffeologicalSpace.induced_const, inf_top_eq]
+
+theorem induction_graph {f : X → Y} (hf : DSmooth f) : Induction fun x => (x, f x) :=
+  Induction.of_comp' (dsmooth_id.prod_mk hf) dsmooth_fst induction_id
+
+theorem induction_prod_mk (x : X) : Induction (Prod.mk x : Y → X × Y) :=
+  induction_const_prod.2 induction_id
+
+theorem induction_prod_mk_left (y : X) : Induction (fun x : X => (x, y)) :=
+  induction_prod_const.2 induction_id
+
+/-- The D-topology of the product diffeology is at least as fine as the product of
+  the D-topologies. -/
+theorem dTop_prod_le_prod_dTop :
+    (DTop : TopologicalSpace (X × Y)) ≤ @instTopologicalSpaceProd _ _ DTop DTop :=
+  continuous_id_iff_le.1 ((@continuous_prod_mk _ X Y DTop DTop DTop _ _).2
+    ⟨dsmooth_fst.continuous,dsmooth_snd.continuous⟩)
+
+end Prod

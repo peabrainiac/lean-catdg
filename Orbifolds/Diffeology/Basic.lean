@@ -2,7 +2,6 @@ import Mathlib.Topology.Sets.Opens
 import Mathlib.Analysis.Calculus.ContDiff.Basic
 import Mathlib.Topology.Algebra.Module.FiniteDimension
 import Mathlib.Analysis.InnerProductSpace.EuclideanDist
-import Mathlib.Topology.LocallyConstant.Basic
 
 open TopologicalSpace
 
