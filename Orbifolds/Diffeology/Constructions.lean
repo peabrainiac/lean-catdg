@@ -128,21 +128,10 @@ lemma isOpen_iff_preimages_plots' {s : Set X} : IsOpen[DTop] s ↔
     ∀ (n : ℕ) (u : Set (Eucl n)) (p : u → X), IsOpen u → DSmooth p → IsOpen (p ⁻¹' s) := by
   rw [isOpen_iff_preimages_plots]
   refine' ⟨fun hs n u p hu hp => _,fun hs n p hp => _⟩
-  · refine' isOpen_iff_mem_nhds.2 fun x hx => _
-    let ⟨ε,hε⟩ := Metric.isOpen_iff.1 hu x x.2
-    let e : Eucl n ≃ₜ Metric.ball x.1 ε := (Homeomorph.Set.univ _).symm.trans <|
-      PartialHomeomorph.univUnitBall.toHomeomorphSourceTarget.trans
-        (PartialHomeomorph.unitBallBall x.1 ε hε.1).toHomeomorphSourceTarget
-    have he : DSmooth e :=
-      (((PartialHomeomorph.contDiff_unitBallBall hε.1).dsmooth.restrict
-        (PartialHomeomorph.unitBallBall x.1 ε hε.1).map_source').comp
-          (PartialHomeomorph.contDiff_univUnitBall.dsmooth.restrict
-            PartialHomeomorph.univUnitBall.map_source')).comp (dsmooth_id.subtype_mk _)
-    have h := hs n _ (hp.comp ((dsmooth_inclusion hε.2).comp he)).isPlot
-    simp_rw [preimage_comp, Homeomorph.isOpen_preimage] at h
-    apply Metric.isOpen_ball.isOpenMap_inclusion hε.2 _ at h
-    rw [image_preimage_eq_inter_range] at h
-    exact mem_nhds_iff.2 ⟨_,inter_subset_left _ _,h,hx,by simp [hε.1]⟩
+  · rw [←isOpen_iff_preimages_plots] at hs
+    have := dTop_induced_comm ((Subtype.range_val (s := u)).symm ▸ hu)
+    convert @IsOpen.preimage _ _ DTop DTop p hp.continuous _ hs
+    exact (dTop_induced_comm ((Subtype.range_val (s := u)).symm ▸ hu)).symm
   · let e := Homeomorph.Set.univ (Fin n → ℝ)
     rw [←e.isOpen_preimage,←preimage_comp]
     exact hs n _ (p ∘ e) isOpen_univ (hp.dsmooth.comp dsmooth_subtype_val)
@@ -150,16 +139,7 @@ lemma isOpen_iff_preimages_plots' {s : Set X} : IsOpen[DTop] s ↔
 /-- On open subsets, the D-topology and subspace topology agree. -/
 protected theorem IsOpen.dTopCompatible [TopologicalSpace X] [DTopCompatible X] (hs : IsOpen s) :
     DTopCompatible s := ⟨by
-  ext t; refine' ⟨fun ht => _,fun ht => _⟩
-  all_goals rw [←Subtype.val_injective.preimage_image t]
-  · refine' IsOpen.preimage continuous_subtype_val (dTop_eq X ▸ _)
-    refine' isOpen_iff_preimages_plots.2 fun n p hp => _
-    have hs' := hs.preimage hp.dsmooth.continuous'
-    convert hs'.isOpenMap_subtype_val _ <| ((isOpen_iff_preimages_plots' (s := t)).1 ht) n _
-      (s.restrictPreimage p) hs' hp.dsmooth.restrictPreimage
-    ext x; simp_rw [mem_preimage, mem_image, Subtype.exists, exists_and_right, exists_eq_right]; rfl
-  · refine' @IsOpen.preimage s X DTop _ _ _ _ (hs.isOpenMap_subtype_val t ht)
-    exact dTop_eq X ▸ dsmooth_subtype_val.continuous⟩
+  exact (dTop_eq X) ▸ dTop_induced_comm (Subtype.range_coe.symm ▸ (dTop_eq X) ▸ hs)⟩
 
 instance [TopologicalSpace X] [DTopCompatible X] [h : Fact (IsOpen s)] : DTopCompatible s :=
   h.out.dTopCompatible
@@ -172,34 +152,129 @@ theorem dsmooth_iff' {f : X → Y} : DSmooth f ↔
   exact ((hf n _ _ isOpen_univ (hp.dsmooth.comp dsmooth_subtype_val)).comp
     (dsmooth_id.subtype_mk _)).isPlot
 
-/-- The locality axiom of diffeologies: any map that is locally a plot is also a plot itself.
-I did not make it part of the `DiffeologicalSpace`-structure because I erroneously thougth that
-it would also follow as a theorem, but it does not - the `sorry` cannot currently be filled. -/
-theorem isPlot_iff_locally_dsmooth {n : ℕ} {p : Eucl n → X} : DSmooth p ↔
-    ∀ x : Eucl n, ∃ u ∈ 𝓝 x,  DSmooth (u.restrict p) := by
-  refine' ⟨fun hp x => ⟨_,Filter.univ_mem,hp.comp dsmooth_subtype_val⟩, fun h m f hf => _⟩
-  sorry
+/-- The locality axiom of diffeologies. Restated here in terms of subspace diffeologies. -/
+theorem isPlot_iff_locally_dsmooth {n : ℕ} {p : Eucl n → X} : IsPlot p ↔
+    ∀ x : Eucl n, ∃ u, IsOpen u ∧ x ∈ u ∧  DSmooth (u.restrict p) := by
+  refine' ⟨fun hp x => ⟨_,isOpen_univ,mem_univ x,hp.dsmooth.comp dsmooth_subtype_val⟩,_⟩
+  refine' fun h => DiffeologicalSpace.locality fun x => _
+  let ⟨u,hu,hxu,hu'⟩ := h x
+  refine' ⟨u,hu,hxu,fun {m f} hfu hf => u.restrict_comp_codRestrict hfu ▸ _⟩
+  exact  (hu' _ _ (hf.dsmooth.codRestrict hfu).isPlot)
+
+theorem dsmooth_iff_locally_dsmooth {f : X → Y} : DSmooth f ↔
+    ∀ x : X, ∃ u : Set X, IsOpen[DTop] u ∧ x ∈ u ∧ DSmooth (u.restrict f) := by
+  refine' ⟨fun hf x => ⟨_,by simp,mem_univ x,hf.comp dsmooth_subtype_val⟩,fun h n p hp => _⟩
+  refine' isPlot_iff_locally_dsmooth.2  fun x => _
+  let ⟨u,hu,hxu,hu'⟩ := h (p x)
+  refine' ⟨p ⁻¹' u,@IsOpen.preimage _ _ _ DTop p (dTop_eq (Eucl n) ▸ hp.continuous) u hu,hxu,_⟩
+  exact hu'.comp hp.dsmooth.restrictPreimage
+
+/-- Any D-locally constant map is smooth. -/
+theorem IsLocallyConstant.dsmooth {f : X → Y} (hf : @IsLocallyConstant _ _ DTop f) :
+    DSmooth f := by
+  refine' dsmooth_iff_locally_dsmooth.2 fun x => Exists.imp (fun u ⟨hu,hxu,hu'⟩ => ⟨hu,hxu,_⟩)
+    (@IsLocallyConstant.exists_open _ _ DTop f hf x)
+  rw [show u.restrict f = fun _ => f x by ext x'; exact hu' x'.1 x'.2]
+  exact dsmooth_const
 
 end Subtype
 
--- TODO: rework all of this
-section Coinduced
+section DTop
 
-open IsLocallyConstant PartialHomeomorph in
-def DiffeologicalSpace.coinduced' {X Y : Type*} (f : X → Y) (dX : DiffeologicalSpace X) :
-    DiffeologicalSpace Y where
-  plots n := {p | (∃ y, p = fun _ => y) ∨
-    ∀ x : Eucl n, ∃ u : Set (Eucl n), x ∈ u ∧ IsOpen u ∧ ∃ p' : u → X, DSmooth p' ∧ p ∘ (↑) = f ∘ p'}
-  constant_plots x := Or.inl ⟨x,rfl⟩
-  plot_reparam {n m p g} := fun hp hg => Or.rec (fun ⟨y,hy⟩ => Or.inl ⟨y,hy ▸ rfl⟩)
-    (fun h => Or.inr fun x => (by
-      let ⟨u,hxu,hu,p',hp',hp''⟩ := h (g x)
-      refine' ⟨g ⁻¹' u,hxu,hu.preimage hg.continuous,p' ∘ u.restrictPreimage g,
-        hp'.comp hg.dsmooth.restrictPreimage,_⟩
-      simp_rw [←Function.comp.assoc,←hp'',Function.comp.assoc]; rfl)) hp
-  locality {n p} := fun h => by
-    dsimp
+/-- The indiscrete diffeology is the one for which every map is a plot. -/
+theorem DiffeologicalSpace.eq_top_iff {X : Type*} {dX : DiffeologicalSpace X} :
+    dX = ⊤ ↔ ∀ n (p : Eucl n → X), IsPlot p :=
+  ⟨fun h _ _ => h ▸ trivial,fun h => IsTop.eq_top fun _ => le_iff'.2 fun n p _ => h n p⟩
+
+open PartialHomeomorph in
+/-- The discrete diffeology is the one with only the constant maps as plots. -/
+theorem DiffeologicalSpace.eq_bot_iff {X : Type*} {dX : DiffeologicalSpace X} :
+    dX = ⊥ ↔ ∀ n (p : Eucl n → X), IsPlot p → ∃ x, p = fun _ => x := by
+  refine' ⟨fun h n p => fun hp => _,fun h => IsBot.eq_bot fun d => _⟩
+  · let d : DiffeologicalSpace X := {
+      plots := fun n => {p | ∃ x, p = fun _ => x}
+      constant_plots := fun x => ⟨x,rfl⟩
+      plot_reparam := fun ⟨x,hx⟩ _ => ⟨x,by rw [hx]; rfl⟩
+      locality := fun {n p} h => by
+        have := Nonempty.map p inferInstance
+        refine' IsLocallyConstant.exists_eq_const <| (IsLocallyConstant.iff_exists_open p).2 _
+        intro x; let ⟨u,hu,hxu,hu'⟩ := h x; let ⟨ε,hε,hε'⟩ := Metric.isOpen_iff.1 hu x hxu
+        refine' ⟨Metric.ball x ε,Metric.isOpen_ball,Metric.mem_ball_self hε,_⟩
+        let e : Eucl n ≃ₜ Metric.ball x ε := (Homeomorph.Set.univ _).symm.trans <|
+          univUnitBall.toHomeomorphSourceTarget.trans
+            (unitBallBall x ε hε).toHomeomorphSourceTarget
+        have he : DSmooth (((↑) : _ → Eucl n) ∘ e) :=
+          (contDiff_unitBallBall hε).dsmooth.comp contDiff_univUnitBall.dsmooth
+        let ⟨x'',hx''⟩ := @hu' n ((↑) ∘ e) (fun x'' => hε' (e x'').2) he.contDiff
+        suffices h : ∀ x' : Metric.ball x ε, p x' = x'' by
+          intro x' hx'; rw [h ⟨x',hx'⟩,h ⟨x,Metric.mem_ball_self hε⟩]
+        intro x'
+        rw [←Function.comp_apply (f := p),←Function.comp_id (p ∘ _),←e.self_comp_symm,
+          ←Function.comp.assoc,Function.comp.assoc p,hx'',Function.comp_apply]}
+    exact le_iff'.1 (h.symm ▸ bot_le (a := d)) n p hp
+  · exact le_iff'.2 fun n p hp => (h n p hp).choose_spec ▸ isPlot_const
+
+theorem dTop_mono {X : Type*} {d₁ d₂ : DiffeologicalSpace X} (h : d₁ ≤ d₂) :
+    DTop[d₁] ≤ DTop[d₂] := by
+  refine' TopologicalSpace.le_def.2 fun u hu => _
+  rw [@isOpen_iff_preimages_plots] at hu ⊢
+  rw [DiffeologicalSpace.le_iff'] at h
+  exact fun n p => hu n p ∘ h n p
+
+/-- The D-topology of the indiscrete diffeology is indiscrete. -/
+theorem dTop_top {X : Type*} : DTop[⊤] = (⊤ : TopologicalSpace X) := by
+  let f : X → Unit := default
+  have h : @DTop Unit ⊤ = ⊥ := Unique.eq_default _
+  rw [←DiffeologicalSpace.induced_top (f := f), dTop_induced_comm (by rw [h]; trivial),
+    h.trans (Unique.default_eq ⊤),induced_top]
+
+/-- The D-topology of the discrete diffeology is discrete. -/
+theorem dTop_bot {X : Type*} : DTop[⊥] = (⊥ : TopologicalSpace X) := by
+  ext u; refine' ⟨fun _ => trivial,fun _ => _⟩
+  rw [@isOpen_iff_preimages_plots _ ⊥ u]; intro n p hp
+  let ⟨x,hx⟩ := DiffeologicalSpace.eq_bot_iff.1 rfl n p hp
+  by_cases h : x ∈ u; all_goals simp [hx,h]
+
+/-- The discrete diffeologoy is the only diffeology whose D-topology is discrete.
+  Note that the corresponding statement for indiscrete spaces is false. -/
+theorem dTop_eq_bot_iff {X : Type*} {dX : DiffeologicalSpace X} : DTop[dX] = ⊥ ↔ dX = ⊥ := by
+  refine' ⟨fun h => _,fun h => by rw [h,dTop_bot]⟩
+  refine' (dX.eq_bot_iff).2 fun n p hp => ⟨p 0,funext fun x => _⟩
+  exact @PreconnectedSpace.constant _ _ X ⊥ (discreteTopology_bot X) inferInstance
+    p (h ▸ hp.continuous) _ _
+
+/-- A map from an indiscrete space is smooth iff its range is indiscrete.
+  Note that this can't be characterised purely topologically, since it might be the case that
+  all involved D-topologies are indiscrete but the diffeologies are not. -/
+theorem dsmooth_top_iff_indiscrete_range {X Y : Type*} {dY : DiffeologicalSpace Y} {f : X → Y} :
+    DSmooth[⊤,dY] f ↔ @instDiffeologicalSpaceSubtype Y dY (Set.range f) = ⊤ := by
+  let _ : DiffeologicalSpace X := ⊤
+  refine' ⟨fun hf => _,fun h => _⟩
+  · refine' DiffeologicalSpace.eq_top_iff.2 fun n p => _
+    have hf' : DSmooth (Set.rangeFactorization f) := hf.codRestrict mem_range_self
+    let ⟨g,hg⟩ := (Set.surjective_onto_range (f := f)).hasRightInverse
+    have h := hf' n (g ∘ p) trivial
+    rw [←Function.comp.assoc,hg.id,Function.id_comp] at h; exact h
+  · exact dsmooth_subtype_val.comp (h ▸ dsmooth_top : DSmooth (Set.rangeFactorization f))
+
+/-- A map to an discrete space is smooth iff it is D-locally constant. -/
+theorem dsmooth_bot_iff_isLocallyConstant {X Y : Type*} {dX : DiffeologicalSpace X} {f : X → Y} :
+    DSmooth[dX,⊥] f ↔ @IsLocallyConstant _ _ DTop[dX] f:= by
+  refine' ⟨fun hf _ => _,@IsLocallyConstant.dsmooth _ dX Y ⊥ _⟩
+  exact @IsOpen.preimage _ Y DTop[dX] ⊥ _ (dTop_bot ▸ @DSmooth.continuous _ Y dX ⊥ _ hf) _ trivial
+
+theorem dTop_coinduced_comm {X Y : Type*} {dX : DiffeologicalSpace X} {f : X → Y} :
+    DTop[dX.coinduced f] = DTop[dX].coinduced f := by
+  let dY := dX.coinduced f
+  refine' le_antisymm (TopologicalSpace.le_def.2 fun u hu n p hp => _) _
+  · rw [isOpen_coinduced] at hu
+    dsimp at hp
     sorry
+  · exact continuous_iff_coinduced_le.1 <| DSmooth.continuous (by rw [dsmooth_iff_coinduced_le])
 
+theorem isPlot_coinduced_iff {X Y : Type*} {dX : DiffeologicalSpace X} {f : X → Y}
+    {n : ℕ} {p : Eucl n → Y} : IsPlot[dX.coinduced f] p ↔ (∃ y, p = fun _ => y) ∨
+    ∀ x : Eucl n, ∃ u , IsOpen u ∧ x ∈ u ∧ ∃ p' : u → X, DSmooth p' ∧ p ∘ (↑) = f ∘ p' := by
+  sorry
 
-end Coinduced
+end DTop

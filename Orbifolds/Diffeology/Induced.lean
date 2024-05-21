@@ -236,6 +236,49 @@ theorem dsmooth_id_iff_le : DSmooth[dX,dX'] id ↔ dX ≤ dX' := by
 theorem dsmooth_id_of_le (h : dX ≤ dX') : DSmooth[dX,dX'] id :=
   dsmooth_id_iff_le.2 h
 
+/-- The D-topology of the induced diffeology is always at least as fine as the induced topology. -/
+theorem dTop_induced_le_induced_dTop : DTop[dY.induced f] ≤ DTop[dY].induced f := by
+  refine' continuous_iff_le_induced.1 <| @DSmooth.continuous _ _ (dY.induced f) dY f _
+  rw [dsmooth_iff_le_induced]
+
+open Topology PartialHomeomorph Classical in
+/-- For functions whose range is D-open, the D-topology of the induced diffeology agrees with
+  the induced topology. -/
+theorem dTop_induced_comm {X Y : Type*} {dY : DiffeologicalSpace Y} {f : X → Y}
+    (hf : IsOpen[DTop[dY]] (Set.range f)) : DTop[dY.induced f] = DTop[dY].induced f := by
+  let dX := dY.induced f; let _ := DTop[dY]
+  refine' le_antisymm dTop_induced_le_induced_dTop <| TopologicalSpace.le_def.2 fun u hu => _
+  have hu' : u = f ⁻¹' (f '' u) := by
+    refine' subset_antisymm (u.subset_preimage_image f) fun x hx => _
+    let ⟨x',hx',hx''⟩ := (Set.mem_image _ _ _).1 hx
+    let p : Eucl 1 → X :=fun x'' => ite (x''=0) x' x
+    have hp : f ∘ p = (fun _ => f x) := by ext x; by_cases h : x=0; all_goals simp [h,p,hx'']
+    by_contra hx; apply not_not_intro <| (@isOpen_iff_preimages_plots _ dX _).1 hu 1 p
+      (isPlot_induced_iff.2 <| hp ▸ isPlot_const)
+    rw [show p ⁻¹' u = {0} by ext x''; by_cases h : x'' = 0; all_goals simp [p,h,hx,hx']]
+    exact not_isOpen_singleton 0
+  rw [hu'] at hu ⊢
+  refine' @IsOpen.preimage _ _ (DTop[dY].induced f) _ _ continuous_induced_dom _ _
+  refine' (@isOpen_iff_preimages_plots _ dY _).2 fun n p hp => _
+  have hu'' := (dTop_eq (Eucl n)) ▸ @IsOpen.preimage _ _ DTop DTop _ hp.dsmooth.continuous _ hf
+  refine' isOpen_iff_mem_nhds.2 fun x hx => _
+  let ⟨ε,hε⟩ := Metric.isOpen_iff.1 hu'' x ((Set.preimage_mono (Set.image_subset_range _ _)) hx)
+  let e : Eucl n ≃ₜ Metric.ball x ε := (Homeomorph.Set.univ _).symm.trans <|
+    univUnitBall.toHomeomorphSourceTarget.trans
+      (unitBallBall x ε hε.1).toHomeomorphSourceTarget
+  have he : DSmooth (((↑) : _ → Eucl n) ∘ e) :=
+    (contDiff_unitBallBall hε.1).dsmooth.comp contDiff_univUnitBall.dsmooth
+  let ⟨p',hp'⟩ : ∃ p' : Eucl n → X, p ∘ (↑) ∘ e = f ∘ p' :=
+    Set.range_subset_range_iff_exists_comp.1 <| by
+      refine' Function.comp.assoc _ _ _ ▸ (Set.range_comp_subset_range _ _).trans _
+      rw [Set.range_comp,Subtype.range_coe]; exact Set.image_subset_iff.2 hε.2
+  have hp'' : DSmooth p' := dsmooth_induced_rng.2 (hp' ▸ hp.dsmooth.comp he)
+  have h := (@isOpen_iff_preimages_plots _ (dY.induced f) _).1 hu n p' hp''.isPlot
+  simp_rw [←Set.preimage_comp,←hp',Set.preimage_comp,Homeomorph.isOpen_preimage] at h
+  apply IsOpen.isOpenMap_subtype_val Metric.isOpen_ball at h
+  rw [Subtype.image_preimage_coe] at h
+  exact mem_nhds_iff.2 ⟨_,Set.inter_subset_right _ _,h,Metric.mem_ball_self hε.1,hx⟩
+
 end Induced
 
 section Inductions

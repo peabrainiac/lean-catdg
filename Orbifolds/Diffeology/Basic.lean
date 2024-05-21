@@ -2,6 +2,7 @@ import Mathlib.Topology.Sets.Opens
 import Mathlib.Analysis.Calculus.ContDiff.Basic
 import Mathlib.Topology.Algebra.Module.FiniteDimension
 import Mathlib.Analysis.InnerProductSpace.EuclideanDist
+import Mathlib.Topology.LocallyConstant.Basic
 
 open TopologicalSpace
 
@@ -17,7 +18,7 @@ class DiffeologicalSpace (X : Type*) where
   constant_plots {n : ℕ} (x : X) : (fun _ => x) ∈ plots n
   plot_reparam {n m : ℕ} {p : Eucl m → X} {f : Eucl n → Eucl m} :
     p ∈ plots m → (ContDiff ℝ ⊤ f) → (p ∘ f ∈ plots n)
-  locality {n : ℕ} {p : Eucl n → X} : (∀ x : Eucl n, ∃ u : Set (Eucl n), x ∈ u ∧ IsOpen u ∧
+  locality {n : ℕ} {p : Eucl n → X} : (∀ x : Eucl n, ∃ u : Set (Eucl n), IsOpen u ∧ x ∈ u ∧
     ∀ {m : ℕ} {f : Eucl m → Eucl n}, (hfu : ∀ x, f x ∈ u) → ContDiff ℝ ⊤ f → p ∘ f ∈ plots m) →
       p ∈ plots n
   dTopology : TopologicalSpace X := {
@@ -46,6 +47,8 @@ def IsPlot {n : ℕ} (p : Eucl n → X) : Prop := p ∈ DiffeologicalSpace.plots
 smoothness of plots. -/
 @[fun_prop]
 def DSmooth (f : X → Y) : Prop := ∀ (n : ℕ) (p : Eucl n → X), IsPlot p → IsPlot (f ∘ p)
+
+notation (name := DTop_of) "DTop[" d "]" => @DTop _ d
 
 notation (name := IsPlot_of) "IsPlot[" d "]" => @IsPlot _ d
 
@@ -111,7 +114,7 @@ def euclideanDiffeology {X : Type*} [NormedAddCommGroup X] [NormedSpace ℝ X]
   plot_reparam := ContDiff.comp
   locality {n p} := fun hp => by
     refine' contDiff_iff_contDiffAt.2 fun x => _
-    let ⟨u,hxu,hu,hu'⟩ := hp x
+    let ⟨u,hu,hxu,hu'⟩ := hp x
     let ⟨ε,hε,hε'⟩ := Metric.isOpen_iff.1 hu x hxu
     have h := hu' (f := PartialHomeomorph.univBall x ε) (fun x' => by
       have h := (PartialHomeomorph.univBall x ε).map_source (x := x')
@@ -254,6 +257,9 @@ lemma le_def {d₁ d₂ : DiffeologicalSpace X} : d₁ ≤ d₂ ↔ d₁.toPlots
 
 lemma le_iff {d₁ d₂ : DiffeologicalSpace X} : d₁ ≤ d₂ ↔ ∀ n, d₁.plots n ⊆ d₂.plots n :=
   le_def.trans ⟨fun h n p h' => (h h' : ⟨n,p⟩ ∈ d₂.toPlots),fun h _ hp => h _ hp⟩
+
+lemma le_iff' {d₁ d₂ : DiffeologicalSpace X} : d₁ ≤ d₂ ↔
+    ∀ n (p : Eucl n → X), IsPlot[d₁] p → IsPlot[d₂] p := le_iff
 
 lemma generateFrom_le_iff_subset_toPlots {g : Set ((n : ℕ) × (Eucl n → X))}
     {d : DiffeologicalSpace X} : generateFrom g ≤ d ↔ g ⊆ d.toPlots :=
