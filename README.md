@@ -11,7 +11,7 @@ So far this is mostly following Patrick Iglesias-Zemmour's book "Diffeology" - I
 		- [x] Arbitrary joins and meets of diffeologies
 		- [x] Pushforwards and pullbacks of diffeologies
 		- [x] Subspace diffeologies
-		- [ ] Quotient diffeologies
+		- [x] Quotient diffeologies
 		- [x] Binary product diffeologies
 		- [ ] Product diffeologies
 		- [ ] Binary coproduct diffeologies
