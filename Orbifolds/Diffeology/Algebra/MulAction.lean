@@ -30,6 +30,10 @@ export DSmoothSMul (dsmooth_smul)
 variable {M X Y : Type*} [DiffeologicalSpace M] [dX : DiffeologicalSpace X]
   [dY : DiffeologicalSpace Y]
 
+@[to_additive]
+instance [SMul M X] [DSmoothSMul M X] : DSmoothSMul (ULift M) X :=
+  ⟨(dsmooth_smul (M := M)).comp₂ (dsmooth_uLift_down.comp dsmooth_fst) dsmooth_snd⟩
+
 @[to_additive (attr := fun_prop)]
 theorem DSmooth.smul [SMul M X] [DSmoothSMul M X] {f : Y → M} {g : Y → X}
     (hf : DSmooth f) (hg : DSmooth g) : DSmooth fun x => f x • g x :=

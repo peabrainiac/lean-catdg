@@ -12,6 +12,8 @@ open TopologicalSpace Set
 
 open Topology
 
+universe u v
+
 section Constructions
 
 instance instDiffeologicalSpaceSubtype {X : Type*} [DiffeologicalSpace X] {p : X → Prop} :
@@ -37,6 +39,10 @@ instance Pi.diffeologicalSpace {ι : Type*} {Y : ι → Type*}
   plot_reparam {n m p f} := fun hp hf i => by
     exact Function.comp.assoc _ _ _ ▸ isPlot_reparam (hp i) hf
   locality := by sorry
+
+instance ULift.diffeologicalSpace {X : Type u} [t : DiffeologicalSpace X] :
+    DiffeologicalSpace (ULift.{v, u} X) :=
+  t.induced ULift.down
 
 end Constructions
 
@@ -691,3 +697,20 @@ theorem dTop_prod_le_prod_dTop :
     ⟨dsmooth_fst.continuous,dsmooth_snd.continuous⟩)
 
 end Prod
+
+section ULift
+
+variable {X : Type u} [DiffeologicalSpace X]
+
+theorem dsmooth_uLift_down : DSmooth (ULift.down : ULift.{v, u} X → X) :=
+  dsmooth_induced_dom
+
+theorem dsmooth_uLift_up : DSmooth (ULift.up : X → ULift.{v, u} X) :=
+  dsmooth_induced_rng.2 dsmooth_id
+
+theorem induction_uLift_down : Induction (ULift.down : ULift.{v, u} X → X) :=
+  ⟨ULift.down_injective,rfl⟩
+
+-- TODO: ulift discrete diffeologies once instance is available
+
+end ULift

@@ -33,7 +33,10 @@ instance : DSmoothMul Mᵒᵈ :=
 theorem dsmooth_mul : DSmooth fun p : M × M => p.1 * p.2 :=
   DSmoothMul.dsmooth_mul
 
--- TODO: instance on ULift
+@[to_additive]
+instance : DSmoothMul (ULift M) :=
+  ⟨dsmooth_uLift_up.comp <| dsmooth_mul.comp₂
+    (dsmooth_uLift_down.comp dsmooth_fst) (dsmooth_uLift_down.comp dsmooth_snd)⟩
 
 @[to_additive]
 instance DSmoothMul.to_dsmoothSMul : DSmoothSMul M M :=
