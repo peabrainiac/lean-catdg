@@ -40,6 +40,28 @@ instance Pi.diffeologicalSpace {ι : Type*} {Y : ι → Type*}
 
 end Constructions
 
+section OrderDual
+
+variable {X : Type*} [DiffeologicalSpace X]
+
+open OrderDual
+
+instance : DiffeologicalSpace Xᵒᵈ := ‹DiffeologicalSpace X›
+
+theorem dsmooth_toDual : DSmooth (toDual : X → Xᵒᵈ) := dsmooth_id
+
+theorem dsmooth_ofDual : DSmooth (ofDual : Xᵒᵈ → X) := dsmooth_id
+
+theorem induction_toDual : Induction (toDual : X → Xᵒᵈ) := induction_id
+
+theorem induction_ofDual : Induction (ofDual : Xᵒᵈ → X) := induction_id
+
+theorem subduction_toDual : Subduction (toDual : X → Xᵒᵈ) := subduction_id
+
+theorem subduction_ofDual : Subduction (ofDual : Xᵒᵈ → X) := subduction_id
+
+end OrderDual
+
 section Pi
 
 variable {ι : Type*} {Y : ι → Type*} [(i : ι) → DiffeologicalSpace (Y i)]
