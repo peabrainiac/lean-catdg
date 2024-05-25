@@ -46,6 +46,56 @@ instance ULift.diffeologicalSpace {X : Type u} [t : DiffeologicalSpace X] :
 
 end Constructions
 
+/-!
+### `Additive`, `Multiplicative`
+
+The diffeology on those type synonyms is inherited without change.
+-/
+
+section
+
+variable {X : Type*} [DiffeologicalSpace X]
+
+open Additive Multiplicative
+
+instance : DiffeologicalSpace (Additive X) := ‹DiffeologicalSpace X›
+
+instance : DiffeologicalSpace (Multiplicative X) := ‹DiffeologicalSpace X›
+
+-- TODO: discrete diffeology instance, once that is available as a typeclass
+
+theorem dsmooth_ofMul : DSmooth (ofMul : X → Additive X) := dsmooth_id
+
+theorem dsmooth_toMul : DSmooth (toMul : Additive X → X) := dsmooth_id
+
+theorem dsmooth_ofAdd : DSmooth (ofAdd : X → Multiplicative X) := dsmooth_id
+
+theorem dsmooth_toAdd : DSmooth (toAdd : Multiplicative X → X) := dsmooth_id
+
+theorem induction_ofMul : Induction (ofMul : X → Additive X) := induction_id
+
+theorem induction_toMul : Induction (toMul : Additive X → X) := induction_id
+
+theorem induction_ofAdd : Induction (ofAdd : X → Multiplicative X) := induction_id
+
+theorem induction_toAdd : Induction (toAdd : Multiplicative X → X) := induction_id
+
+theorem subduction_ofMul : Subduction (ofMul : X → Additive X) := subduction_id
+
+theorem subduction_toMul : Subduction (toMul : Additive X → X) := subduction_id
+
+theorem subduction_ofAdd : Subduction (ofAdd : X → Multiplicative X) := subduction_id
+
+theorem subduction_toAdd : Subduction (toAdd : Multiplicative X → X) := subduction_id
+
+end
+
+/-!
+### Order dual
+
+The diffeology on this type synonym is inherited without change.
+-/
+
 section OrderDual
 
 variable {X : Type*} [DiffeologicalSpace X]

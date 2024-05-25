@@ -151,6 +151,14 @@ theorem DSmooth.units_map {N : Type*} [DiffeologicalSpace N] [Monoid N]
 
 end Units
 
+instance {M : Type*} [DiffeologicalSpace M] [Mul M] [DSmoothMul M] :
+    DSmoothAdd (Additive M) :=
+  ⟨@dsmooth_mul M _ _ _⟩
+
+instance {M : Type*} [DiffeologicalSpace M] [Add M] [DSmoothAdd M] :
+    DSmoothMul (Multiplicative M) :=
+  ⟨@dsmooth_add M _ _ _⟩
+
 @[to_additive]
 theorem dsmoothMul_sInf {M : Type*} [Mul M] {D : Set (DiffeologicalSpace M)}
     (h : ∀ d ∈ D, @DSmoothMul M d _) : @DSmoothMul M (sInf D) _ :=
