@@ -24,7 +24,7 @@ So far this is mostly following Patrick Iglesias-Zemmour's book "Diffeology" - I
 		- [x] Inductions & subductions
 		- [x] Diffeomorphisms
 	- Types of diffeological spaces:
-		- [ ] Diffeological groups
+		- [x] Diffeological groups
 		- [ ] Diffeological vector spaces
 		- [ ] Diffeological manifolds
 		- [ ] Orbifolds as diffeological spaces

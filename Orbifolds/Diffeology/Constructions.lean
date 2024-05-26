@@ -691,12 +691,6 @@ theorem isPlot_prod_iff {n} {p : Eucl n → X × Y} :
     IsPlot p ↔ IsPlot (fun x => (p x).1) ∧ IsPlot (fun x => (p x).2) :=
   ⟨fun hp => ⟨hp.dsmooth.fst.isPlot,hp.dsmooth.snd.isPlot⟩,fun h => h.1.prod h.2⟩
 
-/-- A product of induced diffeologies is induced by the product map. -/
-theorem DiffeologicalSpace.prod_induced_induced (f : X → Y) (g : Z → W) :
-    @instDiffeologicalSpaceProd X Z (induced f ‹_›) (induced g ‹_›) =
-      induced (fun p => (f p.1, g p.2)) instDiffeologicalSpaceProd := by
-  delta instDiffeologicalSpaceProd; simp_rw [induced_inf, induced_compose]; rfl
-
 /-- The first projection in a product of diffeological spaces is a subduction. -/
 theorem subduction_fst [Nonempty Y] : Subduction (@Prod.fst X Y) := by
   let y : Y := Nonempty.some inferInstance
@@ -709,9 +703,46 @@ theorem subduction_snd [Nonempty X] : Subduction (@Prod.snd X Y) := by
   have h : Function.LeftInverse (@Prod.snd X Y) fun y => (x,y) := fun _ => rfl
   exact h.subduction dsmooth_snd dsmooth_id.curry_right
 
+/-- A product of induced diffeologies is induced by the product map. -/
+theorem DiffeologicalSpace.prod_induced_induced (f : X → Y) (g : Z → W) :
+    @instDiffeologicalSpaceProd X Z (induced f ‹_›) (induced g ‹_›) =
+      induced (fun p => (f p.1, g p.2)) instDiffeologicalSpaceProd := by
+  delta instDiffeologicalSpaceProd; simp_rw [induced_inf, induced_compose]; rfl
+
+/-- The diffeology coinduced by a product map is at least as fine as the product of the
+  coinduced diffelogies. Note that equality only holds when both maps are surjective. -/
+theorem DiffeologicalSpace.coinduced_prod_le {X Y Z W : Type*}
+    [dX : DiffeologicalSpace X] [dZ : DiffeologicalSpace Z] (f : X → Y) (g : Z → W) :
+    coinduced (fun p => (f p.1, g p.2)) instDiffeologicalSpaceProd ≤
+      @instDiffeologicalSpaceProd Y W (coinduced f dX) (coinduced g dZ) :=
+  let _ := dX.coinduced f; let _ := dZ.coinduced g
+  dsmooth_iff_coinduced_le.1 (dsmooth_coinduced_rng.prod_map dsmooth_coinduced_rng)
+
+/-- A product of coinduced diffeologies is coinduced by the product map, if both maps
+  are surjective. -/
+theorem DiffeologicalSpace.prod_coinduced_coinduced {X Y Z W : Type*}
+    [dX : DiffeologicalSpace X] [dZ : DiffeologicalSpace Z] {f : X → Y} {g : Z → W}
+    (hf : Function.Surjective f) (hg : Function.Surjective g) :
+    @instDiffeologicalSpaceProd Y W (coinduced f dX) (coinduced g dZ) =
+      coinduced (fun p => (f p.1, g p.2)) instDiffeologicalSpaceProd := by
+  let _ := dX.coinduced f; let _ := dZ.coinduced g
+  refine' le_antisymm (DiffeologicalSpace.le_iff'.2 fun n p hp => _) (coinduced_prod_le _ _)
+  simp_rw [isPlot_prod_iff,hf.isPlot_coinduced_iff,hg.isPlot_coinduced_iff] at hp
+  refine' (hf.Prod_map hg).isPlot_coinduced_iff.2 fun x => _
+  let ⟨u₁,hu₁,hxu₁,p₁,hp₁⟩ := hp.1 x; let ⟨u₂,hu₂,hxu₂,p₂,hp₂⟩ := hp.2 x
+  refine' ⟨_,hu₁.inter hu₂,⟨hxu₁,hxu₂⟩,_,DSmooth.prod_mk
+    (hp₁.1.comp (dsmooth_inclusion (inter_subset_left _ u₂)))
+    (hp₂.1.comp (dsmooth_inclusion (inter_subset_right _ u₂))),funext fun x => _⟩
+  simp_rw [Function.comp,Prod_map,←f.comp_apply,←hp₁.2,←g.comp_apply,←hp₂.2]; rfl
+
+
 theorem Induction.prod_map {f : X → Y} {g : Z → W} (hf : Induction f) (hg : Induction g) :
     Induction (Prod.map f g) :=
   ⟨hf.1.Prod_map hg.1,by rw [hf.2,hg.2,DiffeologicalSpace.prod_induced_induced f g]; rfl⟩
+
+theorem Subduction.prod_map {f : X → Y} {g : Z → W} (hf : Subduction f) (hg : Subduction g) :
+    Subduction (Prod.map f g) :=
+  ⟨hf.1.Prod_map hg.1,by rw [hf.2,hg.2,DiffeologicalSpace.prod_coinduced_coinduced hf.1 hg.1]; rfl⟩
 
 @[simp]
 theorem induction_const_prod {x : X} {f : Y → Z} :

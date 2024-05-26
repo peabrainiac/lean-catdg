@@ -29,7 +29,7 @@ theorem dsmooth_op : DSmooth (op : M → Mᵐᵒᵖ) :=
 
 /-- `MulOpposite.op` as a diffeomorphism. -/
 @[to_additive (attr := simps!) "`AddOpposite.op` as a diffeomorphism."]
-def opDiffeomorph : M ᵈ≃ Mᵐᵒᵖ where
+def opDDiffeomorph : M ᵈ≃ Mᵐᵒᵖ where
   toEquiv := opEquiv
   dsmooth_toFun := dsmooth_op
   dsmooth_invFun := dsmooth_unop

@@ -82,7 +82,7 @@ theorem Induction.dsmoothMul {M N F : Type*} [Mul M] [Mul N] [FunLike F M N] [Mu
     DSmoothMul M :=
   ⟨(hf.dsmoothSMul hf.dsmooth (map_mul f _ _)).1⟩
 
--- TODO: remove injectivity hypothesis -/
+-- TODO: remove injectivity hypothesis
 @[to_additive]
 theorem dsmoothMul_induced {M N F : Type*} [Mul M] [Mul N] [FunLike F M N] [MulHomClass F M N]
     [DiffeologicalSpace N] [DSmoothMul N] (f : F) (hf : Function.Injective f):
@@ -135,21 +135,20 @@ namespace Units
 
 open MulOpposite
 
-variable {M : Type*} [DiffeologicalSpace M] [Monoid M] [DSmoothMul M]
-
 /-- If multiplication on a monoid is smooth, then multiplication on the units of the monoid,
 with respect to the induced diffeology, is also smooth. -/
 @[to_additive "If addition on an additive monoid is smooth, then addition on the additive units
 of the monoid, with respect to the induced diffeology, is also smooth."]
-instance : DSmoothMul Mˣ :=
+instance {M : Type*} [DiffeologicalSpace M] [Monoid M] [DSmoothMul M] : DSmoothMul Mˣ :=
   induction_embedProduct.dsmoothMul (embedProduct M)
 
-@[to_additive]
-theorem DSmooth.units_map {N : Type*} [DiffeologicalSpace N] [Monoid N]
-    (f : M →* N) (hf : DSmooth f) : DSmooth (Units.map f) :=
-  Units.dsmooth_iff.2 ⟨hf.comp Units.dsmooth_val, hf.comp Units.dsmooth_coe_inv⟩
-
 end Units
+
+@[to_additive]
+theorem DSmooth.units_map {M : Type*} [DiffeologicalSpace M] [Monoid M]
+    {N : Type*} [DiffeologicalSpace N] [Monoid N] (f : M →* N) (hf : DSmooth f) :
+    DSmooth (Units.map f) :=
+  Units.dsmooth_iff.2 ⟨hf.comp Units.dsmooth_val, hf.comp Units.dsmooth_coe_inv⟩
 
 instance {M : Type*} [DiffeologicalSpace M] [Mul M] [DSmoothMul M] :
     DSmoothAdd (Additive M) :=

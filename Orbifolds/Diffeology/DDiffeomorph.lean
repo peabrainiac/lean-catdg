@@ -1,4 +1,4 @@
-import Orbifolds.Diffeology.Basic
+import Orbifolds.Diffeology.Constructions
 
 open Function Set
 
@@ -32,6 +32,8 @@ instance : EquivLike (X ᵈ≃ Y) X Y where
   left_inv Φ := Φ.left_inv
   right_inv Φ := Φ.right_inv
   coe_injective' _ _ h _ := toEquiv_injective (DFunLike.ext' h)
+
+instance : CoeFun (X ᵈ≃ Y) fun _ ↦ X → Y := ⟨DFunLike.coe⟩
 
 @[continuity]
 protected theorem continuous (h : X ᵈ≃ Y) : Continuous[DTop,DTop] h := h.dsmooth_toFun.continuous
