@@ -185,6 +185,57 @@ theorem dsmooth_ddiffeomorph_comp_iff (h : X ᵈ≃ Y) {f : Z → X} :
 
 section Constructions
 
+/-- `Set.univ X` is diffeomorphic to `X`. -/
+@[simps! (config := .asFn)]
+def Set.univ (X : Type*) [DiffeologicalSpace X] : (univ : Set X) ᵈ≃ X where
+  toEquiv := Equiv.Set.univ X
+  dsmooth_toFun := dsmooth_subtype_val
+  dsmooth_invFun := dsmooth_id.subtype_mk _
+
+def Set.nested {u : Set X} (v : Set u) : v ᵈ≃ ((↑) '' v : Set X) where
+  toEquiv := {
+    toFun := (v.mapsTo_image (@Subtype.val X u)).restrict
+    invFun := fun x => ⟨⟨↑x,by have ⟨y,hy⟩ := x.2; exact hy.2 ▸ y.2⟩,
+      by have ⟨y,hy⟩ := x.2; exact (show y = ⟨↑x,_⟩ by ext; exact hy.2) ▸ hy.1⟩
+    left_inv := fun _ => rfl
+    right_inv := fun _ => rfl
+  }
+  dsmooth_toFun := by dsimp; exact dsmooth_subtype_val.restrict _
+  dsmooth_invFun := (dsmooth_subtype_val.subtype_mk _).subtype_mk _
+
+protected def restrict (d : X ᵈ≃ Y) (u : Set X) : u ᵈ≃ (d.symm ⁻¹' u) where
+  toEquiv := {
+    toFun := (d.image_eq_preimage _ ▸ Set.mapsTo_image d u).restrict
+    invFun := u.restrictPreimage d.symm
+    left_inv := fun x => by ext; exact d.left_inv x.1
+    right_inv := fun y => by ext; exact d.right_inv y.1
+  }
+  dsmooth_toFun := by dsimp; exact d.dsmooth_toFun.restrict _
+  dsmooth_invFun := by dsimp; exact d.dsmooth_invFun.restrict _
+
+protected def restrictPreimage (d : X ᵈ≃ Y) (u : Set Y) : (d ⁻¹' u) ᵈ≃ u where
+  toEquiv := {
+    toFun := u.restrictPreimage d
+    invFun := (d.symm.image_eq_preimage _ ▸ Set.mapsTo_image d.symm u).restrict
+    left_inv := fun x => by ext; exact d.left_inv x.1
+    right_inv := fun y => by ext; exact d.right_inv y.1
+  }
+  dsmooth_toFun := by dsimp; exact d.dsmooth_toFun.restrict _
+  dsmooth_invFun := by dsimp; exact d.dsmooth_invFun.restrict _
+
+/-- The quotient of `X` by the identity relation is diffeomorphic to `X`. -/
+@[simps! (config := .asFn)]
+def quotient_bot (X : Type*) [DiffeologicalSpace X] : @Quotient X ⊥ ᵈ≃ X where
+  toEquiv := {
+    toFun := Quotient.lift id fun a b => id
+    invFun := @Quotient.mk' X ⊥
+    left_inv := fun x => by
+      rw [←show @Quotient.mk' X ⊥ _ = x from @Quotient.out_eq X ⊥ x,@Quotient.eq']; rfl
+    right_inv := fun _ => rfl
+  }
+  dsmooth_toFun := dsmooth_id.quotient_lift _
+  dsmooth_invFun := dsmooth_quotient_mk'
+
 -- TODO!
 
 end Constructions
