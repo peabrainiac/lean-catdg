@@ -4,6 +4,13 @@ import Mathlib.Geometry.Manifold.Instances.Real
 
 set_option autoImplicit false
 
+/-!
+# Locally Modelled Spaces
+Diffeological space that are locally modelled on a family of other diffeological spaces.
+This mainly functions are infrastructure for manifolds and orbifolds, setting up their
+definitions and a few basic facts they have in common.
+-/
+
 open Topology
 
 /-- A diffeological space is locally modelled by a family of diffeological spaces if each point
@@ -13,11 +20,13 @@ class LocallyModelled {ι : Type*} (M : ι → Type*) [(i : ι) → Diffeologica
   locally_modelled : ∀ x : X, ∃ (u : Set X), IsOpen[DTop] u ∧ x ∈ u ∧
     ∃ (i : ι) (v : Set (M i)), IsOpen[DTop] v ∧ Nonempty (u ᵈ≃ v)
 
-/-- A diffeological space is a manifold if it is locally modelled by R^n. -/
+/-- A diffeological space is a manifold if it is locally modelled by R^n.
+  We do not require Hausdorffness or second-countability here. -/
 abbrev IsManifold (n : ℕ) (X : Type*) [DiffeologicalSpace X] :=
   LocallyModelled (fun _ : Unit => Eucl n) X
 
-/-- A diffeological space is a manifold if it is locally modelled by R^n. -/
+/-- A diffeological space is a manifold with boundary if it is locally modelled by the half-space H^n.
+  We do not require Hausdorffness or second-countability here. -/
 abbrev IsManifoldWithBoundary (n : ℕ) [Zero (Fin n)] (X : Type*) [DiffeologicalSpace X] :=
   LocallyModelled (fun _ : Unit => {x : Eucl n | 0 ≤ x 0}) X
 

@@ -155,20 +155,26 @@ protected theorem DSmooth.continuous' {X Y : Type*} [TopologicalSpace X] [Diffeo
     [DTopCompatible Y] {f : X → Y} (hf : DSmooth f) : Continuous f :=
   dTop_eq X ▸ dTop_eq Y ▸ hf.continuous
 
+instance {X : Type*} [NormedAddCommGroup X] [NormedSpace ℝ X]
+    [FiniteDimensional ℝ X] : @ContDiffCompatible X _ _ euclideanDiffeology :=
+  let _ := euclideanDiffeology (X := X); ⟨Iff.rfl⟩
+
+instance {X : Type*} [NormedAddCommGroup X] [NormedSpace ℝ X]
+    [FiniteDimensional ℝ X] : @DTopCompatible X _ euclideanDiffeology :=
+  let _ := euclideanDiffeology (X := X); ⟨rfl⟩
+
 instance : DiffeologicalSpace ℝ := euclideanDiffeology
 
-instance : ContDiffCompatible ℝ := ⟨Iff.rfl⟩
+example : ContDiffCompatible ℝ := inferInstance
 
-instance : DTopCompatible ℝ := ⟨by ext s; rw [isOpen_iff_preimages_plots]⟩
+example : DTopCompatible ℝ := inferInstance
 
 noncomputable instance {ι : Type*} [Fintype ι] : DiffeologicalSpace (EuclideanSpace ℝ ι) :=
   euclideanDiffeology
 
-instance {ι : Type*} [Fintype ι] : ContDiffCompatible (EuclideanSpace ℝ ι) :=
-  ⟨Iff.rfl⟩
+example {ι : Type*} [Fintype ι] : ContDiffCompatible (EuclideanSpace ℝ ι) := inferInstance
 
-instance {ι : Type*} [Fintype ι] : DTopCompatible (EuclideanSpace ℝ ι) :=
-  ⟨by ext s; rw [isOpen_iff_preimages_plots]⟩
+example {ι : Type*} [Fintype ι] : DTopCompatible (EuclideanSpace ℝ ι) := inferInstance
 
 protected theorem IsPlot.dsmooth {n : ℕ} {p : Eucl n → X} (hp : IsPlot p) : DSmooth p :=
   fun _ _ => isPlot_reparam hp

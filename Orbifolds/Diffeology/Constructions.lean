@@ -207,7 +207,7 @@ theorem ContDiffOn.dsmooth_restrict [NormedAddCommGroup X] [NormedSpace ℝ X] [
     {f : X → Y} (hf : ContDiffOn ℝ ⊤ f s) : DSmooth (s.restrict f) := by
   refine' fun n p hp => isPlot_iff_contDiff.2 _
   rw [restrict_eq,Function.comp.assoc]
-  exact hf.comp_contDiff (dsmooth_subtype_val.comp hp.dsmooth).contDiff fun x => (p x).2
+  exact hf.comp_contDiff (isPlot_iff_contDiff.1 hp) fun x => (p x).2
 
 -- TODO: relax dimensionality hypothesis?
 open PartialHomeomorph in
