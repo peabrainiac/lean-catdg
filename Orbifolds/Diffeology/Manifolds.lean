@@ -220,3 +220,69 @@ theorem SmoothManifoldWithCorners.isManifold {E : Type*} [NormedAddCommGroup E] 
           (toDiffeology_eq_euclideanDiffeology (E := E) ▸
             (contMDiffOn_extChartAt_symm (I := I) x).smoothOn.dsmooth_restrict:)
     }⟩⟩⟩
+
+-- TODO: move this and related lemmas to a more fitting place
+open Classical in
+@[simps]
+noncomputable def PartialEquiv.fromEquivSourceTarget {α β : Type*} {s : Set α} {t : Set β}
+    (e : s ≃ t) (a : s) : PartialEquiv α β where
+  toFun := fun x => if hx : x ∈ s then e ⟨x,hx⟩ else e a
+  invFun := fun y => if hy : y ∈ t then e.symm ⟨y,hy⟩ else a
+  source := s
+  target := t
+  map_source' := fun _ hx => by simp [hx]
+  map_target' := fun _ hy => by simp [hy]
+  left_inv' := fun _ hx => by simp [hx]
+  right_inv' := fun _ hy => by simp [hy]
+
+@[simp]
+lemma PartialEquiv.fromEquivSourceTarget_restrict {α β : Type*} {s : Set α} {t : Set β}
+    (e : s ≃ t) (a : s) : s.restrict (fromEquivSourceTarget e a) = (↑) ∘ e := by
+  ext x; simp
+
+@[simp]
+lemma PartialEquiv.fromEquivSourceTarget_symm_restrict {α β : Type*} {s : Set α} {t : Set β}
+    (e : s ≃ t) (a : s) : t.restrict (fromEquivSourceTarget e a).symm = (↑) ∘ e.symm := by
+  ext x; simp
+
+@[simp]
+lemma PartialEquiv.fromEquivSourceTarget_toEquiv {α β : Type*} {s : Set α} {t : Set β}
+    (e : s ≃ t) (a : s) : (fromEquivSourceTarget e a).toEquiv = e := by
+  ext x; simp only [PartialEquiv.toEquiv,fromEquivSourceTarget_apply,fromEquivSourceTarget_source,
+    Subtype.coe_prop]; rfl
+
+@[simps!]
+noncomputable def PartialHomeomorph.fromHomeomorphSourceTarget {α β : Type*} [TopologicalSpace α]
+    [TopologicalSpace β] {s : Set α} {t : Set β} (e : s ≃ₜ t) (hs : IsOpen s) (ht : IsOpen t)
+    (a : s) : PartialHomeomorph α β where
+  toPartialEquiv := PartialEquiv.fromEquivSourceTarget e.toEquiv a
+  open_source := hs
+  open_target := ht
+  continuousOn_toFun := by simp [continuousOn_iff_continuous_restrict,continuous_subtype_val]
+  continuousOn_invFun := by simp [continuousOn_iff_continuous_restrict,continuous_subtype_val]
+
+@[simp]
+lemma PartialHomeomorph.fromHomeomorphSourceTarget_toPartialEquiv {α β : Type*}
+    [TopologicalSpace α] [TopologicalSpace β] {s : Set α} {t : Set β} (e : s ≃ₜ t) (hs : IsOpen s)
+    (ht : IsOpen t) (a : s) : (fromHomeomorphSourceTarget e hs ht a).toPartialEquiv =
+    PartialEquiv.fromEquivSourceTarget e.toEquiv a := rfl
+
+/-- Charted space structure of a diffeological manifold, consisting of all local diffeomorphisms
+  between `M` and `Eucl n`. -/
+noncomputable def IsManifold.toChartedSpace {M : Type*} [DiffeologicalSpace M] {n : ℕ}
+    [hM : IsManifold n M] : @ChartedSpace (Eucl n) _ M DTop := by
+  let _ := @DTop M _; let _ : DTopCompatible M := ⟨rfl⟩; exact {
+    atlas := {e | DSmooth e.toEquiv ∧ DSmooth e.toEquiv.symm}
+    chartAt := fun x => by
+      have h := hM.locally_modelled x
+      have hu := h.choose_spec.1; have hxu := h.choose_spec.2.1
+      have hv := h.choose_spec.2.2.choose_spec.choose_spec.1
+      have _ := hu.dTopCompatible; have _ := hv.dTopCompatible
+      exact PartialHomeomorph.fromHomeomorphSourceTarget
+        (h.choose_spec.2.2.choose_spec.choose_spec.2.some.toHomeomorph') hu hv ⟨x,hxu⟩
+    mem_chart_source := fun x => by exact (hM.locally_modelled x).choose_spec.2.1
+    chart_mem_atlas := fun x => by
+      let e := (hM.locally_modelled x).choose_spec.2.2.choose_spec.choose_spec.2.some
+      dsimp; rw [PartialEquiv.fromEquivSourceTarget_toEquiv]
+      exact ⟨e.dsmooth,e.symm.dsmooth⟩
+  }

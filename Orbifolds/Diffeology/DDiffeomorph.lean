@@ -38,6 +38,10 @@ instance : CoeFun (X ᵈ≃ Y) fun _ ↦ X → Y := ⟨DFunLike.coe⟩
 @[continuity]
 protected theorem continuous (h : X ᵈ≃ Y) : Continuous[DTop,DTop] h := h.dsmooth_toFun.continuous
 
+@[continuity]
+protected theorem continuous' [TopologicalSpace X] [TopologicalSpace Y] [DTopCompatible X]
+    [DTopCompatible Y] (h : X ᵈ≃ Y) : Continuous h := h.dsmooth_toFun.continuous'
+
 protected theorem dsmooth (h : X ᵈ≃ Y) : DSmooth h := h.dsmooth_toFun
 
 @[simp]
@@ -167,6 +171,32 @@ theorem coe_toHomeomorph (h : X ᵈ≃ Y) : ⇑h.toHomeomorph = h :=
 @[simp]
 theorem coe_toHomeomorph_symm (h : X ᵈ≃ Y) :
     ⇑(@Homeomorph.symm _ _ DTop DTop h.toHomeomorph) = h.symm :=
+  rfl
+
+/-- A diffeomorphism between spaces that are equipped with the D-topologies is also
+  a homeoomorphism. -/
+def toHomeomorph' [TopologicalSpace X] [TopologicalSpace Y] [DTopCompatible X]
+    [DTopCompatible Y] (h : X ᵈ≃ Y) : X ≃ₜ Y := by
+  exact ⟨h.toEquiv,h.dsmooth.continuous',h.symm.dsmooth.continuous'⟩
+
+@[simp]
+theorem toHomeomorph_toEquiv' [TopologicalSpace X] [TopologicalSpace Y] [DTopCompatible X]
+    [DTopCompatible Y] (h : X ᵈ≃ Y) : h.toHomeomorph'.toEquiv = h.toEquiv :=
+  rfl
+
+@[simp]
+theorem symm_toHomeomorph' [TopologicalSpace X] [TopologicalSpace Y] [DTopCompatible X]
+    [DTopCompatible Y] (h : X ᵈ≃ Y) : h.symm.toHomeomorph' = h.toHomeomorph'.symm :=
+  rfl
+
+@[simp]
+theorem coe_toHomeomorph' [TopologicalSpace X] [TopologicalSpace Y] [DTopCompatible X]
+    [DTopCompatible Y] (h : X ᵈ≃ Y) : ⇑h.toHomeomorph' = h :=
+  rfl
+
+@[simp]
+theorem coe_toHomeomorph_symm' [TopologicalSpace X] [TopologicalSpace Y] [DTopCompatible X]
+    [DTopCompatible Y] (h : X ᵈ≃ Y) : ⇑(h.toHomeomorph'.symm) = h.symm :=
   rfl
 
 @[simp]
