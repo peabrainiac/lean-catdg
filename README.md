@@ -33,9 +33,11 @@ So far this is mostly following Patrick Iglesias-Zemmour's book "Diffeology" - I
 		- [ ] Normed or Banach spaces
 		- [ ] Manifolds, maybe ones with boundary & corners too
 	- Abstract nonsense:
-		- [ ] Category of diffeological spaces
-		- [ ] Completeness and Cocompleteness of that category
+		- [x] Category of diffeological spaces
+		- [x] Completeness and Cocompleteness of that category
 		- [ ] Cartesian-closedness of that category
-		- [ ] D-topology as a functor
+		- [x] D-topology as a functor
 		- [ ] Right-adjoint of that functor
-		- [ ] Forgetful functor, right- and left-adjoints of that
+		- [x] Forgetful functor, right- and left-adjoints of that
+		- [ ] Category of smooth sets
+		- [ ] Embedding of diffeological spaces into that

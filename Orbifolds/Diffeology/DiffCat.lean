@@ -1,5 +1,7 @@
 import Mathlib.CategoryTheory.ConcreteCategory.BundledHom
 import Mathlib.CategoryTheory.Adjunction.Basic
+import Mathlib.CategoryTheory.Limits.Types
+import Mathlib.CategoryTheory.Limits.Preserves.Basic
 import Mathlib.Topology.Category.TopCat.Basic
 import Orbifolds.Diffeology.Constructions
 
@@ -15,14 +17,18 @@ Main definitions / results:
 * `DiffCat.discrete`, `DiffCat.indiscrete`: the functors `Type ⥤ DiffCat` giving each type the
   discrete/indiscrete diffeology.
 * `DiffCat.dTop`: the functor `DiffCat ⥤ TopCat` giving each space its D-topology.
-* `discreteForgetAdj`, `forgetIndiscreteAdj`: the adjunctions `discrete ⊣ forget ⊣ indiscrete`.
+* `DiffCat.discreteForgetAdj`, `DiffCat.forgetIndiscreteAdj`: the adjunctions
+  `discrete ⊣ forget ⊣ indiscrete`.
+* `DiffCat.hasLimits`, `DiffCat.hasColimits`: `DiffCat` is complete and cocomplete.
+* `DiffCat.forgetPreservesLimits`, `DiffCat.forgetPreservesColimits`: the forgetful functor
+  `DiffCat ⥤ Type` preserves limits and colimits.
 -/
 
 open CategoryTheory
 
 open Topology
 
-universe u
+universe u v
 
 /-!
 ### Bundled smooth maps
@@ -49,6 +55,9 @@ protected lemma dsmooth (f : DSmoothMap X Y) : DSmooth f := f.prop
 
 @[simp]
 lemma toFun_eq_coe {f : DSmoothMap X Y} : f.toFun = (f : X → Y) := rfl
+
+theorem coe_injective ⦃f g : DSmoothMap X Y⦄ (h : (f : X → Y) = g) : f = g :=
+  DFunLike.ext' h
 
 @[ext]
 lemma ext {f g : DSmoothMap X Y} (h : ∀ x, f x = g x) : f = g := DFunLike.ext _ _ h
@@ -170,3 +179,93 @@ instance : IsLeftAdjoint (forget DiffCat.{u}) :=
 end DiffCat
 
 end Basic
+
+/-!
+### Limits and colimits
+
+The category of diffeological spaces is complete and cocomplete, and the forgetful functor
+preserves all limits and colimits. Adapted from `Mathlib.Topology.Category.TopCat.Limits`.
+-/
+section Limits
+
+namespace DiffCat
+
+open CategoryTheory.Limits
+
+variable {J : Type v} [SmallCategory J]
+
+local notation "forget" => forget DiffCat
+
+/-- A specific choice of limit cone for any `F : J ⥤ DiffCat`. -/
+def limitCone (F : J ⥤ DiffCat.{max v u}) : Cone F where
+  pt := of { u : (j : J) → F.obj j | ∀ {i j : J} (f : i ⟶ j), F.map f (u i) = u j }
+  π :=
+    { app := fun j => ⟨fun u => u.val j,DSmooth.comp (dsmooth_apply _) (dsmooth_subtype_val)⟩
+      naturality := fun X Y f => by
+        dsimp [Category.id_comp]
+        exact DSmoothMap.ext fun a => (a.2 f).symm }
+
+/-- `DiffCat.limitCone F` is actually a limit cone for the given `F : J ⥤ DiffCat`. -/
+def limitConeIsLimit (F : J ⥤ DiffCat.{max v u}) : IsLimit (limitCone.{u,v} F) where
+  lift S :=
+    ⟨fun x => ⟨fun j => S.π.app _ x, fun f => by dsimp; exact S.w f ▸ rfl⟩,
+    DSmooth.subtype_mk (dsmooth_pi fun j => (S.π.app j).2) fun x i j f => by
+      dsimp; exact S.w f ▸ rfl⟩
+  fac S j := by dsimp [limitCone]; rfl
+  uniq S m h := DSmoothMap.ext fun a => Subtype.ext <| by simp_rw [← h]; rfl
+
+instance hasLimitsOfSize : HasLimitsOfSize.{v,v} DiffCat.{max u v} where
+  has_limits_of_shape _ := ⟨fun F => HasLimit.mk ⟨limitCone.{u,v} F,limitConeIsLimit F⟩⟩
+
+/-- `DiffCat` has all limits, i.e. it is complete. -/
+instance hasLimits : HasLimits DiffCat.{u} :=
+  hasLimitsOfSize.{u,u}
+
+noncomputable instance forgetPreservesLimitsOfSize : PreservesLimitsOfSize forget :=
+  ⟨⟨fun {F} => preservesLimitOfPreservesLimitCone (limitConeIsLimit.{u,v} F)
+      (Types.limitConeIsLimit.{v,u} (F ⋙ forget))⟩⟩
+
+/-- The forgetful functor `DiffCat ⥤ Type` preserves all limits. -/
+noncomputable instance forgetPreservesLimits : PreservesLimits forget :=
+  forgetPreservesLimitsOfSize.{u,u}
+
+/-- A specific choice of colimit cocone for any `F : J ⥤ DiffCat`. -/
+noncomputable def colimitCocone (F : J ⥤ DiffCat.{max v u}) : Cocone F where
+  pt := ⟨(Types.TypeMax.colimitCocone.{v,u} (F ⋙ forget)).pt,
+          ⨆ j, (F.obj j).str.coinduced ((Types.TypeMax.colimitCocone (F ⋙ forget)).ι.app j)⟩
+  ι :=
+    { app := fun j =>
+        ⟨(Types.TypeMax.colimitCocone (F ⋙ forget)).ι.app j, dsmooth_iff_coinduced_le.mpr <|
+          le_iSup (fun j => DiffeologicalSpace.coinduced
+            ((Types.TypeMax.colimitCocone (F ⋙ forget)).ι.app j) (F.obj j).str) j⟩
+      naturality := fun _ _ f =>
+        DSmoothMap.coe_injective ((Types.TypeMax.colimitCocone (F ⋙ forget)).ι.naturality f) }
+
+
+/-- `DiffCat.colimitCocone F` is actually a colimit cocone for the given `F : J ⥤ DiffCat`. -/
+def colimitCoconeIsColimit (F : J ⥤ DiffCat.{max v u}) : IsColimit (colimitCocone F) := by
+  refine IsColimit.ofFaithful forget (Types.TypeMax.colimitCoconeIsColimit.{v,u} _) (fun s =>
+      ⟨Quot.lift (fun p => (Functor.mapCocone forget s).ι.app p.fst p.snd) ?_, ?_⟩) fun s => rfl
+  · intro _ _ ⟨_, h⟩; simp [h,←comp_apply',s.ι.naturality]
+  · exact dsmooth_iff_le_induced.mpr
+      (iSup_le fun j => DiffeologicalSpace.coinduced_le_iff_le_induced.mp <|
+        DiffeologicalSpace.coinduced_compose.symm ▸ (s.ι.app j).dsmooth.coinduced_le)
+
+instance hasColimitsOfSize : HasColimitsOfSize.{v,v} DiffCat.{max v u} where
+  has_colimits_of_shape _ := ⟨fun F => HasColimit.mk ⟨colimitCocone F,colimitCoconeIsColimit F⟩⟩
+
+/-- `DiffCat` has all colimits, i.e. it is cocomplete. -/
+instance hasColimits : HasColimits DiffCat.{u} :=
+  hasColimitsOfSize.{u,u}
+
+noncomputable instance forgetPreservesColimitsOfSize : PreservesColimitsOfSize forget :=
+  ⟨⟨fun {F} => preservesColimitOfPreservesColimitCocone (colimitCoconeIsColimit.{u,v} F)
+    (Types.TypeMax.colimitCoconeIsColimit.{v,u} (F ⋙ forget))⟩⟩
+
+/-- The forgetful functor `DiffCat ⥤ Type` preserves all colimits. -/
+noncomputable instance forgetPreservesColimits : PreservesColimits forget :=
+  forgetPreservesColimitsOfSize.{u,u}
+
+end DiffCat
+
+end Limits
