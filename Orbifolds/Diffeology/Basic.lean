@@ -17,6 +17,8 @@ class DiffeologicalSpace (X : Type*) where
   constant_plots {n : ℕ} (x : X) : (fun _ => x) ∈ plots n
   plot_reparam {n m : ℕ} {p : Eucl m → X} {f : Eucl n → Eucl m} :
     p ∈ plots m → (ContDiff ℝ ⊤ f) → (p ∘ f ∈ plots n)
+  -- TODO this is currently a little awkward, since it can't be stated in terms of smooth maps
+  --      like it should. Adding prediffeologies as an intermediate construction might be smart.
   locality {n : ℕ} {p : Eucl n → X} : (∀ x : Eucl n, ∃ u : Set (Eucl n), IsOpen u ∧ x ∈ u ∧
     ∀ {m : ℕ} {f : Eucl m → Eucl n}, (hfu : ∀ x, f x ∈ u) → ContDiff ℝ ⊤ f → p ∘ f ∈ plots m) →
       p ∈ plots n

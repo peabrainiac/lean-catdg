@@ -2,8 +2,9 @@ import Mathlib.CategoryTheory.ConcreteCategory.BundledHom
 import Mathlib.CategoryTheory.Adjunction.Basic
 import Mathlib.CategoryTheory.Limits.Types
 import Mathlib.CategoryTheory.Limits.Preserves.Basic
+import Mathlib.CategoryTheory.Closed.Cartesian
 import Mathlib.Topology.Category.TopCat.Basic
-import Orbifolds.Diffeology.Constructions
+import Orbifolds.Diffeology.DDiffeomorph
 
 /-!
 # Category of diffeological spaces
@@ -29,47 +30,6 @@ open CategoryTheory
 open Topology
 
 universe u v
-
-/-!
-### Bundled smooth maps
-
-The type of smooth maps between two diffeological spaces.
--/
-
-section DSmoothMap
-
-def DSmoothMap (X Y : Type*) [DiffeologicalSpace X] [DiffeologicalSpace Y] :=
-  {f : X → Y // DSmooth f}
-
-namespace DSmoothMap
-
-variable {X Y Z : Type*} [DiffeologicalSpace X] [DiffeologicalSpace Y] [DiffeologicalSpace Z]
-
-instance instFunLike : FunLike (DSmoothMap X Y) X Y where
-  coe := Subtype.val
-  coe_injective' := Subtype.coe_injective
-
-protected def toFun (f : DSmoothMap X Y) : X → Y := f.val
-
-protected lemma dsmooth (f : DSmoothMap X Y) : DSmooth f := f.prop
-
-@[simp]
-lemma toFun_eq_coe {f : DSmoothMap X Y} : f.toFun = (f : X → Y) := rfl
-
-theorem coe_injective ⦃f g : DSmoothMap X Y⦄ (h : (f : X → Y) = g) : f = g :=
-  DFunLike.ext' h
-
-@[ext]
-lemma ext {f g : DSmoothMap X Y} (h : ∀ x, f x = g x) : f = g := DFunLike.ext _ _ h
-
-nonrec def id : DSmoothMap X X := ⟨id,dsmooth_id⟩
-
-def comp (f : DSmoothMap Y Z) (g : DSmoothMap X Y) : DSmoothMap X Z :=
-  ⟨f ∘ g, (f.dsmooth).comp g.dsmooth⟩
-
-end DSmoothMap
-
-end DSmoothMap
 
 /-!
 ### DiffCat

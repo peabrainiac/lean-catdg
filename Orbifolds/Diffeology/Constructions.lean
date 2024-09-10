@@ -1,8 +1,12 @@
-import Orbifolds.Diffeology.Induced
+import Orbifolds.Diffeology.DSmoothMap
 import Mathlib.Analysis.InnerProductSpace.Calculus
 
 /-!
 # Constructions of diffeological spaces
+This file gives some concrete constructions like products and coproducts of
+diffeological spaces. General limits and colimits are found in
+`Orbifolds.Diffeology.DiffCat`.
+
 Mostly based on `Mathlib.Topology.Constructions`.
 -/
 
@@ -795,3 +799,74 @@ theorem induction_uLift_down : Induction (ULift.down : ULift.{v, u} X → X) :=
 -- TODO: ulift discrete diffeologies once instance is available
 
 end ULift
+
+section DSmoothMap
+
+namespace DSmoothMap
+
+variable {X Y Z: Type*} [DiffeologicalSpace X] [DiffeologicalSpace Y] [DiffeologicalSpace Z]
+
+/-- The functional diffeology on the space `DSmoothMap X Y` of smooth maps `X → Y`. -/
+instance diffeologicalSpace {X Y : Type*} [dX : DiffeologicalSpace X]
+    [dY : DiffeologicalSpace Y] : DiffeologicalSpace (DSmoothMap X Y) where
+  plots n := {p | DSmooth (Function.uncurry fun x x' => p x x')}
+  constant_plots f := f.dsmooth.comp dsmooth_snd
+  plot_reparam hp hf := hp.comp <| hf.dsmooth.prod_map dsmooth_id
+  locality {n p} h := by
+    apply dsmooth_iff_locally_dsmooth.mpr; intro x
+    let ⟨u,hu,hxu,h⟩ := h x.1; let _ : TopologicalSpace X := DTop
+    refine' ⟨u ×ˢ univ,(hu.prod isOpen_univ).mono dTop_prod_le_prod_dTop,⟨hxu,mem_univ _⟩,_⟩
+    intro m f hf; specialize @h m (fun x => (f x).1.1) (fun x => (f x).2.1)
+      ((hf.dsmooth.subtype_val.fst).contDiff)
+    exact (h.comp (dsmooth_id.prod_mk hf.dsmooth.subtype_val.snd)).isPlot
+
+lemma isPlot_iff {n : ℕ} {p : Eucl n → DSmoothMap X Y} :
+    IsPlot p ↔ DSmooth (Function.uncurry fun x y => p x y) := by
+  rfl
+
+/-- A map `f : X → DSmoothMap Y Z` is smooth iff the corresponding map `X × Y → Z` is. -/
+lemma dsmooth_iff {f : X → DSmoothMap Y Z} :
+    DSmooth f ↔ DSmooth (Function.uncurry fun x y => f x y) := by
+  refine' ⟨fun hf n p hp => _,fun hf n p hp => hf.comp <| hp.dsmooth.prod_map dsmooth_id⟩
+  exact ((hf n _ hp.dsmooth.fst.isPlot).comp <| dsmooth_id.prod_mk hp.dsmooth.snd).isPlot
+
+/-- The evaluation map `DSmoothMap X Y × X → Y` is smooth. -/
+lemma dsmooth_eval : DSmooth fun (p : DSmoothMap X Y × X) => p.1 p.2 :=
+  fun _ _ hp => ((dsmooth_iff.mp hp.dsmooth.fst).comp <| dsmooth_id.prod_mk hp.dsmooth.snd).isPlot
+
+/-- The composition map `DSmoothMap Y Z × DSmoothMap X Y → DSmoothMap X Z` is smooth. -/
+lemma dsmooth_comp : DSmooth fun (x : DSmoothMap Y Z × DSmoothMap X Y) => x.1.comp x.2 := by
+  rw [dsmooth_iff]
+  refine' dsmooth_eval.comp <| dsmooth_fst.fst.prod_mk _
+  exact dsmooth_eval.comp <| dsmooth_snd.prod_map dsmooth_id
+
+/-- The coevaluation map `Y → DSmoothMap X (Y × X)`. -/
+def coev (y : Y) : DSmoothMap X (Y × X) :=
+  ⟨fun x => (y,x),dsmooth_const.prod_mk dsmooth_id⟩
+
+/-- The coevaluation map is smooth. -/
+lemma dsmooth_coev : DSmooth (coev : Y → DSmoothMap X _) :=
+  dsmooth_iff.mpr dsmooth_id
+
+/-- The currying map `DSmoothMap (X × Y) Z → DSmoothMap X (DSmoothMap Y Z)` -/
+def curry (f : DSmoothMap (X × Y) Z) : DSmoothMap X (DSmoothMap Y Z) :=
+  ⟨fun x => ⟨Function.curry f x,f.dsmooth.curry_right⟩,
+    (dsmooth_comp.curry_right (x := f)).comp dsmooth_coev⟩
+
+/-- The currying map is smooth. -/
+lemma dsmooth_curry : DSmooth (@curry X Y Z _ _ _) :=
+  dsmooth_iff.mpr <| dsmooth_iff.mpr <| dsmooth_eval.comp <|
+    dsmooth_fst.fst.prod_mk <| dsmooth_fst.snd.prod_mk dsmooth_snd
+
+/-- The uncurrying map `DSmoothMap X (DSmoothMap Y Z) → DSmoothMap (X × Y) Z`. -/
+def uncurry (f : DSmoothMap X (DSmoothMap Y Z)) : DSmoothMap (X × Y) Z :=
+  ⟨fun x => f x.1 x.2,dsmooth_iff.mp f.dsmooth⟩
+
+/-- The uncurrying map is smooth. -/
+lemma dsmooth_uncurry : DSmooth (@uncurry X Y Z _ _ _) :=
+  dsmooth_iff.mpr <| dsmooth_eval.comp <|
+    (dsmooth_eval.comp <| dsmooth_fst.prod_mk dsmooth_snd.fst).prod_mk dsmooth_snd.snd
+
+end DSmoothMap
+
+end DSmoothMap

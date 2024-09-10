@@ -16,7 +16,7 @@ So far this is mostly following Patrick Iglesias-Zemmour's book "Diffeology" - I
 		- [ ] Product diffeologies
 		- [ ] Binary coproduct diffeologies
 		- [ ] Coproduct diffeologies
-		- [ ] Mapping spaces
+		- [x] Mapping spaces
 		- [x] D-topology
 		- [ ] Continuous diffeology
 	- Maps:

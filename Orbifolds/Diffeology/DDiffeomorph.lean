@@ -268,6 +268,15 @@ def quotient_bot (X : Type*) [DiffeologicalSpace X] : @Quotient X ⊥ ᵈ≃ X w
 
 -- TODO!
 
+/-- The currying diffeomorphism `DSmoothMap (X × Y) Z ᵈ≃ DSmoothMap X (DSmoothMap Y Z)`. -/
+def curry : DSmoothMap (X × Y) Z ᵈ≃ DSmoothMap X (DSmoothMap Y Z) where
+  toFun := DSmoothMap.curry
+  invFun := DSmoothMap.uncurry
+  left_inv := fun _ => rfl
+  right_inv := fun _ => rfl
+  dsmooth_toFun := DSmoothMap.dsmooth_curry
+  dsmooth_invFun := DSmoothMap.dsmooth_uncurry
+
 end Constructions
 
 end DDiffeomorph
