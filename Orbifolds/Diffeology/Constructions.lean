@@ -37,12 +37,8 @@ instance instDiffeologicalSpaceProd {X Y : Type*} [dX : DiffeologicalSpace X]
   dX.induced Prod.fst ⊓ dY.induced Prod.snd
 
 instance Pi.diffeologicalSpace {ι : Type*} {Y : ι → Type*}
-    [(i : ι) → DiffeologicalSpace (Y i)] : DiffeologicalSpace ((i : ι) → Y i) where
-  plots n := {p | ∀ i, IsPlot ((fun y => y i) ∘ p)}
-  constant_plots _ i := isPlot_const
-  plot_reparam {n m p f} := fun hp hf i => by
-    exact Function.comp.assoc _ _ _ ▸ isPlot_reparam (hp i) hf
-  locality := by sorry
+    [D : (i : ι) → DiffeologicalSpace (Y i)] : DiffeologicalSpace ((i : ι) → Y i) :=
+  ⨅ i : ι, (D i).induced (fun x => x i)
 
 instance ULift.diffeologicalSpace {X : Type u} [t : DiffeologicalSpace X] :
     DiffeologicalSpace (ULift.{v, u} X) :=
@@ -128,7 +124,9 @@ variable {ι : Type*} {Y : ι → Type*} [(i : ι) → DiffeologicalSpace (Y i)]
   {X : Type*} [DiffeologicalSpace X] {f : X → ((i : ι) → Y i)}
 
 theorem dsmooth_pi_iff : DSmooth f ↔ ∀ i, DSmooth fun x => f x i := by
-  simp only [dsmooth_iff,@forall_comm ι _ _]; rfl
+  simp_rw [dsmooth_iff_coinduced_le,Pi.diffeologicalSpace,le_iInf_iff]
+  refine' forall_congr' fun i => _
+  rw [←DiffeologicalSpace.coinduced_le_iff_le_induced,DiffeologicalSpace.coinduced_compose]; rfl
 
 @[fun_prop]
 theorem dsmooth_pi (h : ∀ i, DSmooth fun a => f a i) : DSmooth f :=
@@ -137,6 +135,10 @@ theorem dsmooth_pi (h : ∀ i, DSmooth fun a => f a i) : DSmooth f :=
 @[fun_prop]
 theorem dsmooth_apply (i : ι) : DSmooth fun p : (i : ι) → Y i => p i :=
   dsmooth_pi_iff.1 dsmooth_id i
+
+theorem isPlot_pi_iff {n} {p : Eucl n → ((i : ι) → Y i)} :
+    IsPlot p ↔ ∀ i, IsPlot fun x => p x i := by
+  simp_rw [isPlot_iff_dsmooth,dsmooth_pi_iff]
 
 -- TODO. something like this should be true, but I haven't yet figured out the exact details.
 instance [Fintype ι] [(i : ι) → TopologicalSpace (Y i)] [(i : ι) → LocallyCompactSpace (Y i)]
@@ -148,7 +150,7 @@ instance [Fintype ι] [(i : ι) → TopologicalSpace (Y i)] [(i : ι) → Locall
 instance {ι : Type*} [Fintype ι] {Y : ι → Type*} [(i : ι) → NormedAddCommGroup (Y i)]
     [(i : ι) → NormedSpace ℝ (Y i)] [(i : ι) → DiffeologicalSpace (Y i)]
     [(i : ι) → ContDiffCompatible (Y i)] : ContDiffCompatible ((i : ι) → Y i) :=
-  ⟨by simp_rw [contDiff_pi,←ContDiffCompatible.isPlot_iff]; rfl⟩
+  ⟨fun {_ _} => by simp_rw [contDiff_pi,←ContDiffCompatible.isPlot_iff,isPlot_pi_iff]⟩
 
 end Pi
 

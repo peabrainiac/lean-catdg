@@ -289,7 +289,6 @@ noncomputable instance cartesianClosed : CartesianClosed DiffCat.{u} where
       homEquiv_naturality_right := fun _ _ => rfl
     } : Adjunction _ _).ofNatIsoLeft <| binaryProductIsoProd.app X⟩⟩
 
--- currently still contains sorryAx because of `Pi.diffeologicalSpace` - todo.
 #print axioms cartesianClosed
 
 end Cartesian
