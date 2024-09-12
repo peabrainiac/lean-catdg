@@ -54,6 +54,11 @@ theorem toEquiv_inj {h h' : X ᵈ≃ Y} : h.toEquiv = h'.toEquiv ↔ h = h' :=
 theorem coeFn_injective : Injective ((↑) : X ᵈ≃ Y → X → Y) :=
   DFunLike.coe_injective
 
+-- TODO simp lemmas for this
+def toDSmoothMap (d : X ᵈ≃ Y) : DSmoothMap X Y := ⟨d,d.dsmooth⟩
+
+local instance : Coe (X ᵈ≃ Y) (DSmoothMap X Y) := ⟨DDiffeomorph.toDSmoothMap⟩
+
 @[ext]
 theorem ext {h h' : X ᵈ≃ Y} (heq : ∀ x, h x = h' x) : h = h' :=
   coeFn_injective (funext heq)
@@ -268,6 +273,14 @@ def quotient_bot (X : Type*) [DiffeologicalSpace X] : @Quotient X ⊥ ᵈ≃ X w
 
 -- TODO!
 
+def prodComm : X × Y ᵈ≃ Y × X where
+  toFun := Prod.swap
+  invFun := Prod.swap
+  left_inv := fun _ => rfl
+  right_inv := fun _ => rfl
+  dsmooth_toFun := dsmooth_swap
+  dsmooth_invFun := dsmooth_swap
+
 /-- The currying diffeomorphism `DSmoothMap (X × Y) Z ᵈ≃ DSmoothMap X (DSmoothMap Y Z)`. -/
 def curry : DSmoothMap (X × Y) Z ᵈ≃ DSmoothMap X (DSmoothMap Y Z) where
   toFun := DSmoothMap.curry
@@ -276,6 +289,24 @@ def curry : DSmoothMap (X × Y) Z ᵈ≃ DSmoothMap X (DSmoothMap Y Z) where
   right_inv := fun _ => rfl
   dsmooth_toFun := DSmoothMap.dsmooth_curry
   dsmooth_invFun := DSmoothMap.dsmooth_uncurry
+
+/-- Postcomposition with `d : Y ᵈ≃ Z` as a diffeomorphism `DSmoothMap X Y ᵈ≃ DSmoothMap X Z`. -/
+def comp_left (d : Y ᵈ≃ Z) : DSmoothMap X Y ᵈ≃ DSmoothMap X Z where
+  toFun := fun f => d.toDSmoothMap.comp f
+  invFun := fun f => d.symm.toDSmoothMap.comp f
+  left_inv := fun f => by ext x; exact symm_apply_apply d (f x)
+  right_inv := fun f => by ext x; exact apply_symm_apply d (f x)
+  dsmooth_toFun := DSmoothMap.dsmooth_comp.curry_right
+  dsmooth_invFun := DSmoothMap.dsmooth_comp.curry_right
+
+/-- Precomposition with `d : X ᵈ≃ Y` as a diffeomorphism `DSmoothMap Y Z ᵈ≃ DSmoothMap X Z`. -/
+def comp_right (d : X ᵈ≃ Y) : DSmoothMap Y Z ᵈ≃ DSmoothMap X Z where
+  toFun := fun f => f.comp d
+  invFun := fun f => f.comp d.symm
+  left_inv := fun f => by ext x; exact congrArg f <| apply_symm_apply d x
+  right_inv := fun f => by ext x; exact congrArg f <| symm_apply_apply d x
+  dsmooth_toFun := DSmoothMap.dsmooth_comp.curry_left
+  dsmooth_invFun := DSmoothMap.dsmooth_comp.curry_left
 
 end Constructions
 

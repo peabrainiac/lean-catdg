@@ -140,6 +140,8 @@ end DiffCat
 
 end Basic
 
+namespace DiffCat
+
 /-!
 ### Limits and colimits
 
@@ -147,8 +149,6 @@ The category of diffeological spaces is complete and cocomplete, and the forgetf
 preserves all limits and colimits. Adapted from `Mathlib.Topology.Category.TopCat.Limits`.
 -/
 section Limits
-
-namespace DiffCat
 
 open CategoryTheory.Limits
 
@@ -226,6 +226,72 @@ noncomputable instance forgetPreservesColimitsOfSize : PreservesColimitsOfSize f
 noncomputable instance forgetPreservesColimits : PreservesColimits forget :=
   forgetPreservesColimitsOfSize.{u,u}
 
-end DiffCat
-
 end Limits
+
+/-!
+### Products
+Products in `DiffCat` are given by the usual products of spaces.
+Adapted from `Mathlib.CategoryTheory.Limits.Shapes.Types`.
+-/
+section BinaryProducts
+
+open Limits WalkingPair
+
+/-- The product space `X × Y` as a cone. -/
+def binaryProductCone (X Y : DiffCat.{u}) : BinaryFan X Y :=
+  BinaryFan.mk (P := of (X × Y)) ⟨_,dsmooth_fst⟩ ⟨_,dsmooth_snd⟩
+
+/-- `DiffCat.binaryProductCone X Y` is actually a limiting cone. -/
+def binaryProductLimit (X Y : DiffCat.{u}) : IsLimit (binaryProductCone X Y) where
+  lift (s : BinaryFan X Y) := ⟨_,s.fst.dsmooth.prod_mk s.snd.dsmooth⟩
+  fac _ j := Discrete.recOn j fun j => by cases' j <;> rfl
+  uniq s f w := DSmoothMap.ext fun x => Prod.ext
+    (congrFun (congrArg DSmoothMap.toFun (w ⟨left⟩)) x)
+    (congrFun (congrArg DSmoothMap.toFun (w ⟨right⟩)) x)
+
+/-- The functor taking `X`, `Y` to the product space `X × Y`. -/
+def binaryProductFunctor : DiffCat.{u} ⥤ DiffCat.{u} ⥤ DiffCat.{u} where
+  obj X := {
+    obj := fun Y => of (X × Y)
+    map := fun {Y Y'} f => ⟨_,dsmooth_id.prod_map f.dsmooth⟩ }
+  map {X Y} f := {
+    app := fun Z => ⟨_,f.dsmooth.prod_map dsmooth_id⟩
+    naturality := fun {X' Y'} f' => rfl }
+  map_id := fun X => rfl
+  map_comp := fun {X Y Z} f g => rfl
+
+/-- The explicit products we defined are naturally isomorphic to the products coming from
+  the `HasLimits` instance on diffcat. This is needed because the `HasLimits`
+  instance only stores proof that all limits exist, not the explicit constructions,
+  so the products derived from it are picked with the axiom of choice. -/
+noncomputable def binaryProductIsoProd : binaryProductFunctor.{u} ≅ (prod.functor) := by
+  refine' NatIso.ofComponents (fun X => _) (fun _ => _)
+  · refine' NatIso.ofComponents (fun Y => _) (fun _ => _)
+    · exact ((limit.isLimit _).conePointUniqueUpToIso (binaryProductLimit X Y)).symm
+    · apply prod.hom_ext <;> simp <;> rfl
+  · ext : 2; apply prod.hom_ext <;> simp <;> rfl
+
+end BinaryProducts
+
+section Cartesian
+
+noncomputable instance : MonoidalCategory DiffCat := monoidalOfHasFiniteProducts DiffCat
+
+/-- `DiffCat` is cartesian-closed. -/
+noncomputable instance cartesianClosed : CartesianClosed DiffCat.{u} where
+  closed X := ⟨⟨{
+      obj := fun Y => DiffCat.of (DSmoothMap X Y)
+      map := fun f => ⟨f.comp,DSmoothMap.dsmooth_comp.curry_right⟩
+    },(by exact Adjunction.mkOfHomEquiv {
+      homEquiv := fun Y Z => (DDiffeomorph.prodComm.comp_right).toEquiv.trans
+        (@DDiffeomorph.curry Y X Z _ _ _).toEquiv
+      homEquiv_naturality_left_symm := fun _ _ => rfl
+      homEquiv_naturality_right := fun _ _ => rfl
+    } : Adjunction _ _).ofNatIsoLeft <| binaryProductIsoProd.app X⟩⟩
+
+-- currently still contains sorryAx because of `Pi.diffeologicalSpace` - todo.
+#print axioms cartesianClosed
+
+end Cartesian
+
+end DiffCat
