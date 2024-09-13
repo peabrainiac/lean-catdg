@@ -289,8 +289,6 @@ noncomputable instance cartesianClosed : CartesianClosed DiffCat.{u} where
       homEquiv_naturality_right := fun _ _ => rfl
     } : Adjunction _ _).ofNatIsoLeft <| binaryProductIsoProd.app X⟩⟩
 
-#print axioms cartesianClosed
-
 end Cartesian
 
 end DiffCat
