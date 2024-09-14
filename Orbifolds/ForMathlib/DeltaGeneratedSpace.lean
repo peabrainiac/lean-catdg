@@ -1,5 +1,5 @@
 import Mathlib.Topology.ContinuousFunction.Basic
- import Mathlib.Analysis.Convex.Normed
+import Mathlib.Analysis.Convex.Normed
 
 /-!
 # Delta-generated topological spaces
@@ -45,7 +45,7 @@ lemma isOpen_deltaGenerated_iff {X : Type u} [t : TopologicalSpace X] {u : Set X
 
 /-- A map from ℝⁿ to X is continuous iff it is continuous regarding the
   delta-generated topology on X. -/
-lemma continuous_to_deltaGenerated {X : Type u} [t : TopologicalSpace X] {n : ℕ}
+lemma continuous_to_deltaGenerated' {X : Type u} [t : TopologicalSpace X] {n : ℕ}
     {f : ((Fin n) → ℝ) → X} : Continuous[_,deltaGenerated X] f ↔ Continuous f := by
   simp_rw [continuous_iff_coinduced_le]
   refine' ⟨fun h => h.trans deltaGenerated_le,fun h => _⟩
@@ -57,8 +57,8 @@ lemma deltaGenerated_deltaGenerated_eq {X : Type u} [t : TopologicalSpace X] :
   ext u; simp_rw [isOpen_deltaGenerated_iff]; refine' forall_congr' fun n => _
   -- somewhat awkward because `ContinuousMap` doesn't play well with multiple topologies.
   refine' ⟨fun h p => h <| @ContinuousMap.mk (Fin n → ℝ) X _ (deltaGenerated X) p <|
-      continuous_to_deltaGenerated.mpr p.2,
-    fun h p => h ⟨p,continuous_to_deltaGenerated.mp <|
+      continuous_to_deltaGenerated'.mpr p.2,
+    fun h p => h ⟨p,continuous_to_deltaGenerated'.mp <|
       @ContinuousMap.continuous_toFun _ _ _ (deltaGenerated X) p⟩⟩
 
 /-- A space is delta-generated if its topology is equal to the delta-generated topology, i.e.
@@ -72,11 +72,29 @@ variable {X : Type u} [t : TopologicalSpace X]
 lemma eq_deltaGenerated [DeltaGeneratedSpace X] : t = deltaGenerated X :=
   eq_of_le_of_le DeltaGeneratedSpace.le_deltaGenerated deltaGenerated_le
 
-namespace DeltaGeneratedSpace
-
-lemma isOpen_iff [DeltaGeneratedSpace X] {u : Set X} : IsOpen u ↔
+/-- A subset of a delta-generated space is open iff its preimage is open for every
+  continuous map from ℝⁿ to X. -/
+lemma DeltaGeneratedSpace.isOpen_iff [DeltaGeneratedSpace X] {u : Set X} : IsOpen u ↔
     ∀ (n : ℕ) (p : ContinuousMap ((Fin n) → ℝ) X), IsOpen (p ⁻¹' u) := by
   nth_rewrite 1 [eq_deltaGenerated (X := X)]; exact isOpen_deltaGenerated_iff
+
+/-- A map out of a delta-generated space is continuous iff it preserves continuity of maps
+  from ℝⁿ into X. -/
+lemma DeltaGeneratedSpace.continuous_iff {X Y : Type u} [tX : TopologicalSpace X]
+    [tY : TopologicalSpace Y] [DeltaGeneratedSpace X] {f : X → Y} :
+    Continuous f ↔ ∀ (n : ℕ) (p : C(((Fin n) → ℝ),X)), Continuous (f ∘ p) := by
+  simp_rw [continuous_iff_coinduced_le]
+  nth_rewrite 1 [eq_deltaGenerated (X := X),deltaGenerated]
+  simp [coinduced_compose]
+
+/-- A map out of a delta-generated space is continuous iff it is continuous with respect
+  to the delta-generification of the topology on the codomain. -/
+lemma continuous_to_deltaGenerated {X Y : Type u} [tX : TopologicalSpace X]
+    [tY : TopologicalSpace Y] [DeltaGeneratedSpace X] {g : X → Y} :
+    Continuous[_,deltaGenerated Y] g ↔ Continuous g := by
+  simp_rw [DeltaGeneratedSpace.continuous_iff,continuous_to_deltaGenerated']
+
+namespace DeltaGeneratedSpace
 
 /-- Type synonym to be equipped with the delta-generated topology. -/
 def of (X : Type u) [TopologicalSpace X] : Type u := X
