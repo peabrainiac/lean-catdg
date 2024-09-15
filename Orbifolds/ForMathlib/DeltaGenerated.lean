@@ -10,6 +10,11 @@ The category of delta-generated spaces.
 See https://ncatlab.org/nlab/show/Delta-generated+topological+space.
 
 Adapted from `Mathlib.Topology.Category.CompactlyGenerated`.
+
+TODO:
+* `DeltaGenerated` has all limits and colimits.
+* `DeltaGenerated` is a coreflective subcategory of `CompactlyGenerated`.
+* `DeltaGenerated` is cartesian-closed.
 -/
 
 universe u

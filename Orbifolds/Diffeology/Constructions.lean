@@ -1,4 +1,5 @@
 import Orbifolds.Diffeology.DSmoothMap
+import Orbifolds.ForMathlib.DeltaGeneratedSpace
 import Mathlib.Analysis.InnerProductSpace.Calculus
 
 /-!
@@ -517,6 +518,31 @@ theorem dTop_coinduced_comm {X Y : Type*} {dX : DiffeologicalSpace X} {f : X →
       rw [←Subtype.image_preimage_val,←preimage_comp,hp,preimage_comp]
       exact hv.isOpenMap_subtype_val _ (hu.preimage (hv.dTopCompatible.dTop_eq ▸ hp'.continuous))
   · exact continuous_iff_coinduced_le.1 <| hf.continuous
+
+/-- The D-topology is coinduced by all plots. -/
+lemma dTop_eq_iSup_coinduced {X : Type*} [dX : DiffeologicalSpace X] :
+    DTop = ⨆ (p : (n : ℕ) × dX.plots n), coinduced p.2.1 inferInstance := by
+  ext u
+  rw [isOpen_iff_preimages_plots,isOpen_iSup_iff,Sigma.forall]; simp_rw [isOpen_coinduced]
+  exact forall_congr' fun n => ⟨fun h p => h p p.2,fun h p hp => h ⟨p,hp⟩⟩
+
+/-- The D-topology is always delta-generated. -/
+instance instDeltaGeneratedSpaceDTop {X : Type*} [DiffeologicalSpace X] :
+    @DeltaGeneratedSpace X DTop := by
+  let _ : TopologicalSpace X := DTop; refine' ⟨_⟩
+  nth_rewrite 1 [dTop_eq_iSup_coinduced,deltaGenerated]
+  refine' iSup_le fun ⟨n,p⟩ => _
+  let e : (Fin n → ℝ) ≃L[ℝ] Eucl _ := toEuclidean
+  rw [FiniteDimensional.finrank_pi,Fintype.card_fin] at e
+  refine' le_trans _ <| le_iSup _ (⟨n,@ContinuousMap.mk (Fin n → ℝ) X _ (_:) (p.1 ∘ e) <|
+    (IsPlot.dsmooth p.2).continuous.comp e.continuous⟩)
+  simp only [←coinduced_compose,ContinuousMap.coe_mk]
+  rw [show coinduced e _ = _ by exact e.toHomeomorph.coinduced_eq]
+
+/-- Diffeological spaces are always delta-generated when equipped with the D-topology. -/
+instance {X : Type*} [DiffeologicalSpace X] [TopologicalSpace X] [DTopCompatible X] :
+    DeltaGeneratedSpace X :=
+  dTop_eq (X := X) ▸ inferInstance
 
 end DTop
 
