@@ -405,7 +405,8 @@ theorem dsmooth_bot_iff_isLocallyConstant {X Y : Type*} {dX : DiffeologicalSpace
   exact @IsOpen.preimage _ Y DTop[dX] ⊥ _ (dTop_bot ▸ @DSmooth.continuous _ Y dX ⊥ _ hf) _ trivial
 
 open PartialHomeomorph in
-/-- A map is a plot in the coinduced diffeology iff it is constant or lifts locally. -/
+/-- A map is a plot in the coinduced diffeology iff it is constant or lifts locally.
+  TODO: golf this using `DiffeologicalSpace.mkOfPlotsOn`? -/
 theorem isPlot_coinduced_iff {X Y : Type*} {dX : DiffeologicalSpace X} {f : X → Y}
     {n : ℕ} {p : Eucl n → Y} : IsPlot[dX.coinduced f] p ↔ (∃ y, p = fun _ => y) ∨
     ∀ x : Eucl n, ∃ u, IsOpen u ∧ x ∈ u ∧ ∃ p' : u → X, DSmooth p' ∧ p ∘ (↑) = f ∘ p' := by

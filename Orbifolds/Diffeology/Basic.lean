@@ -103,35 +103,85 @@ theorem DSmooth.comp' {f : X → Y} {g : Y → Z} (hg : DSmooth g) (hf : DSmooth
 theorem dsmooth_const {y : Y} : DSmooth fun _ : X => y :=
   fun _ _ _ => isPlot_const
 
+/-- A structure with plots specified on open subsets of ℝⁿ rather than ℝⁿ itself. Useful
+  for constructing diffeologies, as it often makes the locality condition easiert to prove. -/
+structure DiffeologicalSpace.CorePlotsOn (X : Type*) where
+  isPlotOn {n : ℕ} {u : Set (Eucl n)} (hu : IsOpen u) : (Eucl n → X) → Prop
+  isPlotOn_congr {n : ℕ} {u : Set (Eucl n)} (hu : IsOpen u) {p q : Eucl n → X}
+    (h : Set.EqOn p q u) : isPlotOn hu p ↔ isPlotOn hu q
+  /-- The predicate that the diffeology built from this structure will use. Can be overwritten
+    to allow for better definitional equalities. -/
+  isPlot {n : ℕ} : (Eucl n → X) → Prop := fun p => isPlotOn isOpen_univ p
+  isPlotOn_univ {n : ℕ} {p : Eucl n → X} : isPlotOn isOpen_univ p ↔ isPlot p := by simp
+  isPlot_const {n : ℕ} (x : X) : isPlot fun (_ : Eucl n) => x
+  isPlotOn_reparam {n m : ℕ} {u : Set (Eucl n)} {v : Set (Eucl m)} {hu : IsOpen u}
+    (hv : IsOpen v) {p : Eucl n → X} {f : Eucl m → Eucl n} (h : Set.MapsTo f v u) :
+    isPlotOn hu p → ContDiffOn ℝ ⊤ f v → isPlotOn hv (p ∘ f)
+  /-- The locality axiom of diffeologies, phrased in terms of `isPlotOn`. -/
+  locality {n : ℕ} {u : Set (Eucl n)} (hu : IsOpen u) {p : Eucl n → X} :
+    (∀ x ∈ u, ∃ (v : Set (Eucl n)) (hv : IsOpen v), x ∈ v ∧ isPlotOn hv p) → isPlotOn hu p
+  /-- The D-topology that the diffeology built from this structure will use. Can be overwritten
+    to allow for better definitional equalities. -/
+  dTopology : TopologicalSpace X := {
+    IsOpen := fun u => ∀ {n : ℕ}, ∀ p : Eucl n → X, isPlot p → TopologicalSpace.IsOpen (p ⁻¹' u)
+    isOpen_univ := fun _ _ => isOpen_univ
+    isOpen_inter := fun _ _ hs ht _ p hp =>
+      Set.preimage_inter.symm ▸ (IsOpen.inter (hs p hp) (ht p hp))
+    isOpen_sUnion := fun _ hs _ p hp =>
+      Set.preimage_sUnion ▸ isOpen_biUnion fun u hu => hs u hu p hp
+  }
+  isOpen_iff_preimages_plots {u : Set X} : dTopology.IsOpen u ↔
+    ∀ {n : ℕ}, ∀ p : Eucl n → X, isPlot p → TopologicalSpace.IsOpen (p ⁻¹' u) := by rfl
+
+/-- Constructs a diffeology from plots defined on open subsets or ℝⁿ rather than ℝⁿ itself,
+  organised in the form of the auxiliary `CorePlotsOn` structure.
+  This is more involved in most regards, but also often makes it quite a lot easier to prove
+  the locality condition. -/
+def DiffeologicalSpace.mkOfPlotsOn {X : Type*} (d : CorePlotsOn X) : DiffeologicalSpace X where
+  plots _ := {p | d.isPlot p}
+  constant_plots _ := d.isPlot_const _
+  plot_reparam hp hf := d.isPlotOn_univ.mp <|
+    d.isPlotOn_reparam _ (Set.mapsTo_univ _ _) (d.isPlotOn_univ.mpr hp) hf.contDiffOn
+  locality {n p} h := by
+    dsimp at h
+    refine' d.isPlotOn_univ.mp <| d.locality _ fun x _ => _
+    let ⟨u,hu,hxu,hu'⟩ := h x
+    let ⟨ε,hε,hε'⟩ := Metric.isOpen_iff.mp hu x hxu
+    have h := hu' (f := PartialHomeomorph.univBall x ε) (fun x' => by
+      have h := (PartialHomeomorph.univBall x ε).map_source (x := x')
+      rw [PartialHomeomorph.univBall_source, PartialHomeomorph.univBall_target x hε] at h
+      exact hε' (h (Set.mem_univ _))) PartialHomeomorph.contDiff_univBall
+    have h' := d.isPlotOn_reparam (Metric.isOpen_ball) (Set.mapsTo_univ _ _)
+      (d.isPlotOn_univ.mpr h) (PartialHomeomorph.contDiffOn_univBall_symm (c := x) (r := ε))
+    refine' ⟨_,Metric.isOpen_ball,Metric.mem_ball_self hε,(d.isPlotOn_congr _ _).mp h'⟩
+    rw [Function.comp.assoc,←PartialHomeomorph.coe_trans]; apply Set.EqOn.comp_left
+    convert (PartialHomeomorph.symm_trans_self (PartialHomeomorph.univBall x ε)).2
+    simp [(PartialHomeomorph.univBall_target x hε)]
+  dTopology := d.dTopology
+  isOpen_iff_preimages_plots := d.isOpen_iff_preimages_plots
+
 section FiniteDimensionalNormedSpace
 
 /-- Diffeology on a finite-dimensional normed space. We make this a definition instead of an
 instance because we also want to have product diffeologies as an instance, and having both would
 cause instance diamonds on spaces like `Fin n → ℝ`. -/
 def euclideanDiffeology {X : Type*} [NormedAddCommGroup X] [NormedSpace ℝ X]
-    [FiniteDimensional ℝ X] : DiffeologicalSpace X where
-  plots _ := {p | ContDiff ℝ ⊤ p}
-  constant_plots _ := contDiff_const
-  plot_reparam := ContDiff.comp
-  locality {n p} := fun hp => by
-    refine' contDiff_iff_contDiffAt.2 fun x => _
-    let ⟨u,hu,hxu,hu'⟩ := hp x
-    let ⟨ε,hε,hε'⟩ := Metric.isOpen_iff.1 hu x hxu
-    have h := hu' (f := PartialHomeomorph.univBall x ε) (fun x' => by
-      have h := (PartialHomeomorph.univBall x ε).map_source (x := x')
-      rw [PartialHomeomorph.univBall_source, PartialHomeomorph.univBall_target x hε] at h
-      exact Set.mem_of_mem_of_subset (h (Set.mem_univ _)) hε') PartialHomeomorph.contDiff_univBall
-    have h' := h.comp_contDiffOn (PartialHomeomorph.contDiffOn_univBall_symm (c := x) (r := ε))
-    refine' ContDiffOn.contDiffAt (h'.congr _) (Metric.ball_mem_nhds _ hε)
-    rw [Function.comp.assoc,←PartialHomeomorph.coe_trans]
-    refine' Set.EqOn.comp_left _
-    convert (PartialHomeomorph.symm_trans_self (PartialHomeomorph.univBall x ε)).2.symm
-    simp [(PartialHomeomorph.univBall_target x hε)]
-  dTopology := inferInstance
-  isOpen_iff_preimages_plots := fun {u} => by
-    refine' ⟨fun hu _ _ hp => IsOpen.preimage (hp.continuous) hu, fun h => _⟩
-    rw [←toEuclidean.preimage_symm_preimage u]
-    exact toEuclidean.continuous.isOpen_preimage _ (h _ toEuclidean.symm.contDiff)
+    [FiniteDimensional ℝ X] : DiffeologicalSpace X :=
+  DiffeologicalSpace.mkOfPlotsOn {
+    isPlotOn := fun {_ u} _ p => ContDiffOn ℝ ⊤ p u
+    isPlotOn_congr := fun _ _ _ h => contDiffOn_congr h
+    isPlot := fun p => ContDiff ℝ ⊤ p
+    isPlotOn_univ := contDiffOn_univ
+    isPlot_const := fun _ => contDiff_const
+    isPlotOn_reparam := fun _ _ _ h hp hf => hp.comp hf h.subset_preimage
+    locality := fun _ _ h => fun x hxu => by
+      let ⟨v,hv,hxv,hv'⟩ := h x hxu
+      exact ((hv' x hxv).contDiffAt (hv.mem_nhds hxv)).contDiffWithinAt
+    dTopology := inferInstance
+    isOpen_iff_preimages_plots := fun {u} => by
+      refine' ⟨fun hu _ _ hp => IsOpen.preimage (hp.continuous) hu, fun h => _⟩
+      rw [←toEuclidean.preimage_symm_preimage u]
+      exact toEuclidean.continuous.isOpen_preimage _ (h _ toEuclidean.symm.contDiff) }
 
 /-- Technical condition saying that the diffeology on a space is the one coming from
 smoothness in the sense of `ContDiff ℝ ⊤`. Necessary as a hypothesis for some theorems
