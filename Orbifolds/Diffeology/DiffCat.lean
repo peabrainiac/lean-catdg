@@ -5,6 +5,8 @@ import Mathlib.CategoryTheory.Limits.Preserves.Basic
 import Mathlib.CategoryTheory.Closed.Cartesian
 import Mathlib.Topology.Category.TopCat.Basic
 import Orbifolds.Diffeology.DDiffeomorph
+import Orbifolds.Diffeology.Continuous
+import Orbifolds.ForMathlib.DeltaGenerated
 
 /-!
 # Category of diffeological spaces
@@ -17,9 +19,12 @@ Main definitions / results:
   provided through a `ConcreteCategory`-instance on `DiffCat`.
 * `DiffCat.discrete`, `DiffCat.indiscrete`: the functors `Type ⥤ DiffCat` giving each type the
   discrete/indiscrete diffeology.
-* `DiffCat.dTop`: the functor `DiffCat ⥤ TopCat` giving each space its D-topology.
 * `DiffCat.discreteForgetAdj`, `DiffCat.forgetIndiscreteAdj`: the adjunctions
   `discrete ⊣ forget ⊣ indiscrete`.
+* `DiffCat.dTop`, `DiffCat.diffToDeltaGenerated`, `DiffCat.topToDiff`,
+  `DiffCat.deltaGeneratedToDiff`: the functors between `DiffCat`, `DeltaGenerated` and
+  `TopCat` given by the D-topology and continuous diffeology.
+* `DiffCat.dTopAdj`, `DiffCat.dTopAdj'`: the adjunctions between those.
 * `DiffCat.hasLimits`, `DiffCat.hasColimits`: `DiffCat` is complete and cocomplete.
 * `DiffCat.forgetPreservesLimits`, `DiffCat.forgetPreservesColimits`: the forgetful functor
   `DiffCat ⥤ Type` preserves limits and colimits.
@@ -102,17 +107,15 @@ theorem coe_of (X : Type u) [DiffeologicalSpace X] : (of X : Type u) = X := rfl
 instance inhabited : Inhabited DiffCat :=
   ⟨Empty,⊥⟩
 
+/-- The functor equipping each type with the discrete diffeology. -/
 def discrete : Type u ⥤ DiffCat.{u} where
   obj X := ⟨X,⊥⟩
   map f := ⟨f,dsmooth_bot⟩
 
+/-- The functor equipping each type with the indiscrete diffeology. -/
 def indiscrete : Type u ⥤ DiffCat.{u} where
   obj X := ⟨X,⊤⟩
   map f := ⟨f,dsmooth_top⟩
-
-def dTop : DiffCat.{u} ⥤ TopCat.{u} where
-  obj X := ⟨X,DTop⟩
-  map f := ⟨f,f.dsmooth.continuous⟩
 
 /-- Adjunction `discrete ⊣ forget`, adapted from
   `Mathlib.Topology.Category.TopCat.Adjunctions`. -/
@@ -135,6 +138,50 @@ instance : IsRightAdjoint (forget DiffCat.{u}) :=
 
 instance : IsLeftAdjoint (forget DiffCat.{u}) :=
   ⟨_, forgetIndiscreteAdj⟩
+
+/-- The functor sending each diffeological spaces to its D-topology. -/
+def dTop : DiffCat.{u} ⥤ TopCat.{u} where
+  obj X := ⟨X,DTop⟩
+  map f := ⟨f,f.dsmooth.continuous⟩
+
+/-- The functor sending each diffeological space to its D-topology, as a delta-generated
+  space. -/
+def diffToDeltaGenerated : DiffCat.{u} ⥤ DeltaGenerated.{u} where
+  obj X := ⟨⟨X,DTop⟩,inferInstance⟩
+  map f := ⟨f,f.dsmooth.continuous⟩
+
+/-- The functor equipping each topological space with the continuous diffeology. -/
+def topToDiff : TopCat.{u} ⥤ DiffCat.{u} where
+  obj X := of (withContinuousDiffeology X)
+  map f := ⟨f,f.2.dsmooth⟩
+
+/-- The functor equipping each delta-generated space with the continuous diffeology. -/
+def deltaGeneratedToDiff : DeltaGenerated.{u} ⥤ DiffCat.{u} where
+  obj X := of (withContinuousDiffeology X)
+  map f := ⟨f,f.2.dsmooth⟩
+
+/-- Adjunction between the D-topology and continuous diffeology as functors between
+  `DiffCat` and `TopCat`. -/
+def dTopAdj : dTop ⊣ topToDiff :=
+  Adjunction.mkOfUnitCounit {
+    unit := { app := fun X => ⟨id,dsmooth_id.continuous.dsmooth'⟩ }
+    counit := { app := fun X => ⟨id,continuous_iff_coinduced_le.mpr deltaGenerated_le⟩ } }
+
+/-- Adjunction between the D-topology and continuous diffeology as functors between
+  `DiffCat` and `DeltaGenerated`. -/
+def dTopAdj' : diffToDeltaGenerated ⊣ deltaGeneratedToDiff :=
+  Adjunction.mkOfUnitCounit {
+    unit := { app := fun X => ⟨id,dsmooth_id.continuous.dsmooth'⟩ }
+    counit := { app := fun X => ⟨id,continuous_iff_coinduced_le.mpr
+      dTop_continuousDiffeology_eq_self.le⟩ } }
+
+/-- The D-topology functor `DiffCat ⥤ TopCat` is a left-adjoint. -/
+instance : IsLeftAdjoint (dTop.{u}) :=
+  ⟨_,dTopAdj⟩
+
+/-- The D-topology functor `DiffCat ⥤ DeltaGenerated` is a left-adjoint. -/
+instance : IsLeftAdjoint (diffToDeltaGenerated.{u}) :=
+  ⟨_,dTopAdj'⟩
 
 end DiffCat
 

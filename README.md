@@ -18,7 +18,7 @@ So far this is mostly following Patrick Iglesias-Zemmour's book "Diffeology" - I
 		- [ ] Coproduct diffeologies
 		- [x] Mapping spaces
 		- [x] D-topology
-		- [ ] Continuous diffeology
+		- [x] Continuous diffeology
 	- Maps:
 		- [x] Smooth maps
 		- [x] Inductions & subductions
@@ -36,8 +36,7 @@ So far this is mostly following Patrick Iglesias-Zemmour's book "Diffeology" - I
 		- [x] Category of diffeological spaces
 		- [x] Completeness and Cocompleteness of that category
 		- [x] Cartesian-closedness of that category
-		- [x] D-topology as a functor
-		- [ ] Right-adjoint of that functor
-		- [x] Forgetful functor, right- and left-adjoints of that
+		- [x] Forgetful functor and related adjunctions
+		- [x] D-topology functor and adjunction
 		- [ ] Category of smooth sets
 		- [ ] Embedding of diffeological spaces into that
