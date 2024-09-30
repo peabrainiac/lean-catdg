@@ -98,6 +98,33 @@ instance {n : ℕ} {X : Type*} [DiffeologicalSpace X] [hm : IsManifold n X] :
   refine' ⟨(Quotient.lift id fun a b => id) ⁻¹' v,_,⟨e⟩⟩
   exact @IsOpen.preimage _ _ DTop DTop _ (dsmooth_id.quotient_lift _).continuous _ hv⟩
 
+/-- Spaces that are modelled on locally compact spaces are locally compact. -/
+protected theorem LocallyModelled.locallyCompactSpace {X ι : Type*} [DiffeologicalSpace X]
+    {M : ι → Type*} [(i : ι) → TopologicalSpace (M i)] [(i : ι) → DiffeologicalSpace (M i)]
+    [(i : ι) → DTopCompatible (M i)] [(i : ι) → LocallyCompactSpace (M i)]
+    (h : LocallyModelled M X) : @LocallyCompactSpace X DTop := by
+  let _ : TopologicalSpace X := DTop; have : DTopCompatible X := ⟨rfl⟩
+  constructor; intro x s hs
+  let ⟨u, hu, hxu, i, v, hv, ⟨d⟩⟩ := h.locally_modelled x; rw [dTop_eq] at hv
+  have := hu.dTopCompatible; have := hv.dTopCompatible
+  have := d.toHomeomorph'.locallyCompactSpace_iff.mpr hv.locallyCompactSpace
+  let ⟨t, ht, hts, ht'⟩ := local_compact_nhds <|
+    (mem_nhds_subtype u ⟨x, hxu⟩ _).mpr ⟨s, hs, subset_rfl⟩
+  refine ⟨(↑) '' t, ?_, by simp [hts], ht'.image continuous_subtype_val⟩
+  exact hu.isOpenMap_subtype_val.image_mem_nhds ht
+
+/-- The quotient spaces that orbifolds are modelled on are locally compact. -/
+instance {n : ℕ} {Γ : {Γ : Subgroup ((Eucl n) ≃ₗ[ℝ] (Eucl n)) | Finite Γ}} :
+    LocallyCompactSpace (MulAction.orbitRel.Quotient Γ (Eucl n)) := by
+  sorry
+
+/-- Orbifolds are locally compact. Not an instance because lean can't infer typeclasses that
+  don't depend on `n` from ones that do.
+  TODO: solve by allowing orbifolds of mixed dimension? -/
+protected theorem IsOrbifold.locallyCompactSpace {X : Type*} [TopologicalSpace X] [DiffeologicalSpace X]
+    [DTopCompatible X] {n : ℕ} [hX : IsOrbifold n X] : LocallyCompactSpace X := by
+  exact (dTop_eq X) ▸ LocallyModelled.locallyCompactSpace hX
+
 
 variable {n : ℕ}
 

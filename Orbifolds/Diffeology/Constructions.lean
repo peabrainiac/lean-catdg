@@ -527,6 +527,11 @@ lemma dTop_eq_iSup_coinduced {X : Type*} [dX : DiffeologicalSpace X] :
   rw [isOpen_iff_preimages_plots,isOpen_iSup_iff,Sigma.forall]; simp_rw [isOpen_coinduced]
   exact forall_congr' fun n => ⟨fun h p => h p p.2,fun h p hp => h ⟨p,hp⟩⟩
 
+/-- The D-topology is coinduced by the sum of all plots. -/
+lemma dTop_eq_coinduced {X : Type*} [dX : DiffeologicalSpace X] : DTop =
+    coinduced (fun x : (p : (n : ℕ) × dX.plots n) × Eucl p.1 ↦ x.1.2.1 x.2) inferInstance := by
+  rw [dTop_eq_iSup_coinduced, ← coinduced_sigma]
+
 /-- The D-topology is always delta-generated. -/
 instance instDeltaGeneratedSpaceDTop {X : Type*} [DiffeologicalSpace X] :
     @DeltaGeneratedSpace X DTop := by
@@ -802,13 +807,109 @@ theorem induction_prod_mk (x : X) : Induction (Prod.mk x : Y → X × Y) :=
 theorem induction_prod_mk_left (y : X) : Induction (fun x : X => (x, y)) :=
   induction_prod_const.2 induction_id
 
+/-- Products of reflexive diffeological spaces are reflexive. -/
+instance [hX : ReflexiveDiffeologicalSpace X] [hY :ReflexiveDiffeologicalSpace Y] :
+    ReflexiveDiffeologicalSpace (X × Y) where
+  isPlot_if p h :=
+    (hX.isPlot_if (fun x => (p x).1) fun _ hf => h _ <| hf.fst').prod <|
+      hY.isPlot_if (fun x => (p x).2) fun _ hf => h _ <| hf.snd'
+
+/-- Products of normed spaces are compatible with the product diffeology. -/
+instance {X Y : Type*} [NormedAddCommGroup X] [NormedSpace ℝ X] [DiffeologicalSpace X]
+    [ContDiffCompatible X] [NormedAddCommGroup Y] [NormedSpace ℝ Y] [DiffeologicalSpace Y]
+    [ContDiffCompatible Y] : ContDiffCompatible (X × Y) := ⟨fun {n p} ↦ by
+  simp_rw [isPlot_prod_iff, isPlot_iff_contDiff]
+  exact ⟨fun h ↦ h.1.prod h.2, fun h ↦ ⟨h.fst, h.snd⟩⟩⟩
+
 /-- The D-topology of the product diffeology is at least as fine as the product of
-  the D-topologies.
-  TODO: figure out nice conditions under which this is an equality. -/
+  the D-topologies. -/
 theorem dTop_prod_le_prod_dTop :
     (DTop : TopologicalSpace (X × Y)) ≤ @instTopologicalSpaceProd _ _ DTop DTop :=
   continuous_id_iff_le.1 ((@continuous_prod_mk _ X Y DTop DTop DTop _ _).2
     ⟨dsmooth_fst.continuous,dsmooth_snd.continuous⟩)
+
+/-- For locally compact spaces `X`, the product functor `X × -` takes quotient maps to quotient
+  maps. Note that surjectivity is actually required here - coinducing maps do not necessarily
+  get taken to coinducing maps.
+  Adapted from
+  https://dantopology.wordpress.com/2023/04/21/the-product-of-the-identity-map-and-a-quotient-map/.
+  TODO: give an explicit description of the coinduced topology without assuming surjectivity
+  TODO: give an explicit description even without local compactness, using `deltaGenerated`
+  TODO: maybe move to mathlib? -/
+theorem QuotientMap.id_prod {X Y Z : Type*} [TopologicalSpace X] [TopologicalSpace Y]
+    [TopologicalSpace Z] [LocallyCompactSpace X] {f : Y → Z} (hf : QuotientMap f) :
+    QuotientMap (Prod.map (@id X) f) := by
+  refine ⟨Function.surjective_id.Prod_map hf.1,
+    le_antisymm ?_ (continuous_id.prod_map hf.continuous).coinduced_le⟩
+  intro s hs; rw [isOpen_coinduced] at hs
+  refine isOpen_prod_iff.mpr fun x z hxz ↦ ?_
+  let ⟨y, hy⟩ := hf.1 z
+  let ⟨k, hk, hks, hk'⟩ := local_compact_nhds <|
+    (hs.preimage <| continuous_id.prod_mk continuous_const).mem_nhds (hy.symm ▸ hxz)
+  let ⟨u, huk, hu, hxu⟩ := mem_nhds_iff.mp hk
+  refine ⟨u, {z | k ×ˢ (f ⁻¹' {z}) ⊆ Prod.map id f ⁻¹' s}, hu, ?_, hxu, ?_, ?_⟩
+  · rw [hf.2, isOpen_coinduced]; dsimp
+    have : CompactSpace k := isCompact_iff_compactSpace.mp hk'
+    suffices h : IsOpen {y | k ×ˢ {y} ⊆ Prod.map id f ⁻¹' s} by
+      convert h using 1; ext y
+      simp_rw [← image_subset_iff, Prod.map, ← prod_image_image_eq,
+        image_preimage_eq _ hf.1, image_singleton]
+    have h := (isClosedMap_snd_of_compactSpace (X := k) (Prod.map (↑) f ⁻¹' s)ᶜ <|
+      IsOpen.isClosed_compl
+      (by exact hs.preimage (continuous_subtype_val.prod_map continuous_id))).isOpen_compl
+    convert h using 1; ext y'
+    simp [prod_subset_iff, - prod_singleton]
+  · intro ⟨x', y'⟩ hxy'
+    rw [mem_preimage, Prod_map, (hxy'.2 : f _ = _), ← hy]
+    exact hks hxy'.1
+  · intro ⟨x', z'⟩ hxz'; let ⟨y', hy'⟩ := hf.1 z'
+    exact hy' ▸ hxz'.2 (by exact ⟨huk hxz'.1, hy'⟩ : (x', y') ∈ _)
+
+/-- Analogous to `QuotientMap.id_prod`. -/
+theorem QuotientMap.prod_id {X Y Z : Type*} [TopologicalSpace X] [TopologicalSpace Y]
+    [TopologicalSpace Z] [LocallyCompactSpace Z] {f : X → Y} (hf : QuotientMap f) :
+    QuotientMap (Prod.map f (@id Z)) := by
+  exact (Homeomorph.prodComm _ _).quotientMap.comp <|
+    (hf.id_prod (X := Z)).comp (Homeomorph.prodComm _ _).quotientMap
+
+/-- Equivalent of `Function.Surjective.sigma_map` for quotient maps.
+  TODO: move to mathlib. -/
+theorem QuotientMap.sigma_map {ι ι' : Type*} {X : ι → Type*} {Y : ι' → Type*}
+    [(i : ι) → TopologicalSpace (X i)] [(i : ι') → TopologicalSpace (Y i)] {f₁ : ι → ι'}
+    {f₂ : (i : ι) → X i → Y (f₁ i)} (h₁ : Function.Surjective f₁)
+    (h₂ : ∀ i : ι, QuotientMap (f₂ i)) : QuotientMap (Sigma.map f₁ f₂) :=
+  ⟨h₁.sigma_map fun i ↦ (h₂ i).1, by
+    ext u; simp_rw [isOpen_coinduced, isOpen_sigma_iff, h₁.forall]
+    exact forall_congr' fun i => (h₂ i).2 ▸ isOpen_coinduced⟩
+
+-- TODO: move to mathlib? also figure out why this works below but `coinduced_sigma` doesn't
+lemma coinduced_sigma' {ι Y : Type*} {X : ι → Type v} [tX : (i : ι) → TopologicalSpace (X i)]
+    (f : (i : ι) × X i → Y) : coinduced f inferInstance =
+    ⨆ i : ι, coinduced (fun x ↦ f ⟨i,x⟩) inferInstance := by
+  rw [instTopologicalSpaceSigma,coinduced_iSup]; rfl
+
+/-- For locally compact diffeological spaces, the D-topology commutes with products.
+  This is not true in general, because the product topology might not be delta-generated;
+  however, according to a remark in https://arxiv.org/abs/1302.2935 it should be always true
+  if one takes the product in the category of delta-generated spaces instead of in Top.
+  TODO: work this all out more generally -/
+theorem dTop_prod_eq_prod_dTop [@LocallyCompactSpace X DTop] :
+    (DTop : TopologicalSpace (X × Y)) = @instTopologicalSpaceProd _ _ DTop DTop := by
+  let _ := @DTop X _; let _ := @DTop Y _
+  refine le_antisymm dTop_prod_le_prod_dTop ?_
+  have h₁ := @QuotientMap.id_prod X _ Y _ _ _ _ _
+    ⟨fun y => ⟨⟨⟨37, ⟨fun _ => y, isPlot_const⟩⟩, 0⟩, rfl⟩, dTop_eq_coinduced⟩
+  have h₂ := @QuotientMap.comp _ _ _ _ _ _ _ (@instTopologicalSpaceProd X Y _ DTop) h₁ <|
+    (Homeomorph.sigmaProdDistrib.symm.trans (Homeomorph.prodComm _ _)).quotientMap.comp
+      (QuotientMap.sigma_map Function.surjective_id fun i => (QuotientMap.id_prod
+        ⟨fun x => ⟨⟨⟨37, ⟨fun _ => x, isPlot_const⟩⟩, 0⟩, rfl⟩, dTop_eq_coinduced⟩).comp <|
+          (Homeomorph.sigmaProdDistrib.symm.trans (Homeomorph.prodComm _ _)).quotientMap.comp <|
+            QuotientMap.sigma_map Function.surjective_id fun i ↦
+              toEuclidean.symm.toHomeomorph.quotientMap)
+  simp_rw [h₂.2,coinduced_sigma',iSup_le_iff]
+  intro p₁ p₂
+  exact (((IsPlot.dsmooth p₂.2.2).prod_map (IsPlot.dsmooth p₁.2.2)).comp
+    toEuclidean.symm.contDiff.dsmooth).continuous.coinduced_le
 
 end Prod
 
