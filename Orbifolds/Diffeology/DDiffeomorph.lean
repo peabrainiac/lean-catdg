@@ -44,6 +44,12 @@ protected theorem continuous' [TopologicalSpace X] [TopologicalSpace Y] [DTopCom
 
 protected theorem dsmooth (h : X ᵈ≃ Y) : DSmooth h := h.dsmooth_toFun
 
+protected theorem induction (h : X ᵈ≃ Y) : Induction h :=
+  h.left_inv.induction h.dsmooth_invFun h.dsmooth
+
+protected theorem subduction (h : X ᵈ≃ Y) : Subduction h :=
+  h.right_inv.subduction h.dsmooth h.dsmooth_invFun
+
 @[simp]
 theorem coe_toEquiv (h : X ᵈ≃ Y) : ⇑h.toEquiv = h := rfl
 
@@ -153,6 +159,12 @@ theorem image_symm_image (h : X ᵈ≃ Y) (s : Set Y) : h '' (h.symm '' s) = s :
 theorem symm_image_image (h : X ᵈ≃ Y) (s : Set X) : h.symm '' (h '' s) = s :=
   h.toEquiv.symm_image_image s
 
+/-- An induction is a diffeomorphism onto its image. -/
+noncomputable def ofInduction {f : X → Y} (hf : Induction f) : X ᵈ≃ range f where
+  toEquiv := Equiv.ofInjective f hf.1
+  dsmooth_toFun := hf.dsmooth
+  dsmooth_invFun := hf.dsmooth_iff.2 <| by simp [dsmooth_subtype_val]
+
 /-- A diffeomorphism is a homeomorphism with respect to the D-topologies. -/
 def toHomeomorph (h : X ᵈ≃ Y) : @Homeomorph X Y DTop DTop := by
   letI : TopologicalSpace X := DTop
@@ -219,6 +231,26 @@ theorem dsmooth_ddiffeomorph_comp_iff (h : X ᵈ≃ Y) {f : Z → X} :
   exact h.symm.dsmooth.comp h'
 
 section Constructions
+
+open PartialHomeomorph in
+/-- Inner product spaces are diffeomorphic to open balls in them. -/
+noncomputable def univBall {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
+    [DiffeologicalSpace E] [ContDiffCompatible E] (x : E) {r : ℝ} (hr : r > 0) :
+     E ᵈ≃ (Metric.ball x r) where
+  toEquiv := by
+    rw [←unitBallBall_target x r hr]
+    exact (Equiv.Set.univ _).symm.trans
+      (univUnitBall.toHomeomorphSourceTarget.trans
+        (unitBallBall x r hr).toHomeomorphSourceTarget).toEquiv
+  dsmooth_toFun := by
+    exact (contDiff_unitBallBall hr).dsmooth.comp contDiff_univUnitBall.dsmooth
+  dsmooth_invFun := by
+    have h₁ : DSmooth (univUnitBall (E := E)).toHomeomorphSourceTarget.symm :=
+      ContDiffOn.dsmooth_restrict contDiffOn_univUnitBall_symm
+    have h₂ : DSmooth (unitBallBall x r hr).toHomeomorphSourceTarget.symm :=
+      (contDiff_unitBallBall_symm hr).dsmooth.restrict (unitBallBall x r hr).symm_mapsTo
+    exact dsmooth_subtype_val.comp (h₁.comp h₂)
+
 
 /-- `Set.univ X` is diffeomorphic to `X`. -/
 @[simps! (config := .asFn)]
