@@ -6,7 +6,7 @@ import Mathlib.Analysis.InnerProductSpace.Calculus
 # Constructions of diffeological spaces
 This file gives some concrete constructions like products and coproducts of
 diffeological spaces. General limits and colimits are found in
-`Orbifolds.Diffeology.DiffCat`.
+`Orbifolds.Diffeology.DiffSp`.
 
 Mostly based on `Mathlib.Topology.Constructions`.
 -/

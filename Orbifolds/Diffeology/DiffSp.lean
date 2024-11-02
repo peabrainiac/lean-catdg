@@ -14,20 +14,20 @@ The category of diffeological spaces and smooth maps.
 Adapted from `Mathlib.Topology.Category.TopCat.Basic`.
 
 Main definitions / results:
-* `DiffCat`: the category of diffeological spaces and smooth maps.
-* `forget DiffCat`: the forgetful functor `DiffCat ⥤ Type`,
-  provided through a `ConcreteCategory`-instance on `DiffCat`.
-* `DiffCat.discrete`, `DiffCat.indiscrete`: the functors `Type ⥤ DiffCat` giving each type the
+* `DiffSp`: the category of diffeological spaces and smooth maps.
+* `forget DiffSp`: the forgetful functor `DiffSp ⥤ Type`,
+  provided through a `ConcreteCategory`-instance on `DiffSp`.
+* `DiffSp.discrete`, `DiffSp.indiscrete`: the functors `Type ⥤ DiffSp` giving each type the
   discrete/indiscrete diffeology.
-* `DiffCat.discreteForgetAdj`, `DiffCat.forgetIndiscreteAdj`: the adjunctions
+* `DiffSp.discreteForgetAdj`, `DiffSp.forgetIndiscreteAdj`: the adjunctions
   `discrete ⊣ forget ⊣ indiscrete`.
-* `DiffCat.dTop`, `DiffCat.diffToDeltaGenerated`, `DiffCat.topToDiff`,
-  `DiffCat.deltaGeneratedToDiff`: the functors between `DiffCat`, `DeltaGenerated` and
+* `DiffSp.dTop`, `DiffSp.diffToDeltaGenerated`, `DiffSp.topToDiff`,
+  `DiffSp.deltaGeneratedToDiff`: the functors between `DiffSp`, `DeltaGenerated` and
   `TopCat` given by the D-topology and continuous diffeology.
-* `DiffCat.dTopAdj`, `DiffCat.dTopAdj'`: the adjunctions between those.
-* `DiffCat.hasLimits`, `DiffCat.hasColimits`: `DiffCat` is complete and cocomplete.
-* `DiffCat.forgetPreservesLimits`, `DiffCat.forgetPreservesColimits`: the forgetful functor
-  `DiffCat ⥤ Type` preserves limits and colimits.
+* `DiffSp.dTopAdj`, `DiffSp.dTopAdj'`: the adjunctions between those.
+* `DiffSp.hasLimits`, `DiffSp.hasColimits`: `DiffSp` is complete and cocomplete.
+* `DiffSp.forgetPreservesLimits`, `DiffSp.forgetPreservesColimits`: the forgetful functor
+  `DiffSp ⥤ Type` preserves limits and colimits.
 -/
 
 open CategoryTheory
@@ -37,66 +37,66 @@ open Topology
 universe u v
 
 /-!
-### DiffCat
+### DiffSp
 
 Basic definitions and lemmas about the category of diffeological spaces.
 -/
 
 section Basic
 
-@[to_additive existing DiffCat]
-def DiffCat : Type (u + 1) :=
+@[to_additive existing DiffSp]
+def DiffSp : Type (u + 1) :=
   Bundled DiffeologicalSpace
 
-namespace DiffCat
+namespace DiffSp
 
 instance bundledHom : BundledHom @DSmoothMap where
   toFun := @DSmoothMap.toFun
   id := @DSmoothMap.id
   comp := @DSmoothMap.comp
 
-deriving instance LargeCategory for DiffCat
+deriving instance LargeCategory for DiffSp
 
-instance concreteCategory : ConcreteCategory DiffCat :=
+instance concreteCategory : ConcreteCategory DiffSp :=
   inferInstanceAs <| ConcreteCategory (Bundled DiffeologicalSpace)
 
-instance : CoeSort DiffCat Type* where
+instance : CoeSort DiffSp Type* where
   coe X := X.α
 
-instance topologicalSpaceUnbundled (X : DiffCat) : DiffeologicalSpace X :=
+instance topologicalSpaceUnbundled (X : DiffSp) : DiffeologicalSpace X :=
   X.str
 
-instance instFunLike (X Y : DiffCat) : FunLike (X ⟶ Y) X Y :=
+instance instFunLike (X Y : DiffSp) : FunLike (X ⟶ Y) X Y :=
   inferInstanceAs <| FunLike (DSmoothMap X Y) X Y
 
 -- TODO DSmoothMapClass-Instanz
 
-lemma id_app (X : DiffCat) (x : ↑X) : (𝟙 X : X ⟶ X) x = x := rfl
+lemma id_app (X : DiffSp) (x : ↑X) : (𝟙 X : X ⟶ X) x = x := rfl
 
-lemma comp_app {X Y Z : DiffCat} (f : X ⟶ Y) (g : Y ⟶ Z) (x : X) :
+lemma comp_app {X Y Z : DiffSp} (f : X ⟶ Y) (g : Y ⟶ Z) (x : X) :
     (f ≫ g : X → Z) x = g (f x) := rfl
 
 @[simp]
-lemma coe_id (X : DiffCat) : (𝟙 X : X → X) = id := rfl
+lemma coe_id (X : DiffSp) : (𝟙 X : X → X) = id := rfl
 
 @[simp]
-lemma coe_comp {X Y Z : DiffCat} (f : X ⟶ Y) (g : Y ⟶ Z) :
+lemma coe_comp {X Y Z : DiffSp} (f : X ⟶ Y) (g : Y ⟶ Z) :
     (f ≫ g : X → Z) = g ∘ f := rfl
 
 @[simp]
-lemma hom_inv_id_apply {X Y : DiffCat} (f : X ≅ Y) (x : X) : f.inv (f.hom x) = x :=
+lemma hom_inv_id_apply {X Y : DiffSp} (f : X ≅ Y) (x : X) : f.inv (f.hom x) = x :=
   DFunLike.congr_fun f.hom_inv_id x
 
 @[simp]
-lemma inv_hom_id_apply {X Y : DiffCat} (f : X ≅ Y) (y : Y) : f.hom (f.inv y) = y :=
+lemma inv_hom_id_apply {X Y : DiffSp} (f : X ≅ Y) (y : Y) : f.hom (f.inv y) = y :=
   DFunLike.congr_fun f.inv_hom_id y
 
 /-- Construct a bundled space from the underlying type and the typeclass. -/
-def of (X : Type u) [DiffeologicalSpace X] : DiffCat :=
+def of (X : Type u) [DiffeologicalSpace X] : DiffSp :=
   ⟨X, inferInstance⟩
 
 @[instance] abbrev diffeologicalSpace_forget
-    (X : DiffCat) : DiffeologicalSpace <| (forget DiffCat).obj X :=
+    (X : DiffSp) : DiffeologicalSpace <| (forget DiffSp).obj X :=
   X.str
 
 @[simp]
@@ -104,23 +104,23 @@ theorem coe_of (X : Type u) [DiffeologicalSpace X] : (of X : Type u) = X := rfl
 
 -- TODO `coe_of_of`?
 
-instance inhabited : Inhabited DiffCat :=
+instance inhabited : Inhabited DiffSp :=
   ⟨Empty,⊥⟩
 
 /-- The functor equipping each type with the discrete diffeology. -/
-def discrete : Type u ⥤ DiffCat.{u} where
+def discrete : Type u ⥤ DiffSp.{u} where
   obj X := ⟨X,⊥⟩
   map f := ⟨f,dsmooth_bot⟩
 
 /-- The functor equipping each type with the indiscrete diffeology. -/
-def indiscrete : Type u ⥤ DiffCat.{u} where
+def indiscrete : Type u ⥤ DiffSp.{u} where
   obj X := ⟨X,⊤⟩
   map f := ⟨f,dsmooth_top⟩
 
 /-- Adjunction `discrete ⊣ forget`, adapted from
   `Mathlib.Topology.Category.TopCat.Adjunctions`. -/
 @[simps! unit counit]
-def discreteForgetAdj : discrete ⊣ forget DiffCat.{u} :=
+def discreteForgetAdj : discrete ⊣ forget DiffSp.{u} :=
   Adjunction.mkOfUnitCounit
     { unit := { app := fun X => id }
       counit := { app := fun X => ⟨id, dsmooth_bot⟩ } }
@@ -128,66 +128,66 @@ def discreteForgetAdj : discrete ⊣ forget DiffCat.{u} :=
 /-- Adjunction `forget ⊣ indiscrete`, adapted from
   `Mathlib.Topology.Category.TopCat.Adjunctions`. -/
 @[simps! unit counit]
-def forgetIndiscreteAdj : forget DiffCat.{u} ⊣ indiscrete :=
+def forgetIndiscreteAdj : forget DiffSp.{u} ⊣ indiscrete :=
   Adjunction.mkOfUnitCounit
     { unit := { app := fun X => ⟨id, dsmooth_top⟩ }
       counit := { app := fun X => id } }
 
-instance : IsRightAdjoint (forget DiffCat.{u}) :=
+instance : IsRightAdjoint (forget DiffSp.{u}) :=
   ⟨_, discreteForgetAdj⟩
 
-instance : IsLeftAdjoint (forget DiffCat.{u}) :=
+instance : IsLeftAdjoint (forget DiffSp.{u}) :=
   ⟨_, forgetIndiscreteAdj⟩
 
 /-- The functor sending each diffeological spaces to its D-topology. -/
-def dTop : DiffCat.{u} ⥤ TopCat.{u} where
+def dTop : DiffSp.{u} ⥤ TopCat.{u} where
   obj X := ⟨X,DTop⟩
   map f := ⟨f,f.dsmooth.continuous⟩
 
 /-- The functor sending each diffeological space to its D-topology, as a delta-generated
   space. -/
-def diffToDeltaGenerated : DiffCat.{u} ⥤ DeltaGenerated.{u} where
+def diffToDeltaGenerated : DiffSp.{u} ⥤ DeltaGenerated.{u} where
   obj X := ⟨⟨X,DTop⟩,inferInstance⟩
   map f := ⟨f,f.dsmooth.continuous⟩
 
 /-- The functor equipping each topological space with the continuous diffeology. -/
-def topToDiff : TopCat.{u} ⥤ DiffCat.{u} where
+def topToDiff : TopCat.{u} ⥤ DiffSp.{u} where
   obj X := of (withContinuousDiffeology X)
   map f := ⟨f,f.2.dsmooth⟩
 
 /-- The functor equipping each delta-generated space with the continuous diffeology. -/
-def deltaGeneratedToDiff : DeltaGenerated.{u} ⥤ DiffCat.{u} where
+def deltaGeneratedToDiff : DeltaGenerated.{u} ⥤ DiffSp.{u} where
   obj X := of (withContinuousDiffeology X)
   map f := ⟨f,f.2.dsmooth⟩
 
 /-- Adjunction between the D-topology and continuous diffeology as functors between
-  `DiffCat` and `TopCat`. -/
+  `DiffSp` and `TopCat`. -/
 def dTopAdj : dTop ⊣ topToDiff :=
   Adjunction.mkOfUnitCounit {
     unit := { app := fun X => ⟨id,dsmooth_id.continuous.dsmooth'⟩ }
     counit := { app := fun X => ⟨id,continuous_iff_coinduced_le.mpr deltaGenerated_le⟩ } }
 
 /-- Adjunction between the D-topology and continuous diffeology as functors between
-  `DiffCat` and `DeltaGenerated`. -/
+  `DiffSp` and `DeltaGenerated`. -/
 def dTopAdj' : diffToDeltaGenerated ⊣ deltaGeneratedToDiff :=
   Adjunction.mkOfUnitCounit {
     unit := { app := fun X => ⟨id,dsmooth_id.continuous.dsmooth'⟩ }
     counit := { app := fun X => ⟨id,continuous_iff_coinduced_le.mpr
       dTop_continuousDiffeology_eq_self.le⟩ } }
 
-/-- The D-topology functor `DiffCat ⥤ TopCat` is a left-adjoint. -/
+/-- The D-topology functor `DiffSp ⥤ TopCat` is a left-adjoint. -/
 instance : IsLeftAdjoint (dTop.{u}) :=
   ⟨_,dTopAdj⟩
 
-/-- The D-topology functor `DiffCat ⥤ DeltaGenerated` is a left-adjoint. -/
+/-- The D-topology functor `DiffSp ⥤ DeltaGenerated` is a left-adjoint. -/
 instance : IsLeftAdjoint (diffToDeltaGenerated.{u}) :=
   ⟨_,dTopAdj'⟩
 
-end DiffCat
+end DiffSp
 
 end Basic
 
-namespace DiffCat
+namespace DiffSp
 
 /-!
 ### Limits and colimits
@@ -201,10 +201,10 @@ open CategoryTheory.Limits
 
 variable {J : Type v} [SmallCategory J]
 
-local notation "forget" => forget DiffCat
+local notation "forget" => forget DiffSp
 
-/-- A specific choice of limit cone for any `F : J ⥤ DiffCat`. -/
-def limitCone (F : J ⥤ DiffCat.{max v u}) : Cone F where
+/-- A specific choice of limit cone for any `F : J ⥤ DiffSp`. -/
+def limitCone (F : J ⥤ DiffSp.{max v u}) : Cone F where
   pt := of { u : (j : J) → F.obj j | ∀ {i j : J} (f : i ⟶ j), F.map f (u i) = u j }
   π :=
     { app := fun j => ⟨fun u => u.val j,DSmooth.comp (dsmooth_apply _) (dsmooth_subtype_val)⟩
@@ -212,8 +212,8 @@ def limitCone (F : J ⥤ DiffCat.{max v u}) : Cone F where
         dsimp [Category.id_comp]
         exact DSmoothMap.ext fun a => (a.2 f).symm }
 
-/-- `DiffCat.limitCone F` is actually a limit cone for the given `F : J ⥤ DiffCat`. -/
-def limitConeIsLimit (F : J ⥤ DiffCat.{max v u}) : IsLimit (limitCone.{u,v} F) where
+/-- `DiffSp.limitCone F` is actually a limit cone for the given `F : J ⥤ DiffSp`. -/
+def limitConeIsLimit (F : J ⥤ DiffSp.{max v u}) : IsLimit (limitCone.{u,v} F) where
   lift S :=
     ⟨fun x => ⟨fun j => S.π.app _ x, fun f => by dsimp; exact S.w f ▸ rfl⟩,
     DSmooth.subtype_mk (dsmooth_pi fun j => (S.π.app j).2) fun x i j f => by
@@ -221,23 +221,23 @@ def limitConeIsLimit (F : J ⥤ DiffCat.{max v u}) : IsLimit (limitCone.{u,v} F)
   fac S j := by dsimp [limitCone]; rfl
   uniq S m h := DSmoothMap.ext fun a => Subtype.ext <| by simp_rw [← h]; rfl
 
-instance hasLimitsOfSize : HasLimitsOfSize.{v,v} DiffCat.{max u v} where
+instance hasLimitsOfSize : HasLimitsOfSize.{v,v} DiffSp.{max u v} where
   has_limits_of_shape _ := ⟨fun F => HasLimit.mk ⟨limitCone.{u,v} F,limitConeIsLimit F⟩⟩
 
-/-- `DiffCat` has all limits, i.e. it is complete. -/
-instance hasLimits : HasLimits DiffCat.{u} :=
+/-- `DiffSp` has all limits, i.e. it is complete. -/
+instance hasLimits : HasLimits DiffSp.{u} :=
   hasLimitsOfSize.{u,u}
 
 noncomputable instance forgetPreservesLimitsOfSize : PreservesLimitsOfSize forget :=
   ⟨⟨fun {F} => preservesLimitOfPreservesLimitCone (limitConeIsLimit.{u,v} F)
       (Types.limitConeIsLimit.{v,u} (F ⋙ forget))⟩⟩
 
-/-- The forgetful functor `DiffCat ⥤ Type` preserves all limits. -/
+/-- The forgetful functor `DiffSp ⥤ Type` preserves all limits. -/
 noncomputable instance forgetPreservesLimits : PreservesLimits forget :=
   forgetPreservesLimitsOfSize.{u,u}
 
-/-- A specific choice of colimit cocone for any `F : J ⥤ DiffCat`. -/
-noncomputable def colimitCocone (F : J ⥤ DiffCat.{max v u}) : Cocone F where
+/-- A specific choice of colimit cocone for any `F : J ⥤ DiffSp`. -/
+noncomputable def colimitCocone (F : J ⥤ DiffSp.{max v u}) : Cocone F where
   pt := ⟨(Types.TypeMax.colimitCocone.{v,u} (F ⋙ forget)).pt,
           ⨆ j, (F.obj j).str.coinduced ((Types.TypeMax.colimitCocone (F ⋙ forget)).ι.app j)⟩
   ι :=
@@ -249,8 +249,8 @@ noncomputable def colimitCocone (F : J ⥤ DiffCat.{max v u}) : Cocone F where
         DSmoothMap.coe_injective ((Types.TypeMax.colimitCocone (F ⋙ forget)).ι.naturality f) }
 
 
-/-- `DiffCat.colimitCocone F` is actually a colimit cocone for the given `F : J ⥤ DiffCat`. -/
-def colimitCoconeIsColimit (F : J ⥤ DiffCat.{max v u}) : IsColimit (colimitCocone F) := by
+/-- `DiffSp.colimitCocone F` is actually a colimit cocone for the given `F : J ⥤ DiffSp`. -/
+def colimitCoconeIsColimit (F : J ⥤ DiffSp.{max v u}) : IsColimit (colimitCocone F) := by
   refine IsColimit.ofFaithful forget (Types.TypeMax.colimitCoconeIsColimit.{v,u} _) (fun s =>
       ⟨Quot.lift (fun p => (Functor.mapCocone forget s).ι.app p.fst p.snd) ?_, ?_⟩) fun s => rfl
   · intro _ _ ⟨_, h⟩; simp [h,←comp_apply',s.ι.naturality]
@@ -258,18 +258,18 @@ def colimitCoconeIsColimit (F : J ⥤ DiffCat.{max v u}) : IsColimit (colimitCoc
       (iSup_le fun j => DiffeologicalSpace.coinduced_le_iff_le_induced.mp <|
         DiffeologicalSpace.coinduced_compose.symm ▸ (s.ι.app j).dsmooth.coinduced_le)
 
-instance hasColimitsOfSize : HasColimitsOfSize.{v,v} DiffCat.{max v u} where
+instance hasColimitsOfSize : HasColimitsOfSize.{v,v} DiffSp.{max v u} where
   has_colimits_of_shape _ := ⟨fun F => HasColimit.mk ⟨colimitCocone F,colimitCoconeIsColimit F⟩⟩
 
-/-- `DiffCat` has all colimits, i.e. it is cocomplete. -/
-instance hasColimits : HasColimits DiffCat.{u} :=
+/-- `DiffSp` has all colimits, i.e. it is cocomplete. -/
+instance hasColimits : HasColimits DiffSp.{u} :=
   hasColimitsOfSize.{u,u}
 
 noncomputable instance forgetPreservesColimitsOfSize : PreservesColimitsOfSize forget :=
   ⟨⟨fun {F} => preservesColimitOfPreservesColimitCocone (colimitCoconeIsColimit.{u,v} F)
     (Types.TypeMax.colimitCoconeIsColimit.{v,u} (F ⋙ forget))⟩⟩
 
-/-- The forgetful functor `DiffCat ⥤ Type` preserves all colimits. -/
+/-- The forgetful functor `DiffSp ⥤ Type` preserves all colimits. -/
 noncomputable instance forgetPreservesColimits : PreservesColimits forget :=
   forgetPreservesColimitsOfSize.{u,u}
 
@@ -277,7 +277,7 @@ end Limits
 
 /-!
 ### Products
-Products in `DiffCat` are given by the usual products of spaces.
+Products in `DiffSp` are given by the usual products of spaces.
 Adapted from `Mathlib.CategoryTheory.Limits.Shapes.Types`.
 -/
 section BinaryProducts
@@ -285,11 +285,11 @@ section BinaryProducts
 open Limits WalkingPair
 
 /-- The product space `X × Y` as a cone. -/
-def binaryProductCone (X Y : DiffCat.{u}) : BinaryFan X Y :=
+def binaryProductCone (X Y : DiffSp.{u}) : BinaryFan X Y :=
   BinaryFan.mk (P := of (X × Y)) ⟨_,dsmooth_fst⟩ ⟨_,dsmooth_snd⟩
 
-/-- `DiffCat.binaryProductCone X Y` is actually a limiting cone. -/
-def binaryProductLimit (X Y : DiffCat.{u}) : IsLimit (binaryProductCone X Y) where
+/-- `DiffSp.binaryProductCone X Y` is actually a limiting cone. -/
+def binaryProductLimit (X Y : DiffSp.{u}) : IsLimit (binaryProductCone X Y) where
   lift (s : BinaryFan X Y) := ⟨_,s.fst.dsmooth.prod_mk s.snd.dsmooth⟩
   fac _ j := Discrete.recOn j fun j => by cases' j <;> rfl
   uniq s f w := DSmoothMap.ext fun x => Prod.ext
@@ -297,7 +297,7 @@ def binaryProductLimit (X Y : DiffCat.{u}) : IsLimit (binaryProductCone X Y) whe
     (congrFun (congrArg DSmoothMap.toFun (w ⟨right⟩)) x)
 
 /-- The functor taking `X`, `Y` to the product space `X × Y`. -/
-def binaryProductFunctor : DiffCat.{u} ⥤ DiffCat.{u} ⥤ DiffCat.{u} where
+def binaryProductFunctor : DiffSp.{u} ⥤ DiffSp.{u} ⥤ DiffSp.{u} where
   obj X := {
     obj := fun Y => of (X × Y)
     map := fun {Y Y'} f => ⟨_,dsmooth_id.prod_map f.dsmooth⟩ }
@@ -308,7 +308,7 @@ def binaryProductFunctor : DiffCat.{u} ⥤ DiffCat.{u} ⥤ DiffCat.{u} where
   map_comp := fun {X Y Z} f g => rfl
 
 /-- The explicit products we defined are naturally isomorphic to the products coming from
-  the `HasLimits` instance on diffcat. This is needed because the `HasLimits`
+  the `HasLimits` instance on DiffSp. This is needed because the `HasLimits`
   instance only stores proof that all limits exist, not the explicit constructions,
   so the products derived from it are picked with the axiom of choice. -/
 noncomputable def binaryProductIsoProd : binaryProductFunctor.{u} ≅ (prod.functor) := by
@@ -322,12 +322,12 @@ end BinaryProducts
 
 section Cartesian
 
-noncomputable instance : MonoidalCategory DiffCat := monoidalOfHasFiniteProducts DiffCat
+noncomputable instance : MonoidalCategory DiffSp := monoidalOfHasFiniteProducts DiffSp
 
-/-- `DiffCat` is cartesian-closed. -/
-noncomputable instance cartesianClosed : CartesianClosed DiffCat.{u} where
+/-- `DiffSp` is cartesian-closed. -/
+noncomputable instance cartesianClosed : CartesianClosed DiffSp.{u} where
   closed X := ⟨⟨{
-      obj := fun Y => DiffCat.of (DSmoothMap X Y)
+      obj := fun Y => DiffSp.of (DSmoothMap X Y)
       map := fun f => ⟨f.comp,DSmoothMap.dsmooth_comp.curry_right⟩
     },(by exact Adjunction.mkOfHomEquiv {
       homEquiv := fun Y Z => (DDiffeomorph.prodComm.comp_right).toEquiv.trans
@@ -338,4 +338,4 @@ noncomputable instance cartesianClosed : CartesianClosed DiffCat.{u} where
 
 end Cartesian
 
-end DiffCat
+end DiffSp

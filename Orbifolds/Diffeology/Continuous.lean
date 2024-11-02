@@ -5,7 +5,7 @@ import Orbifolds.ForMathlib.DeltaGeneratedSpace
 # Continuous diffeology
 
 Defines the continuous diffeology on topological spaces, i.e. the diffeology consisting of all
-continuous plots. This is used mainly to show in `Orbifolds.Diffeology.DiffCat` that the
+continuous plots. This is used mainly to show in `Orbifolds.Diffeology.DiffSp` that the
 D-topology functor has a right adjoint.
 See https://ncatlab.org/nlab/show/adjunction+between+topological+spaces+and+diffeological+spaces.
 -/

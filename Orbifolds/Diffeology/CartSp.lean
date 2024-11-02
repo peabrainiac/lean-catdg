@@ -1,6 +1,6 @@
 import Mathlib.CategoryTheory.Sites.Coverage
 --import Mathlib.CategoryTheory.Sites.Sheaf
-import Orbifolds.Diffeology.DiffCat
+import Orbifolds.Diffeology.DiffSp
 
 /-!
 # CartSp
@@ -15,6 +15,12 @@ Note however that with the current implementation, this could not be used to *de
 diffeological spaces - it already uses diffeology in the definition of
 `CartSp.openCoverCoverage`. The reason is that smooth embeddings are apparently not yet
 implemented in mathlib, so diffeological inductions are used instead.
+
+Main definitions / results:
+* `CartSp`: the category of euclidean spaces and smooth maps between them
+* `CartSp.openCoverCoverage`: the coverage given by jointly surjective open inductions
+* `SmoothSp`: the category of smooth sets, as the category of sheaves on `CartSp`
+* `DiffSp.toSmoothSp`: the embedding of diffeological spaces into smooth sets
 -/
 
 universe u
@@ -99,7 +105,7 @@ def SmoothSp := SheafOfTypes CartSp.openCoverTopology
 instance : Category.{u,u+1} SmoothSp.{u} := SheafOfTypes.instCategory
 
 /-- The embedding of diffeological spaces into smooth spaces. -/
-def DiffCat.toSmoothSp : DiffCat.{u} ⥤ SmoothSp.{u} where
+def DiffSp.toSmoothSp : DiffSp.{u} ⥤ SmoothSp.{u} where
   obj X := ⟨{
     obj := fun n => DSmoothMap n.unop X
     map := fun f g => g.comp ⟨f.unop.1, f.unop.2.dsmooth⟩
