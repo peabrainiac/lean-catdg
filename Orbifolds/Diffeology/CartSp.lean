@@ -36,8 +36,8 @@ instance (n : ℕ) : OfNat CartSp n where
   ofNat := n
 
 instance : SmallCategory CartSp where
-  Hom := fun n m => {f : n → m | ContDiff ℝ ⊤ f}
-  id := fun n => ⟨id,contDiff_id⟩
+  Hom := fun n m => DSmoothMap n m
+  id := fun n => DSmoothMap.id
   comp := fun f g => ⟨_,g.2.comp f.2⟩
 
 instance : ConcreteCategory CartSp where
@@ -54,10 +54,6 @@ theorem id_app (n : CartSp) (x : n) : (𝟙 n : n ⟶ n) x = x := rfl
 @[simp]
 theorem comp_app {n m k : CartSp} (f : n ⟶ m) (g : m ⟶ k) (x : n) :
     (f ≫ g : n → k) x = g (f x) := rfl
-
-@[simp]
-lemma CartSp.hom_coe_mk {n m : CartSp} (f : n → m) (hf : ContDiff ℝ ⊤ f) :
-    (⟨f,hf⟩ : n ⟶ m) = f := rfl
 
 /-- The open cover coverage on `CartSp`, consisting of all coverings by open smooth embeddings.
   Since mathlib apparently doesn't have smooth embeddings yet, diffeological inductions are
@@ -76,7 +72,7 @@ def CartSp.openCoverCoverage : Coverage CartSp where
       let ⟨ε, hε, hxε⟩ := Metric.isOpen_iff.1
         ((hs.1 k f hf).2.isOpen_range.preimage g.2.continuous) x hgx
       let e := (DDiffeomorph.univBall x hε)
-      use ⟨_, (dsmooth_subtype_val.comp e.dsmooth).contDiff⟩
+      use ⟨_, dsmooth_subtype_val.comp e.dsmooth⟩
       refine ⟨⟨?_, ?_⟩, ?_⟩
       · refine ⟨k, f, hf, subset_trans ?_ (Set.image_subset_iff.2 hxε)⟩
         simp_rw [Set.range_comp]; apply Set.image_mono; simp
@@ -88,7 +84,7 @@ def CartSp.openCoverCoverage : Coverage CartSp where
     · intro k f ⟨⟨k',f',hf'⟩,_⟩; use k'
       let f'' := (DDiffeomorph.ofInduction (hs.1 k' f' hf'.1).1)
       use ⟨_,(f''.dsmooth_invFun.comp <|
-        (f ≫ g).2.dsmooth.subtype_mk (fun x => hf'.2 (Set.mem_range_self x))).contDiff⟩
+        (f ≫ g).2.subtype_mk (fun x => hf'.2 (Set.mem_range_self x)))⟩
       refine ⟨f', hf'.1, ?_⟩; ext x; change f'.1 (f''.invFun _) = _
       simp_rw [show f'.1 = Subtype.val ∘ f'' by rfl]
       dsimp; rw [DDiffeomorph.apply_symm_apply,comp_apply]; rfl
@@ -108,7 +104,7 @@ instance : Category.{u,u+1} SmoothSp.{u} := SheafOfTypes.instCategory
 def DiffSp.toSmoothSp : DiffSp.{u} ⥤ SmoothSp.{u} where
   obj X := ⟨{
     obj := fun n => DSmoothMap n.unop X
-    map := fun f g => g.comp ⟨f.unop.1, f.unop.2.dsmooth⟩
+    map := fun f g => g.comp f.unop
     map_id := fun _ => rfl
     map_comp := fun _ _ => rfl
   }, by
@@ -124,8 +120,8 @@ def DiffSp.toSmoothSp : DiffSp.{u} ⥤ SmoothSp.{u} where
     have hf'' : ∀ l (g : l ⟶ n) (hg : s g), f'' ∘ g = f g hg := fun l g hg => by
       ext x
       dsimp [f'']
-      have h := @hf _ _ 0 ⟨_, contDiff_const (c := (hf' (g x)).2.choose)⟩
-        ⟨_, contDiff_const (c := x)⟩ _ _ (hf' (g x)).1 hg
+      have h := @hf _ _ 0 (DSmoothMap.const (hf' (g x)).2.choose)
+        (DSmoothMap.const x) _ _ (hf' (g x)).1 hg
         (by ext; exact (hf' (g x)).2.choose_spec)
       exact DFunLike.congr_fun h 0
     refine ⟨⟨f'', ?_⟩, ?_, ?_⟩
@@ -139,7 +135,7 @@ def DiffSp.toSmoothSp : DiffSp.{u} ⥤ SmoothSp.{u} where
       exact (DFunLike.congr_fun (hf''' (f' x) (hf' x).1) _).trans
         (congr_fun (hf'' _ (f' x) (hf' x).1) _).symm⟩
   map f := ⟨{
-    app := fun _ g => ⟨_, f.2.comp g.2⟩
+    app := fun _ g => f.comp g
     naturality := fun _ _ _ => rfl
   }⟩
   map_id := fun _ => rfl

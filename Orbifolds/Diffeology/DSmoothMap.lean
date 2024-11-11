@@ -37,4 +37,6 @@ nonrec def id : DSmoothMap X X := ⟨id,dsmooth_id⟩
 def comp (f : DSmoothMap Y Z) (g : DSmoothMap X Y) : DSmoothMap X Z :=
   ⟨f ∘ g, (f.dsmooth).comp g.dsmooth⟩
 
+def const (y : Y) : DSmoothMap X Y := ⟨fun _ => y, dsmooth_const⟩
+
 end DSmoothMap
