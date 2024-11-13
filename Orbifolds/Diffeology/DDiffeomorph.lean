@@ -220,14 +220,14 @@ theorem coe_toHomeomorph_symm' [TopologicalSpace X] [TopologicalSpace Y] [DTopCo
 theorem dsmooth_comp_ddiffeomorph_iff (h : X ᵈ≃ Y) {f : Y → Z} :
     DSmooth (f ∘ h) ↔ DSmooth f := by
   refine' ⟨fun h' => _, fun hf => hf.comp h.dsmooth⟩
-  rw [←comp_id f, ←coe_refl, ←symm_trans_self h, coe_trans, ←comp.assoc]
+  rw [←comp_id f, ←coe_refl, ←symm_trans_self h, coe_trans, ←comp_assoc]
   exact h'.comp h.symm.dsmooth
 
 @[simp]
 theorem dsmooth_ddiffeomorph_comp_iff (h : X ᵈ≃ Y) {f : Z → X} :
     DSmooth (h ∘ f) ↔ DSmooth f := by
   refine' ⟨fun h' => _, fun hf => h.dsmooth.comp hf⟩
-  rw [←id_comp f, ←coe_refl, ←self_trans_symm h, coe_trans, comp.assoc]
+  rw [←id_comp f, ←coe_refl, ←self_trans_symm h, coe_trans, comp_assoc]
   exact h.symm.dsmooth.comp h'
 
 section Constructions
@@ -268,7 +268,7 @@ def Set.nested {u : Set X} (v : Set u) : v ᵈ≃ ((↑) '' v : Set X) where
     right_inv := fun _ => rfl
   }
   dsmooth_toFun := by dsimp; exact dsmooth_subtype_val.restrict _
-  dsmooth_invFun := (dsmooth_subtype_val.subtype_mk _).subtype_mk _
+  dsmooth_invFun := by exact (dsmooth_subtype_val.subtype_mk _).subtype_mk _
 
 protected def restrict (d : X ᵈ≃ Y) (u : Set X) : u ᵈ≃ (d.symm ⁻¹' u) where
   toEquiv := {

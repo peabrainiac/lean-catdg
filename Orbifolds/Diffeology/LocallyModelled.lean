@@ -124,8 +124,3 @@ instance {n : ℕ} {Γ : {Γ : Subgroup ((Eucl n) ≃ₗ[ℝ] (Eucl n)) | Finite
 protected theorem IsOrbifold.locallyCompactSpace {X : Type*} [TopologicalSpace X] [DiffeologicalSpace X]
     [DTopCompatible X] {n : ℕ} [hX : IsOrbifold n X] : LocallyCompactSpace X := by
   exact (dTop_eq X) ▸ LocallyModelled.locallyCompactSpace hX
-
-
-variable {n : ℕ}
-
-#check (inferInstance : IsOrbifold n (Eucl n))

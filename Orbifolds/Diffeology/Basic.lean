@@ -57,6 +57,7 @@ notation (name := DSmooth_of) "DSmooth[" d₁ ", " d₂ "]" => @DSmooth _ _ d₁
 
 end Defs
 
+omit [DiffeologicalSpace X] in
 @[ext]
 protected theorem DiffeologicalSpace.ext {d₁ d₂ : DiffeologicalSpace X}
     (h : IsPlot[d₁] = IsPlot[d₂]) : d₁ = d₂ := by
@@ -154,7 +155,7 @@ def DiffeologicalSpace.mkOfPlotsOn {X : Type*} (d : CorePlotsOn X) : Diffeologic
     have h' := d.isPlotOn_reparam (Metric.isOpen_ball) (Set.mapsTo_univ _ _)
       (d.isPlotOn_univ.mpr h) (PartialHomeomorph.contDiffOn_univBall_symm (c := x) (r := ε))
     refine' ⟨_,Metric.isOpen_ball,Metric.mem_ball_self hε,(d.isPlotOn_congr _ _).mp h'⟩
-    rw [Function.comp.assoc,←PartialHomeomorph.coe_trans]; apply Set.EqOn.comp_left
+    rw [Function.comp_assoc,←PartialHomeomorph.coe_trans]; apply Set.EqOn.comp_left
     convert (PartialHomeomorph.symm_trans_self (PartialHomeomorph.univBall x ε)).2
     simp [(PartialHomeomorph.univBall_target x hε)]
   dTopology := d.dTopology
