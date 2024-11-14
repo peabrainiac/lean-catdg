@@ -124,44 +124,6 @@ lemma continuous_counit : Continuous (counit : _ → X) := by
 end DeltaGeneratedSpace
 
 /--
-Some lemmas about path-components that really should move into mathlib.
--/
-
--- lemma mem_pathComponentIn_self {X : Type u} [TopologicalSpace X] {x : X} {F : Set X} (h : x ∈ F) :
---     x ∈ pathComponentIn x F :=
---   JoinedIn.refl h
-
--- lemma pathComponentIn_subset {X : Type u} [TopologicalSpace X] {x : X} {F : Set X} :
---     pathComponentIn x F ⊆ F :=
---   fun _ hy => hy.target_mem
-
--- lemma isPathConnected_pathComponentIn {X : Type u} [TopologicalSpace X] {x : X} {F : Set X}
---     (h : x ∈ F) : IsPathConnected (pathComponentIn x F) :=
---   ⟨x,mem_pathComponentIn_self h,fun ⟨γ,hγ⟩ => by
---     refine' ⟨γ,fun t =>
---       ⟨(γ.truncateOfLE t.2.1).cast (γ.extend_zero.symm) (γ.extend_extends' t).symm,
---       fun t' => _⟩⟩
---     dsimp [Path.truncateOfLE,Path.truncate]
---     exact γ.extend_extends' ⟨min (max t'.1 0) t.1,by simp [t.2.1,t.2.2]⟩ ▸ hγ _⟩
-
-lemma mem_pathComponentIn_of_mem {X : Type u} [TopologicalSpace X] {x y : X} {F : Set X}
-    (h : x ∈ pathComponentIn y F) : y ∈ pathComponentIn x F :=
-  JoinedIn.symm h
-
--- lemma pathComponentIn_congr {X : Type u} [TopologicalSpace X] {x y : X} {F : Set X}
---     (h : x ∈ pathComponentIn y F) : pathComponentIn x F = pathComponentIn y F :=
---   Set.ext fun _ => ⟨h.trans,h.symm.trans⟩
-
--- lemma IsPathConnected.subset_pathComponentIn {X : Type u} [TopologicalSpace X] {x : X}
---     {s F: Set X} (hs : IsPathConnected s) (hxs : x ∈ s) (hsF : s ⊆ F) :
---     s ⊆ pathComponentIn x F :=
---   fun y hys => (hs.joinedIn x hxs y hys).mono hsF
-
-lemma pathComponentIn_nonEmpty_iff {X : Type u} [TopologicalSpace X] {x : X} {F : Set X} :
-    (pathComponentIn x F).Nonempty ↔ x ∈ F :=
-  ⟨fun ⟨_,⟨γ,hγ⟩⟩ => γ.source ▸ hγ 0,fun hx => ⟨x,mem_pathComponentIn_self hx⟩⟩
-
-/--
 Some lemmas about locally path-connected spaces that really should move into mathlib.
 -/
 
@@ -196,12 +158,6 @@ instance {X : Type u} [TopologicalSpace X] [LocPathConnectedSpace X] :
   exact ⟨pathComponentIn x u,⟨isOpen_pathComponentIn hu.2.1,⟨mem_pathComponentIn_self hu.2.2,
     (isPathConnected_pathComponentIn hu.2.2).isConnected⟩⟩,
     pathComponentIn_subset.trans <| hu.1.trans hs.2⟩
-
--- /-- In locally path-connected spaces, path components and connected components are the same. -/
--- lemma pathComponent_eq_connectedComponent {X : Type u} [TopologicalSpace X]
---     [LocPathConnectedSpace X] {x : X} : pathComponent x = connectedComponent x :=
---   subset_antisymm (pathComponent_subset_component x) <|
---     isClopen_pathComponent.connectedComponent_subset (mem_pathComponent_self x)
 
 /-- A space is locally path-connected iff all path components of open subsets are open. -/
 lemma isLocPathConnected_iff {X : Type u} [TopologicalSpace X] :
