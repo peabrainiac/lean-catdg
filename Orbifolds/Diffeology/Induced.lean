@@ -270,14 +270,14 @@ theorem dTop_induced_comm {X Y : Type*} {dY : DiffeologicalSpace Y} {f : X → Y
     (contDiff_unitBallBall hε.1).dsmooth.comp contDiff_univUnitBall.dsmooth
   let ⟨p',hp'⟩ : ∃ p' : Eucl n → X, p ∘ (↑) ∘ e = f ∘ p' :=
     Set.range_subset_range_iff_exists_comp.1 <| by
-      refine' Function.comp.assoc _ _ _ ▸ (Set.range_comp_subset_range _ _).trans _
+      refine' Function.comp_assoc _ _ _ ▸ (Set.range_comp_subset_range _ _).trans _
       rw [Set.range_comp,Subtype.range_coe]; exact Set.image_subset_iff.2 hε.2
   have hp'' : DSmooth p' := dsmooth_induced_rng.2 (hp' ▸ hp.dsmooth.comp he)
   have h := (@isOpen_iff_preimages_plots _ (dY.induced f) _).1 hu n p' hp''.isPlot
   simp_rw [←Set.preimage_comp,←hp',Set.preimage_comp,Homeomorph.isOpen_preimage] at h
   apply IsOpen.isOpenMap_subtype_val Metric.isOpen_ball at h
   rw [Subtype.image_preimage_coe] at h
-  exact mem_nhds_iff.2 ⟨_,Set.inter_subset_right _ _,h,Metric.mem_ball_self hε.1,hx⟩
+  exact mem_nhds_iff.2 ⟨_,Set.inter_subset_right,h,Metric.mem_ball_self hε.1,hx⟩
 
 end Induced
 
@@ -296,10 +296,12 @@ notation (name := Induction_of) "Induction[" d₁ ", " d₂ "]" => @Induction _ 
 
 notation (name := Subduction_of) "Subduction[" d₁ ", " d₂ "]" => @Subduction _ _ d₁ d₂
 
+omit dX dY in
 theorem Function.Injective.induction_induced {dY : DiffeologicalSpace Y} {f : X → Y}
     (hf : Injective f) : Induction[dY.induced f,dY] f :=
   ⟨hf,rfl⟩
 
+omit dX dY in
 theorem Function.Surjective.subduction_coinduced {dX : DiffeologicalSpace X} {f : X → Y}
     (hf : Surjective f) : Subduction[dX,dX.coinduced f] f :=
   ⟨hf,rfl⟩

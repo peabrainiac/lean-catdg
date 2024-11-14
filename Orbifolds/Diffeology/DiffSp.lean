@@ -133,11 +133,11 @@ def forgetIndiscreteAdj : forget DiffSp.{u} ⊣ indiscrete :=
     { unit := { app := fun X => ⟨id, dsmooth_top⟩ }
       counit := { app := fun X => id } }
 
-instance : IsRightAdjoint (forget DiffSp.{u}) :=
-  ⟨_, discreteForgetAdj⟩
+instance : Functor.IsRightAdjoint (forget DiffSp.{u}) :=
+  ⟨_, ⟨discreteForgetAdj⟩⟩
 
-instance : IsLeftAdjoint (forget DiffSp.{u}) :=
-  ⟨_, forgetIndiscreteAdj⟩
+instance : Functor.IsLeftAdjoint (forget DiffSp.{u}) :=
+  ⟨_, ⟨forgetIndiscreteAdj⟩⟩
 
 /-- The functor sending each diffeological spaces to its D-topology. -/
 def dTop : DiffSp.{u} ⥤ TopCat.{u} where
@@ -158,7 +158,7 @@ def topToDiff : TopCat.{u} ⥤ DiffSp.{u} where
 /-- The functor equipping each delta-generated space with the continuous diffeology. -/
 def deltaGeneratedToDiff : DeltaGenerated.{u} ⥤ DiffSp.{u} where
   obj X := of (withContinuousDiffeology X)
-  map f := ⟨f,f.2.dsmooth⟩
+  map f := ⟨f.1,f.2.dsmooth⟩
 
 /-- Adjunction between the D-topology and continuous diffeology as functors between
   `DiffSp` and `TopCat`. -/
@@ -176,12 +176,12 @@ def dTopAdj' : diffToDeltaGenerated ⊣ deltaGeneratedToDiff :=
       dTop_continuousDiffeology_eq_self.le⟩ } }
 
 /-- The D-topology functor `DiffSp ⥤ TopCat` is a left-adjoint. -/
-instance : IsLeftAdjoint (dTop.{u}) :=
-  ⟨_,dTopAdj⟩
+instance : Functor.IsLeftAdjoint (dTop.{u}) :=
+  ⟨_, ⟨dTopAdj⟩⟩
 
 /-- The D-topology functor `DiffSp ⥤ DeltaGenerated` is a left-adjoint. -/
-instance : IsLeftAdjoint (diffToDeltaGenerated.{u}) :=
-  ⟨_,dTopAdj'⟩
+instance : Functor.IsLeftAdjoint (diffToDeltaGenerated.{u}) :=
+  ⟨_, ⟨dTopAdj'⟩⟩
 
 end DiffSp
 
@@ -315,8 +315,8 @@ noncomputable def binaryProductIsoProd : binaryProductFunctor.{u} ≅ (prod.func
   refine' NatIso.ofComponents (fun X => _) (fun _ => _)
   · refine' NatIso.ofComponents (fun Y => _) (fun _ => _)
     · exact ((limit.isLimit _).conePointUniqueUpToIso (binaryProductLimit X Y)).symm
-    · apply prod.hom_ext <;> simp <;> rfl
-  · ext : 2; apply prod.hom_ext <;> simp <;> rfl
+    · apply Limits.prod.hom_ext <;> simp <;> rfl
+  · ext : 2; apply Limits.prod.hom_ext <;> simp <;> rfl
 
 end BinaryProducts
 
@@ -326,15 +326,15 @@ noncomputable instance : MonoidalCategory DiffSp := monoidalOfHasFiniteProducts 
 
 /-- `DiffSp` is cartesian-closed. -/
 noncomputable instance cartesianClosed : CartesianClosed DiffSp.{u} where
-  closed X := ⟨⟨{
+  closed X := ⟨{
       obj := fun Y => DiffSp.of (DSmoothMap X Y)
       map := fun f => ⟨f.comp,DSmoothMap.dsmooth_comp.curry_right⟩
-    },(by exact Adjunction.mkOfHomEquiv {
+    }, by exact (Adjunction.mkOfHomEquiv {
       homEquiv := fun Y Z => (DDiffeomorph.prodComm.comp_right).toEquiv.trans
         (@DDiffeomorph.curry Y X Z _ _ _).toEquiv
       homEquiv_naturality_left_symm := fun _ _ => rfl
       homEquiv_naturality_right := fun _ _ => rfl
-    } : Adjunction _ _).ofNatIsoLeft <| binaryProductIsoProd.app X⟩⟩
+    } : Adjunction _ _).ofNatIsoLeft <| binaryProductIsoProd.app X⟩
 
 end Cartesian
 

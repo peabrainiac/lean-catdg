@@ -68,7 +68,7 @@ theorem dsmooth_val : DSmooth ((↑) : Mˣ → M) :=
 @[to_additive]
 protected theorem dsmooth_iff {f : X → Mˣ} :
     DSmooth f ↔ DSmooth (val ∘ f) ∧ DSmooth (fun x => ↑(f x)⁻¹ : X → M) := by
-  simp_rw [induction_embedProduct.dsmooth_iff, (· ∘ ·), dsmooth_prod_mk]; rfl
+  simp_rw [induction_embedProduct.dsmooth_iff, Function.comp_def, dsmooth_prod_mk]; rfl
 
 @[to_additive]
 theorem dsmooth_coe_inv : DSmooth (fun u => ↑u⁻¹ : Mˣ → M) :=

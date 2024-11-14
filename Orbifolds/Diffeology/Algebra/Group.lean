@@ -135,7 +135,7 @@ theorem dsmoothInv_inf {G : Type*} [Inv G] {d₁ d₂ : DiffeologicalSpace G}
 theorem Induction.dsmoothInv {G H : Type*} [Inv G] [Inv H] [DiffeologicalSpace G]
     [DiffeologicalSpace H] [DSmoothInv H] {f : G → H} (hf : Induction f)
     (hf_inv : ∀ x, f x⁻¹ = (f x)⁻¹) : DSmoothInv G :=
-  ⟨hf.dsmooth_iff.2 <| by simpa only [(· ∘ ·), hf_inv] using hf.dsmooth.inv⟩
+  ⟨hf.dsmooth_iff.2 <| by simpa only [Function.comp_def, hf_inv] using hf.dsmooth.inv⟩
 
 /-!
 ### Diffeological groups
@@ -200,7 +200,7 @@ theorem dsmooth_zpow : ∀ z : ℤ, DSmooth fun a : G => a ^ z
 
 -- TODO: adapt `AddGroup.continuousConstSMul_int`, `AddGroup.continuousSMul_int`
 
-#check continuous_prod_of_discrete_left
+--#check continuous_prod_of_discrete_left
 
 @[to_additive (attr := fun_prop)]
 theorem DSmooth.zpow {X : Type*} [DiffeologicalSpace X] {f : X → G} (h : DSmooth f) (z : ℤ) :
@@ -251,6 +251,7 @@ theorem DDiffeomorph.shearMulRight_symm_coe :
 
 variable {G}
 
+omit [DiffeologicalSpace H] [Group H] [DiffeologicalGroup H] in
 -- TODO: remove injectivity hypothesis
 @[to_additive]
 protected theorem Induction.diffeologicalGroup {F : Type*} [Group H] [DiffeologicalSpace H]
@@ -258,6 +259,7 @@ protected theorem Induction.diffeologicalGroup {F : Type*} [Group H] [Diffeologi
   { toDSmoothMul := hf.dsmoothMul _
     toDSmoothInv := hf.dsmoothInv (map_inv f) }
 
+omit [DiffeologicalSpace H] [Group H] [DiffeologicalGroup H] in
 -- TODO: remove injectivity hypothesis
 @[to_additive]
 theorem diffeologicalGroup_induced {F : Type*} [Group H] [FunLike F H G] [MonoidHomClass F H G]
@@ -288,6 +290,7 @@ open QuotientGroup
 variable {G : Type*} [DiffeologicalSpace G] [Group G] [DiffeologicalGroup G]
   (N : Subgroup G)-- (n : N.Normal)
 
+omit [DiffeologicalGroup G] in
 @[to_additive]
 theorem QuotientGroup.subduction_coe : Subduction ((↑) : G → G ⧸ N) :=
   subduction_quotient_mk'
@@ -515,7 +518,7 @@ instance : BoundedOrder (GroupDiffeology G) where
   bot_le x := show ⊥ ≤ x.toDiffeologicalSpace from bot_le
 
 @[to_additive]
-instance : Inf (GroupDiffeology G) where inf d₁ d₂ :=
+instance : Min (GroupDiffeology G) where min d₁ d₂ :=
   ⟨d₁.1 ⊓ d₂.1,diffeologicalGroup_inf d₁.2 d₂.2⟩
 
 @[to_additive (attr := simp)]
