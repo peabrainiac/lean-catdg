@@ -507,8 +507,10 @@ theorem dTop_coinduced_comm {X Y : Type*} {dX : DiffeologicalSpace X} {f : X →
     · by_cases h : y ∈ u; all_goals simp [hy,h]
     · refine' isOpen_iff_mem_nhds.2 fun x hx => _
       let ⟨v,hv,hxv,p',hp',hp⟩ := hp x
-      refine' mem_nhds_iff.2 ⟨_,_,hv,hxv⟩
-      sorry
+      --refine' mem_nhds_iff.2 ⟨_,_,hv,hxv⟩
+      refine' mem_nhds_iff.2 ⟨_,@inter_subset_right _ v _,_,hxv,hx⟩
+      rw [←Subtype.image_preimage_val,←preimage_comp,hp,preimage_comp]
+      exact hv.isOpenMap_subtype_val _ (hu.preimage (hv.dTopCompatible.dTop_eq ▸ hp'.continuous))
   · exact continuous_iff_coinduced_le.1 <| hf.continuous
 
 /-- The D-topology is coinduced by all plots. -/
