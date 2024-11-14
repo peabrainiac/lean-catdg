@@ -1,12 +1,40 @@
 import Orbifolds.Diffeology.DDiffeomorph
 
+/-!
+# Internal tangent spaces
+
+This file defines internal tangent spaces on diffeological spaces following
+https://arxiv.org/abs/1411.5425; concretely, the tangent space at `x` is implemented as
+a quotient of the direct sum of the domains of all plots sending `0` to `x`.
+
+For this to be actually useful we will need to show that this agrees with the usual tangent
+spaces of vector spaces and manifolds, which we have yet to do.
+
+Main definitions / results:
+* `preInternalTangentSpace x`: the direct sum of the domains of all plots sending `0` to `x`.
+* `internalTangentSpace x`: the internal tangent space at `x`.
+* `internalTangentMap f x`: the tangent map of `f` at `x` if `f` is (globally) smooth,
+  and `0` otherwise.
+* `internalTangentMap_id`, `internalTangentMap_comp`: lemmas showing that this is functorial.
+
+Todo:
+* namespace and shorten names of `internalTangentSpace` and `internalTangentMap`,
+  maybe find some good abbreviations
+* tangent spaces of discrete / indiscrete spaces
+* tangent spaces of open subspaces
+* tangent spaces of vector spaces
+* tangent spaces of manifolds
+* tangent maps of constant maps
+* tangent maps of maps between vector spaces / manifolds
+-/
+
 universe u v
 
 open DirectSum DiffeologicalSpace Classical
 
 noncomputable section
 
-variable {X Y : Type u} [DiffeologicalSpace X] [DiffeologicalSpace Y]
+variable {X Y Z : Type u} [DiffeologicalSpace X] [DiffeologicalSpace Y] [DiffeologicalSpace Z]
 
 /-- The set of all plots in `X` that send `0` to `x`. -/
 def DiffeologicalSpace.pointedPlots (x : X) : Set ((n : ℕ) × (Eucl n → X)) :=
@@ -27,7 +55,7 @@ instance {x : X} : Module ℝ (preInternalTangentSpace x) := by
 def internalTangentSpace (x : X) := preInternalTangentSpace x ⧸ Submodule.span ℝ
   {v : preInternalTangentSpace x | ∃ p q : pointedPlots x,
     ∃ f : DSmoothMap (Eucl p.1.1) (Eucl q.1.1), ∃ w : Eucl p.1.1,
-      v = DirectSum.of _ p w - DirectSum.of _ q (fderiv ℝ f 0 w)}
+      v = DirectSum.lof ℝ _ _ p w - DirectSum.lof ℝ _ _ q (fderiv ℝ f 0 w)}
 
 instance {x : X} : AddCommGroup (internalTangentSpace x) := by
   unfold internalTangentSpace; infer_instance
@@ -45,8 +73,8 @@ def DiffeologicalSpace.pointedPlots_map {f : X → Y} (hf : DSmooth f) (x : X) :
 def preInternalTangentMap (f : X → Y) (x : X) :
     preInternalTangentSpace x →ₗ[ℝ] preInternalTangentSpace (f x) :=
   if hf : DSmooth f then
-    DirectSum.toModule _ _ _ fun p ↦ (DirectSum.lof _ _ _ <|
-      DiffeologicalSpace.pointedPlots_map hf x p : _ →ₗ[ℝ] preInternalTangentSpace (f x))
+    toModule ℝ (pointedPlots x) (preInternalTangentSpace (f x)) fun p ↦
+      lof ℝ (pointedPlots (f x)) (fun p ↦ Eucl p.1.1) (pointedPlots_map hf x p)
   else 0
 
 /-- The internal tangent map of `f` at `x` when `f` is smooth, and `0` otherwise. -/
@@ -57,10 +85,42 @@ def internalTangentMap (f : X → Y) (x : X) :
     · rw [← Submodule.map_le_iff_le_comap, Submodule.map_span_le]
       intro v ⟨p, q, g, w, hv⟩
       apply Submodule.subset_span
-      use DiffeologicalSpace.pointedPlots_map hf x p
-      use DiffeologicalSpace.pointedPlots_map hf x q
-      use g
-      use w
-      --simp [preInternalTangentMap, hf, hv, pointedPlots_map]
-      sorry
-    · sorry)
+      use pointedPlots_map hf x p, pointedPlots_map hf x q, g, w
+      simp only [preInternalTangentMap, hf, ↓reduceDite, hv, map_sub]
+      -- why does simp not use `toModule_lof`? possible defeq abuse in `preInternalTangentMap`?
+      convert rfl using 2 <;> symm <;> convert toModule_lof ℝ _ _ using 2
+    · simp_rw [preInternalTangentMap, eq_false hf, dite_false, Submodule.comap_zero]
+      exact le_top)
+
+@[simp]
+lemma pointedPlots_map_id (x : X) : pointedPlots_map dsmooth_id x = id := by
+  rfl
+
+lemma pointedPlots_map_comp {f : X → Y} {g : Y → Z} (hf : DSmooth f) (hg : DSmooth g) (x : X) :
+    pointedPlots_map (hg.comp hf) x = pointedPlots_map hg (f x) ∘ pointedPlots_map hf x  := by
+  rfl
+
+@[simp]
+def preInternalTangentMap_id (x : X) : preInternalTangentMap id x = LinearMap.id := by
+  simp_rw [preInternalTangentMap, dsmooth_id, dite_true, pointedPlots_map_id, id_eq]
+  apply linearMap_ext; intro p; ext x
+  simp
+
+def preInternalTangentMap_comp {f : X → Y} {g : Y → Z} (hf : DSmooth f) (hg : DSmooth g) (x : X) :
+    preInternalTangentMap (g ∘ f) x =
+      preInternalTangentMap g (f x) ∘ₗ preInternalTangentMap f x := by
+  simp_rw [preInternalTangentMap, hf, hg, hg.comp hf, dite_true, pointedPlots_map_comp hf hg]
+  apply linearMap_ext; intro p; ext x'
+  simp_rw [LinearMap.comp_assoc, LinearMap.comp_apply, Function.comp_apply, toModule_lof]
+  -- again necessary because rewriting with `toModule_lof` directly doesn't work somehow
+  symm; convert toModule_lof ℝ _ _ using 2
+
+@[simp]
+def internalTangentMap_id (x : X) : internalTangentMap id x = LinearMap.id := by
+  simp_rw [internalTangentMap, preInternalTangentMap_id]
+  exact Submodule.mapQ_id _
+
+def internalTangentMap_comp {f : X → Y} {g : Y → Z} (hf : DSmooth f) (hg : DSmooth g) (x : X) :
+    internalTangentMap (g ∘ f) x = internalTangentMap g (f x) ∘ₗ internalTangentMap f x := by
+  simp_rw [internalTangentMap, preInternalTangentMap_comp hf hg]
+  exact Submodule.mapQ_comp _ _ _ _ _ _ _
