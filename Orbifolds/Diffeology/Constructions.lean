@@ -182,6 +182,9 @@ theorem DSmooth.subtype_map {f : X → Y} (h : DSmooth f) {q : Y → Prop}
     (hpq : ∀ x, p x → q (f x)) : DSmooth (Subtype.map f hpq) :=
   (h.comp dsmooth_subtype_val).subtype_mk _
 
+theorem induction_inclusion {s t : Set X} (h : s ⊆ t) : Induction (inclusion h) :=
+  induction_subtype_val.of_comp (Set.val_comp_inclusion h ▸ induction_subtype_val)
+
 theorem dsmooth_inclusion {s t : Set X} (h : s ⊆ t) : DSmooth (inclusion h) :=
   dsmooth_id.subtype_map h
 
@@ -276,6 +279,9 @@ protected theorem IsOpen.dTopCompatible [TopologicalSpace X] [DTopCompatible X] 
 
 instance [TopologicalSpace X] [DTopCompatible X] [h : Fact (IsOpen s)] : DTopCompatible s :=
   h.out.dTopCompatible
+
+instance [TopologicalSpace X] [DTopCompatible X] {u : Opens X} : DTopCompatible u :=
+  u.2.dTopCompatible
 
 /-- Smoothness can also be characterised as preserving smooth maps `u → X` for open `u`.-/
 theorem dsmooth_iff' {f : X → Y} : DSmooth f ↔
