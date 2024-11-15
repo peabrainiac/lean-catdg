@@ -10,8 +10,6 @@ Diffeomorphisms between diffeological spaces.
 Mostly copied from `Mathlib.Geometry.Manifold.Diffeomorph`.
 -/
 
-set_option autoImplicit false
-
 structure DDiffeomorph (X Y : Type*) [DiffeologicalSpace X] [DiffeologicalSpace Y]
     extends X ≃ Y where
   protected dsmooth_toFun : DSmooth toFun

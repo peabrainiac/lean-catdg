@@ -8,8 +8,6 @@ Defines the `DiffeologicalSpace` structure on `Mᵐᵒᵖ`, `Mᵃᵒᵖ`, `Mˣ`,
 Adapted from `Mathlib.Topology.Algebra.Constructions`
 -/
 
-set_option autoImplicit false
-
 variable {M X : Type*} [dM : DiffeologicalSpace M]
 
 namespace MulOpposite

@@ -7,8 +7,6 @@ open TopologicalSpace
 
 open Topology
 
-set_option autoImplicit false
-
 abbrev Eucl (n : ℕ) := EuclideanSpace ℝ (Fin n)
 
 /-- A diffeology on `X`, given by the smooth functions (or "plots") from ℝⁿ to `X`. -/

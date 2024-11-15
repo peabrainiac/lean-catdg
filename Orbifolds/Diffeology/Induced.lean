@@ -6,8 +6,6 @@ import Mathlib.Topology.LocallyConstant.Basic
 In large parts based on `Mathlib.Topology.Order`.
 -/
 
-set_option autoImplicit false
-
 section Induced
 
 variable {X Y Z : Type*}

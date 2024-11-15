@@ -4,7 +4,9 @@ open Lake DSL
 package «orbifolds» where
   -- Settings applied to both builds and interactive editing
   leanOptions := #[
-    ⟨`pp.unicode.fun, true⟩ -- pretty-prints `fun a ↦ b`
+    ⟨`pp.unicode.fun, true⟩, -- pretty-prints `fun a ↦ b`
+    ⟨`autoImplicit, false⟩, -- switch off auto-implicit
+    ⟨`relaxedAutoImplicit, false⟩ -- switch off relaxed auto-implicit
   ]
   -- add any additional package configuration options here
 

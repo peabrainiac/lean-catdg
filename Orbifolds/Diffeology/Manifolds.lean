@@ -6,8 +6,6 @@ import Mathlib.Geometry.Manifold.ContMDiff.Atlas
 import Mathlib.Geometry.Manifold.SmoothManifoldWithCorners
 
 
-set_option autoImplicit false
-
 /-!
 # Diffeological manifolds
 Some lemmas and theorems on manifolds as diffeological spaces, as defined in

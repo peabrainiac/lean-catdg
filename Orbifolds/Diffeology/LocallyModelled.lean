@@ -2,8 +2,6 @@ import Orbifolds.Diffeology.Constructions
 import Orbifolds.Diffeology.DDiffeomorph
 import Mathlib.Geometry.Manifold.Instances.Real
 
-set_option autoImplicit false
-
 /-!
 # Locally Modelled Spaces
 Diffeological space that are locally modelled on a family of other diffeological spaces.

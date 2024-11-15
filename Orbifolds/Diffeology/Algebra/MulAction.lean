@@ -8,8 +8,6 @@ For now this just contains a few basic definitions and lemmas, used to build up 
 diffeological groups and vector spaces.
 -/
 
-set_option autoImplicit false
-
 /-- Class `ContinuousVAdd M X` saying that the additive action `(+ᵥ) : M → X → X`
   is smooth in both arguments. -/
 class DSmoothVAdd (M X : Type*) [VAdd M X] [DiffeologicalSpace M] [DiffeologicalSpace X] :

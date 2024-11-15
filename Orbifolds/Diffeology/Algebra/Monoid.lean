@@ -1,7 +1,5 @@
 import Orbifolds.Diffeology.Algebra.MulAction
 
-set_option autoImplicit false
-
 /-!
 # Smooth  monoids
 Adapted from `Mathlib.Topology.Algebra.Monoid`.

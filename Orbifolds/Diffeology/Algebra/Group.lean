@@ -5,8 +5,6 @@ import Orbifolds.Diffeology.Algebra.Monoid
 Adapted from `Mathlib.Topology.Algebra.Group.Basic`.
 -/
 
-set_option autoImplicit false
-
 universe u v
 
 section DSmoothMulGroup

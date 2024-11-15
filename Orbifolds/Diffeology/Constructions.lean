@@ -11,8 +11,6 @@ diffeological spaces. General limits and colimits are found in
 Mostly based on `Mathlib.Topology.Constructions`.
 -/
 
-set_option autoImplicit false
-
 open TopologicalSpace Set
 
 open Topology
