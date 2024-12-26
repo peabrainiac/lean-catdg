@@ -1,4 +1,5 @@
 import Mathlib.CategoryTheory.Sites.Coverage
+import Mathlib.CategoryTheory.Sites.DenseSubSite
 import Orbifolds.Diffeology.DiffSp
 
 /-!
@@ -79,7 +80,7 @@ def CartSp.openCoverCoverage : Coverage CartSp where
         have := (Metric.isOpen_ball  (x := x) (ε := ε)).dTopCompatible
         exact (Metric.isOpen_ball).isOpenMap_subtype_val.comp e.toHomeomorph'.isOpenMap
       · change x ∈ Set.range (Subtype.val ∘ e.toEquiv)
-        rw [e.surjective.range_comp]; simp [hε]
+        rw [e.toEquiv.surjective.range_comp]; simp [hε]
     · intro k f ⟨⟨k',f',hf'⟩,_⟩; use k'
       let f'' := (DDiffeomorph.ofInduction (hs.1 k' f' hf'.1).1)
       use ⟨_,(f''.dsmooth_invFun.comp <|
@@ -207,4 +208,43 @@ noncomputable def CartSp.toEuclOp : CartSp ⥤ EuclOp where
   obj n := ⟨n, ⊤⟩
   map f := ⟨_, f.2.restrict (Set.mapsTo_univ f Set.univ)⟩
 
--- TODO: show that `CartSp.toEuclOp` exhibits `CartSp` as a dense sub-site
+/-- Open subsets of cartesian spaces can be covered with cartesian spaces. -/
+instance : CartSp.toEuclOp.IsCoverDense EuclOp.openCoverTopology := by
+  constructor; intro u
+  refine EuclOp.openCoverCoverage.mem_toGrothendieck_sieves_of_superset (R := ?_) ?_ ?_
+  · exact fun {v} f ↦ v.2.1 = Set.univ ∧ Induction f.1 ∧ IsOpenMap f.1
+  · intro v f hf
+    refine ⟨⟨v.1, ⟨_, dsmooth_id.restrict (Set.mapsTo_univ _ _)⟩, ?_, ?_⟩⟩
+    · let e : CartSp.toEuclOp.obj v.1 ⟶ v :=
+        ⟨_, dsmooth_id.restrict (by convert Set.mapsTo_univ _ _; exact hf.1)⟩
+      exact e ≫ f
+    · ext x; rfl
+  · refine ⟨fun v f hf ↦ hf.2, Set.iUnion_eq_univ_iff.2 fun x => ?_⟩
+    use ⟨u.1, ⊤⟩; apply Set.mem_iUnion₂.2
+    let ⟨ε, hε, hxε⟩ := Metric.isOpen_iff.1 u.2.2 x.1 x.2
+    let e := (DDiffeomorph.Set.univ _).trans (DDiffeomorph.univBall x.1 hε)
+    use ⟨_, (dsmooth_inclusion hxε).comp e.dsmooth⟩
+    refine ⟨⟨rfl, ?_, ?_⟩, ?_⟩
+    · exact (induction_inclusion hxε).comp e.induction
+    · have := (@isOpen_univ (EuclideanSpace ℝ (Fin u.1)) _).dTopCompatible
+      have h : IsOpen (Metric.ball x.1 ε) := Metric.isOpen_ball
+      have := h.dTopCompatible
+      exact (h.isOpenMap_inclusion hxε).comp e.toHomeomorph'.isOpenMap
+    · rw [Set.range_comp, e.surjective.range_eq, Set.image_univ]
+      use ⟨x.1, Metric.mem_ball_self hε⟩; rfl
+
+instance CartSp.toEuclOp_fullyFaithful : CartSp.toEuclOp.FullyFaithful where
+  preimage {n m} f := by
+    exact ⟨_, (dsmooth_subtype_val.comp f.2).comp (dsmooth_id.subtype_mk (Set.mem_univ))⟩
+
+instance : CartSp.toEuclOp.Full := CartSp.toEuclOp_fullyFaithful.full
+
+instance : CartSp.toEuclOp.Faithful := CartSp.toEuclOp_fullyFaithful.faithful
+
+instance : CartSp.toEuclOp.IsDenseSubsite
+    CartSp.openCoverTopology EuclOp.openCoverTopology where
+  functorPushforward_mem_iff {n} s := by
+    unfold EuclOp.openCoverTopology CartSp.openCoverTopology
+      EuclOp.openCoverCoverage CartSp.openCoverCoverage
+    --rw [Coverage.toGrothendieck_eq_sInf]
+    sorry

@@ -63,6 +63,15 @@ def toDSmoothMap (d : X ᵈ≃ Y) : DSmoothMap X Y := ⟨d,d.dsmooth⟩
 
 local instance : Coe (X ᵈ≃ Y) (DSmoothMap X Y) := ⟨DDiffeomorph.toDSmoothMap⟩
 
+protected theorem bijective (h : X ᵈ≃ Y) : Function.Bijective h :=
+  h.toEquiv.bijective
+
+protected theorem injective (h : X ᵈ≃ Y) : Function.Injective h :=
+  h.toEquiv.injective
+
+protected theorem surjective (h : X ᵈ≃ Y) : Function.Surjective h :=
+  h.toEquiv.surjective
+
 @[ext]
 theorem ext {h h' : X ᵈ≃ Y} (heq : ∀ x, h x = h' x) : h = h' :=
   coeFn_injective (funext heq)
