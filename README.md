@@ -39,5 +39,5 @@ So far this is mostly following Patrick Iglesias-Zemmour's book "Diffeology" - I
 		- [x] Forgetful functor and related adjunctions
 		- [x] D-topology functor and adjunction
 		- [x] Category of smooth sets as sheaf topos on `CartSp`
-		- [x] Embedding of diffeological spaces into that
+		- [x] Diffeological spaces as a reflective subcategory of that
 		- [ ] Alternative characterisations via `EuclOp` etc.

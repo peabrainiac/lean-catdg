@@ -1,5 +1,6 @@
 import Mathlib.CategoryTheory.Sites.Coverage
 import Mathlib.CategoryTheory.Sites.DenseSubSite
+import Mathlib.CategoryTheory.Monad.Limits
 import Orbifolds.Diffeology.DiffSp
 
 /-!
@@ -19,8 +20,12 @@ implemented in mathlib, so diffeological inductions are used instead.
 Main definitions / results:
 * `CartSp`: the category of euclidean spaces and smooth maps between them
 * `CartSp.openCoverCoverage`: the coverage given by jointly surjective open inductions
-* `SmoothSp`: the category of smooth sets, as the category of sheaves on `CartSp`
+* `SmoothSp`: the category of smooth spaces, as the category of sheaves on `CartSp`
 * `DiffSp.toSmoothSp`: the embedding of diffeological spaces into smooth sets
+* `SmoothSp.Γ`: the global sections functor taking a smooth space to the set of its points
+* `SmoothSp.concr`: the concretisation functor from smooth spaces to diffeological spaces
+* `DiffSp.reflectorAdjunction`: the adjunction between `SmoothSp.concr` and `DiffSp.toSmoothSp`
+  turning `DiffSp` into a reflective subcategory of `SmoothSp`
 -/
 
 universe u
@@ -139,6 +144,22 @@ def DiffSp.toSmoothSp : DiffSp.{u} ⥤ SmoothSp.{u} where
   map_id := fun _ => rfl
   map_comp := fun _ _ => rfl
 
+/-- `DiffSp.toSmoothSp` is fully faithful. -/
+def DiffSp.toSmoothSp.fullyFaithful : DiffSp.toSmoothSp.{u}.FullyFaithful where
+  preimage f := ⟨fun x ↦
+      (by exact f.val.app (.op 0) ⟨fun _ ↦ x, dsmooth_const⟩ : DSmoothMap (Eucl 0) _) 0, by
+    intro n p hp; convert (f.val.app (.op n) ⟨p, hp.dsmooth⟩).dsmooth.isPlot using 1; ext x
+    exact DFunLike.congr_fun (F := DSmoothMap _ _)
+      (congrFun (f.val.naturality ⟨fun _ ↦ x, dsmooth_const⟩) ⟨p, hp.dsmooth⟩) 0⟩
+  map_preimage f := by
+    apply SheafOfTypes.Hom.ext; ext n p; refine DSmoothMap.ext fun x ↦ ?_
+    exact DFunLike.congr_fun (F := DSmoothMap _ _)
+      (congrFun (f.val.naturality ⟨fun _ : Eucl 0 ↦ x, dsmooth_const⟩) p) 0
+
+instance : DiffSp.toSmoothSp.{u}.Full := DiffSp.toSmoothSp.fullyFaithful.full
+
+instance : DiffSp.toSmoothSp.{u}.Faithful := DiffSp.toSmoothSp.fullyFaithful.faithful
+
 /-- The global sections functor taking a smooth space to its type of points. Note that this
   is by no means faithful; `SmoothSp` is not a concrete category. -/
 def SmoothSp.Γ : SmoothSp.{u} ⥤ Type u where
@@ -196,6 +217,18 @@ def DiffSp.reflectorAdjunction : SmoothSp.concr.{u} ⊣ DiffSp.toSmoothSp.{u} :=
       exact congrFun (X.val.map_id (.op 0) : _ = id) x
     right_triangle := rfl
   }
+
+/-- `SmoothSp.concr` is a left-adjoint. In particular, this means that it preserves colimits. -/
+instance : Functor.IsLeftAdjoint SmoothSp.concr :=
+  ⟨DiffSp.toSmoothSp, ⟨DiffSp.reflectorAdjunction⟩⟩
+
+/-- Diffeological spaces form a reflective subcategory of the category of smooth spaces. -/
+instance DiffSp.toSmoothSp.reflective : Reflective toSmoothSp where
+  L := SmoothSp.concr
+  adj := DiffSp.reflectorAdjunction
+
+noncomputable instance DiffSp.toSmoothSp.createsLimits : CreatesLimits toSmoothSp :=
+  monadicCreatesLimits _
 
 def EuclOp := (n : ℕ) × Opens (EuclideanSpace ℝ (Fin n))
 
