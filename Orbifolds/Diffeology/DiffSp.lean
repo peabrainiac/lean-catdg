@@ -63,7 +63,7 @@ instance concreteCategory : ConcreteCategory DiffSp :=
 instance : CoeSort DiffSp Type* where
   coe X := X.α
 
-instance topologicalSpaceUnbundled (X : DiffSp) : DiffeologicalSpace X :=
+instance diffeologicalSpaceUnbundled (X : DiffSp) : DiffeologicalSpace X :=
   X.str
 
 instance instFunLike (X Y : DiffSp) : FunLike (X ⟶ Y) X Y :=

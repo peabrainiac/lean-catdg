@@ -307,6 +307,10 @@ lemma self_subset_toPlots_generateFrom (g : Set ((n : ℕ) × (Eucl n → X))) :
     g ⊆ (generateFrom g).toPlots :=
   Set.subset_iInter₂ fun _ hd => hd
 
+lemma isPlot_generatedFrom_of_mem {g : Set ((n : ℕ) × (Eucl n → X))} {n : ℕ} {p : Eucl n → X}
+    (hp : ⟨n, p⟩ ∈ g) : IsPlot[generateFrom g] p :=
+  self_subset_toPlots_generateFrom g hp
+
 instance : PartialOrder (DiffeologicalSpace X) := PartialOrder.lift _ injective_toPlots
 
 lemma le_def {d₁ d₂ : DiffeologicalSpace X} : d₁ ≤ d₂ ↔ d₁.toPlots ⊆ d₂.toPlots := by rfl
@@ -321,7 +325,7 @@ lemma generateFrom_le_iff_subset_toPlots {g : Set ((n : ℕ) × (Eucl n → X))}
     {d : DiffeologicalSpace X} : generateFrom g ≤ d ↔ g ⊆ d.toPlots :=
   ⟨fun h => (self_subset_toPlots_generateFrom g).trans h,fun h => le_def.2 (Set.iInter₂_subset d h)⟩
 
-/-- The topology defined by `g`. Same as `generateFrom g`, except that its set of plots is
+/-- The diffeology defined by `g`. Same as `generateFrom g`, except that its set of plots is
 definitionally equal to `g`. -/
 protected def mkOfClosure (g : Set ((n : ℕ) × (Eucl n → X))) (hg : (generateFrom g).toPlots = g) :
     DiffeologicalSpace X where

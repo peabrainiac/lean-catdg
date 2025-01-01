@@ -39,4 +39,8 @@ def comp (f : DSmoothMap Y Z) (g : DSmoothMap X Y) : DSmoothMap X Z :=
 
 def const (y : Y) : DSmoothMap X Y := ⟨fun _ => y, dsmooth_const⟩
 
+@[simp]
+theorem coe_mk (f : X → Y) (h : DSmooth f) : @DFunLike.coe (DSmoothMap X Y) X _ _ ⟨f, h⟩ = f :=
+  rfl
+
 end DSmoothMap
