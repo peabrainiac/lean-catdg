@@ -1,7 +1,4 @@
-import Mathlib.CategoryTheory.ConcreteCategory.BundledHom
-import Mathlib.CategoryTheory.Adjunction.Basic
 import Mathlib.CategoryTheory.Limits.Types
-import Mathlib.CategoryTheory.Limits.Preserves.Basic
 import Mathlib.CategoryTheory.Closed.Cartesian
 import Mathlib.Topology.Category.TopCat.Basic
 import Orbifolds.Diffeology.DDiffeomorph
@@ -228,12 +225,13 @@ instance hasLimitsOfSize : HasLimitsOfSize.{v,v} DiffSp.{max u v} where
 instance hasLimits : HasLimits DiffSp.{u} :=
   hasLimitsOfSize.{u,u}
 
-noncomputable instance forgetPreservesLimitsOfSize : PreservesLimitsOfSize forget :=
-  ⟨⟨fun {F} => preservesLimitOfPreservesLimitCone (limitConeIsLimit.{u,v} F)
+noncomputable instance forgetPreservesLimitsOfSize :
+    PreservesLimitsOfSize.{v,v} (forget : DiffSp.{max v u} ⥤ _) :=
+  ⟨⟨fun {F} => preservesLimit_of_preserves_limit_cone (limitConeIsLimit.{u,v} F)
       (Types.limitConeIsLimit.{v,u} (F ⋙ forget))⟩⟩
 
 /-- The forgetful functor `DiffSp ⥤ Type` preserves all limits. -/
-noncomputable instance forgetPreservesLimits : PreservesLimits forget :=
+noncomputable instance forgetPreservesLimits : PreservesLimits (forget : DiffSp.{u} ⥤ _) :=
   forgetPreservesLimitsOfSize.{u,u}
 
 /-- A specific choice of colimit cocone for any `F : J ⥤ DiffSp`. -/
@@ -265,12 +263,13 @@ instance hasColimitsOfSize : HasColimitsOfSize.{v,v} DiffSp.{max v u} where
 instance hasColimits : HasColimits DiffSp.{u} :=
   hasColimitsOfSize.{u,u}
 
-noncomputable instance forgetPreservesColimitsOfSize : PreservesColimitsOfSize forget :=
-  ⟨⟨fun {F} => preservesColimitOfPreservesColimitCocone (colimitCoconeIsColimit.{u,v} F)
+noncomputable instance forgetPreservesColimitsOfSize :
+    PreservesColimitsOfSize.{v,v} (forget : DiffSp.{max v u} ⥤ _) :=
+  ⟨⟨fun {F} => preservesColimit_of_preserves_colimit_cocone (colimitCoconeIsColimit.{u,v} F)
     (Types.TypeMax.colimitCoconeIsColimit.{v,u} (F ⋙ forget))⟩⟩
 
 /-- The forgetful functor `DiffSp ⥤ Type` preserves all colimits. -/
-noncomputable instance forgetPreservesColimits : PreservesColimits forget :=
+noncomputable instance forgetPreservesColimits : PreservesColimits (forget : DiffSp.{u} ⥤ _) :=
   forgetPreservesColimitsOfSize.{u,u}
 
 end Limits
@@ -318,23 +317,34 @@ noncomputable def binaryProductIsoProd : binaryProductFunctor.{u} ≅ (prod.func
     · apply Limits.prod.hom_ext <;> simp <;> rfl
   · ext : 2; apply Limits.prod.hom_ext <;> simp <;> rfl
 
+/-- The one-point space as a cone. -/
+def terminalCone : Cone (Functor.empty DiffSp.{u}) where
+  pt := ⟨PUnit, ⊤⟩
+  π := (Functor.uniqueFromEmpty _).hom
+
+/-- `DiffSp.terminalCone` is actually limiting. -/
+def terminalCodeIsLimit : IsLimit terminalCone where
+  lift c := ⟨fun _ ↦ PUnit.unit, dsmooth_const⟩
+
 end BinaryProducts
 
 section Cartesian
 
-noncomputable instance : MonoidalCategory DiffSp := monoidalOfHasFiniteProducts DiffSp
+instance : ChosenFiniteProducts DiffSp where
+  product X Y := ⟨binaryProductCone X Y, binaryProductLimit X Y⟩
+  terminal := ⟨terminalCone, terminalCodeIsLimit⟩
 
 /-- `DiffSp` is cartesian-closed. -/
 noncomputable instance cartesianClosed : CartesianClosed DiffSp.{u} where
   closed X := ⟨{
       obj := fun Y => DiffSp.of (DSmoothMap X Y)
       map := fun f => ⟨f.comp,DSmoothMap.dsmooth_comp.curry_right⟩
-    }, by exact (Adjunction.mkOfHomEquiv {
+    }, by exact Adjunction.mkOfHomEquiv {
       homEquiv := fun Y Z => (DDiffeomorph.prodComm.comp_right).toEquiv.trans
         (@DDiffeomorph.curry Y X Z _ _ _).toEquiv
       homEquiv_naturality_left_symm := fun _ _ => rfl
       homEquiv_naturality_right := fun _ _ => rfl
-    } : Adjunction _ _).ofNatIsoLeft <| binaryProductIsoProd.app X⟩
+    }⟩
 
 end Cartesian
 

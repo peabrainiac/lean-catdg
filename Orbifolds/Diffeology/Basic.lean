@@ -5,7 +5,7 @@ import Mathlib.Analysis.InnerProductSpace.EuclideanDist
 
 open TopologicalSpace
 
-open Topology
+open Topology ContDiff
 
 abbrev Eucl (n : ℕ) := EuclideanSpace ℝ (Fin n)
 
@@ -14,11 +14,11 @@ class DiffeologicalSpace (X : Type*) where
   plots (n : ℕ) : Set (Eucl n → X)
   constant_plots {n : ℕ} (x : X) : (fun _ => x) ∈ plots n
   plot_reparam {n m : ℕ} {p : Eucl m → X} {f : Eucl n → Eucl m} :
-    p ∈ plots m → (ContDiff ℝ ⊤ f) → (p ∘ f ∈ plots n)
+    p ∈ plots m → (ContDiff ℝ ∞ f) → (p ∘ f ∈ plots n)
   -- TODO this is currently a little awkward, since it can't be stated in terms of smooth maps
   --      like it should. Adding prediffeologies as an intermediate construction might be smart.
   locality {n : ℕ} {p : Eucl n → X} : (∀ x : Eucl n, ∃ u : Set (Eucl n), IsOpen u ∧ x ∈ u ∧
-    ∀ {m : ℕ} {f : Eucl m → Eucl n}, (hfu : ∀ x, f x ∈ u) → ContDiff ℝ ⊤ f → p ∘ f ∈ plots m) →
+    ∀ {m : ℕ} {f : Eucl m → Eucl n}, (hfu : ∀ x, f x ∈ u) → ContDiff ℝ ∞ f → p ∘ f ∈ plots m) →
       p ∈ plots n
   dTopology : TopologicalSpace X := {
     IsOpen := fun u => ∀ {n : ℕ}, ∀ p ∈ plots n, TopologicalSpace.IsOpen (p ⁻¹' u)
@@ -67,7 +67,7 @@ lemma isPlot_const {n : ℕ} {x : X} : IsPlot (fun _ => x : Eucl n → X) :=
   DiffeologicalSpace.constant_plots x
 
 lemma isPlot_reparam {n m : ℕ} {p : Eucl m → X} {f : Eucl n → Eucl m}
-    (hp : IsPlot p) (hf : ContDiff ℝ ⊤ f) : IsPlot (p ∘ f) :=
+    (hp : IsPlot p) (hf : ContDiff ℝ ∞ f) : IsPlot (p ∘ f) :=
   DiffeologicalSpace.plot_reparam hp hf
 
 lemma isOpen_iff_preimages_plots {u : Set X} :
@@ -115,7 +115,7 @@ structure DiffeologicalSpace.CorePlotsOn (X : Type*) where
   isPlot_const {n : ℕ} (x : X) : isPlot fun (_ : Eucl n) => x
   isPlotOn_reparam {n m : ℕ} {u : Set (Eucl n)} {v : Set (Eucl m)} {hu : IsOpen u}
     (hv : IsOpen v) {p : Eucl n → X} {f : Eucl m → Eucl n} (h : Set.MapsTo f v u) :
-    isPlotOn hu p → ContDiffOn ℝ ⊤ f v → isPlotOn hv (p ∘ f)
+    isPlotOn hu p → ContDiffOn ℝ ∞ f v → isPlotOn hv (p ∘ f)
   /-- The locality axiom of diffeologies, phrased in terms of `isPlotOn`. -/
   locality {n : ℕ} {u : Set (Eucl n)} (hu : IsOpen u) {p : Eucl n → X} :
     (∀ x ∈ u, ∃ (v : Set (Eucl n)) (hv : IsOpen v), x ∈ v ∧ isPlotOn hv p) → isPlotOn hu p
@@ -167,9 +167,9 @@ cause instance diamonds on spaces like `Fin n → ℝ`. -/
 def euclideanDiffeology {X : Type*} [NormedAddCommGroup X] [NormedSpace ℝ X]
     [FiniteDimensional ℝ X] : DiffeologicalSpace X :=
   DiffeologicalSpace.mkOfPlotsOn {
-    isPlotOn := fun {_ u} _ p => ContDiffOn ℝ ⊤ p u
+    isPlotOn := fun {_ u} _ p => ContDiffOn ℝ ∞ p u
     isPlotOn_congr := fun _ _ _ h => contDiffOn_congr h
-    isPlot := fun p => ContDiff ℝ ⊤ p
+    isPlot := fun p => ContDiff ℝ ∞ p
     isPlotOn_univ := contDiffOn_univ
     isPlot_const := fun _ => contDiff_const
     isPlotOn_reparam := fun _ _ _ h hp hf => hp.comp hf h.subset_preimage
@@ -183,13 +183,13 @@ def euclideanDiffeology {X : Type*} [NormedAddCommGroup X] [NormedSpace ℝ X]
       exact toEuclidean.continuous.isOpen_preimage _ (h _ toEuclidean.symm.contDiff) }
 
 /-- Technical condition saying that the diffeology on a space is the one coming from
-smoothness in the sense of `ContDiff ℝ ⊤`. Necessary as a hypothesis for some theorems
+smoothness in the sense of `ContDiff ℝ ∞`. Necessary as a hypothesis for some theorems
 because some normed spaces carry a diffeology that is equal but not defeq to the normed space
 diffeology (for example the product diffeology in the case of `Fin n → ℝ`), so the information
 that these theorems still holds needs to be made available via this typeclass. -/
 class ContDiffCompatible (X : Type*) [NormedAddCommGroup X] [NormedSpace ℝ X]
     [DiffeologicalSpace X] : Prop where
-  isPlot_iff {n : ℕ} {p : Eucl n → X} : IsPlot p ↔ ContDiff ℝ ⊤ p
+  isPlot_iff {n : ℕ} {p : Eucl n → X} : IsPlot p ↔ ContDiff ℝ ∞ p
 
 /-- Technical condition saying that the topology on a type agrees with the D-topology.
 Necessary because the D-topologies on for example products and subspaces don't agree with
@@ -231,7 +231,7 @@ protected theorem IsPlot.dsmooth {n : ℕ} {p : Eucl n → X} (hp : IsPlot p) : 
   fun _ _ => isPlot_reparam hp
 
 protected theorem DSmooth.isPlot {n : ℕ} {p : Eucl n → X} (hp : DSmooth p) : IsPlot p :=
-  hp n id contDiff_id
+  hp n id <| @contDiff_id ℝ _ (Eucl n) _ _ ∞
 
 theorem isPlot_iff_dsmooth {n : ℕ} {p : Eucl n → X} : IsPlot p ↔ DSmooth p :=
   ⟨IsPlot.dsmooth,DSmooth.isPlot⟩
@@ -240,18 +240,18 @@ variable {X Y : Type*} [NormedAddCommGroup X] [NormedSpace ℝ X] [Diffeological
   [ContDiffCompatible X] [NormedAddCommGroup Y] [NormedSpace ℝ Y] [DiffeologicalSpace Y]
   [ContDiffCompatible Y]
 
-theorem isPlot_iff_contDiff {n : ℕ} {p : Eucl n → X} : IsPlot p ↔ ContDiff ℝ ⊤ p :=
+theorem isPlot_iff_contDiff {n : ℕ} {p : Eucl n → X} : IsPlot p ↔ ContDiff ℝ ∞ p :=
   ContDiffCompatible.isPlot_iff
 
-protected theorem ContDiff.dsmooth {f : X → Y} (hf: ContDiff ℝ ⊤ f) : DSmooth f :=
+protected theorem ContDiff.dsmooth {f : X → Y} (hf: ContDiff ℝ ∞ f) : DSmooth f :=
   fun _ _ hp => isPlot_iff_contDiff.2 (hf.comp (isPlot_iff_contDiff.1 hp))
 
-protected theorem DSmooth.contDiff [FiniteDimensional ℝ X] {f : X → Y} (hf : DSmooth f) : ContDiff ℝ ⊤ f := by
+protected theorem DSmooth.contDiff [FiniteDimensional ℝ X] {f : X → Y} (hf : DSmooth f) : ContDiff ℝ ∞ f := by
   let g := toEuclidean (E := X)
   rw [←Function.comp_id f,←g.symm_comp_self]
   exact (isPlot_iff_contDiff.1 <| hf _ _ (g.symm.contDiff.dsmooth.isPlot)).comp g.contDiff
 
-theorem dsmooth_iff_contDiff [FiniteDimensional ℝ X] {f : X → Y} : DSmooth f ↔ ContDiff ℝ ⊤ f :=
+theorem dsmooth_iff_contDiff [FiniteDimensional ℝ X] {f : X → Y} : DSmooth f ↔ ContDiff ℝ ∞ f :=
   ⟨DSmooth.contDiff,ContDiff.dsmooth⟩
 
 end FiniteDimensionalNormedSpace

@@ -1,5 +1,5 @@
 import Orbifolds.Diffeology.DSmoothMap
-import Orbifolds.ForMathlib.DeltaGeneratedSpace
+import Mathlib.Topology.Compactness.DeltaGeneratedSpace
 import Mathlib.Analysis.InnerProductSpace.Calculus
 
 /-!
@@ -13,7 +13,7 @@ Mostly based on `Mathlib.Topology.Constructions`.
 
 open TopologicalSpace Set
 
-open Topology
+open Topology ContDiff
 
 universe u v
 
@@ -204,7 +204,7 @@ theorem Induction.codRestrict {f : X → Y} (hf : Induction f) {s : Set Y} (hs :
 
 theorem ContDiffOn.dsmooth_restrict [NormedAddCommGroup X] [NormedSpace ℝ X] [ContDiffCompatible X]
     [NormedAddCommGroup Y] [NormedSpace ℝ Y] [ContDiffCompatible Y]
-    {f : X → Y} (hf : ContDiffOn ℝ ⊤ f s) : DSmooth (s.restrict f) := by
+    {f : X → Y} (hf : ContDiffOn ℝ ∞ f s) : DSmooth (s.restrict f) := by
   refine' fun n p hp => isPlot_iff_contDiff.2 _
   rw [restrict_eq,Function.comp_assoc]
   exact hf.comp_contDiff (isPlot_iff_contDiff.1 hp) fun x => (p x).2
@@ -215,12 +215,12 @@ open PartialHomeomorph in
 theorem IsOpen.dsmooth_iff_contDiffOn [NormedAddCommGroup X] [InnerProductSpace ℝ X]
     [ContDiffCompatible X] [FiniteDimensional ℝ X]
     [NormedAddCommGroup Y] [NormedSpace ℝ Y] [ContDiffCompatible Y]
-    {f : X → Y} (hs : IsOpen s) : DSmooth (s.restrict f) ↔ ContDiffOn ℝ ⊤ f s := by
+    {f : X → Y} (hs : IsOpen s) : DSmooth (s.restrict f) ↔ ContDiffOn ℝ ∞ f s := by
   refine' ⟨fun hf x hxs => _,ContDiffOn.dsmooth_restrict⟩
   let ⟨ε,hε,hε'⟩ := Metric.isOpen_iff.1 hs x hxs
   refine' ContDiffWithinAt.mono_of_mem_nhdsWithin (s := Metric.ball x ε) _ <| mem_nhdsWithin.2
     ⟨_,Metric.isOpen_ball,Metric.mem_ball_self hε, inter_subset_left⟩
-  suffices h : ContDiffOn ℝ ⊤ f (Metric.ball x ε) by exact h x (Metric.mem_ball_self hε)
+  suffices h : ContDiffOn ℝ ∞ f (Metric.ball x ε) by exact h x (Metric.mem_ball_self hε)
   let e := univUnitBall.trans' (unitBallBall x ε hε) rfl
   have he : DSmooth e :=
     (contDiff_unitBallBall hε).dsmooth.comp contDiff_univUnitBall.dsmooth
@@ -523,6 +523,14 @@ lemma dTop_eq_iSup_coinduced {X : Type*} [dX : DiffeologicalSpace X] :
   ext u
   rw [isOpen_iff_preimages_plots,isOpen_iSup_iff,Sigma.forall]; simp_rw [isOpen_coinduced]
   exact forall_congr' fun n => ⟨fun h p => h p p.2,fun h p hp => h ⟨p,hp⟩⟩
+
+/-- The topology coinduced by a map out of a sigma type is the surpremum of the topologies
+  coinduced by its components.
+  Maybe should go into mathlib? A similar `induced_to_pi` is already there. -/
+lemma coinduced_sigma {ι Y : Type u} {X : ι → Type v} [tX : (i : ι) → TopologicalSpace (X i)]
+    (f : (i : ι) → X i → Y) : coinduced (fun x : (i : ι) × X i => f x.1 x.2) inferInstance =
+    ⨆ i : ι, coinduced (f i) inferInstance := by
+  rw [instTopologicalSpaceSigma,coinduced_iSup]; rfl
 
 /-- The D-topology is coinduced by the sum of all plots. -/
 lemma dTop_eq_coinduced {X : Type*} [dX : DiffeologicalSpace X] : DTop =

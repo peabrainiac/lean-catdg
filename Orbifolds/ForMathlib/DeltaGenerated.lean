@@ -1,4 +1,4 @@
-import Orbifolds.ForMathlib.DeltaGeneratedSpace
+import Mathlib.Topology.Compactness.DeltaGeneratedSpace
 import Mathlib.Topology.Category.TopCat.Basic
 import Mathlib.CategoryTheory.Adjunction.Reflective
 

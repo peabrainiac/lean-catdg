@@ -1,5 +1,5 @@
 import Mathlib.CategoryTheory.Sites.Coverage
-import Mathlib.CategoryTheory.Sites.DenseSubSite
+import Mathlib.CategoryTheory.Sites.DenseSubSite.Basic
 import Mathlib.CategoryTheory.Monad.Limits
 import Orbifolds.Diffeology.DiffSp
 
@@ -99,7 +99,7 @@ def CartSp.openCoverTopology : GrothendieckTopology CartSp :=
   openCoverCoverage.toGrothendieck
 
 /-- The category of sheaves on `CartSp`, also known as *smooth spaces*. -/
-def SmoothSp := SheafOfTypes CartSp.openCoverTopology
+def SmoothSp := Sheaf CartSp.openCoverTopology (Type u)
 
 instance : Category.{u,u+1} SmoothSp.{u} := by unfold SmoothSp; infer_instance
 
@@ -111,7 +111,7 @@ def DiffSp.toSmoothSp : DiffSp.{u} ⥤ SmoothSp.{u} where
     map_id := fun _ => rfl
     map_comp := fun _ _ => rfl
   }, by
-    rw [CartSp.openCoverTopology, Presieve.isSheaf_coverage]
+    rw [CartSp.openCoverTopology, isSheaf_iff_isSheaf_of_type, Presieve.isSheaf_coverage]
     refine fun {n} s hs f hf => ?_
     have hs' : ∀ x : n, _ := fun x => Set.mem_iUnion.1 <| hs.2.symm ▸ Set.mem_univ x
     let k := fun x => (hs' x).choose
@@ -152,7 +152,7 @@ def DiffSp.toSmoothSp.fullyFaithful : DiffSp.toSmoothSp.{u}.FullyFaithful where
     exact DFunLike.congr_fun (F := DSmoothMap _ _)
       (congrFun (f.val.naturality ⟨fun _ ↦ x, dsmooth_const⟩) ⟨p, hp.dsmooth⟩) 0⟩
   map_preimage f := by
-    apply SheafOfTypes.Hom.ext; ext n p; refine DSmoothMap.ext fun x ↦ ?_
+    apply Sheaf.Hom.ext; ext n p; refine DSmoothMap.ext fun x ↦ ?_
     exact DFunLike.congr_fun (F := DSmoothMap _ _)
       (congrFun (f.val.naturality ⟨fun _ : Eucl 0 ↦ x, dsmooth_const⟩) p) 0
 
@@ -198,7 +198,7 @@ def DiffSp.reflectorAdjunction : SmoothSp.concr.{u} ⊣ DiffSp.toSmoothSp.{u} :=
           exact congrFun (X.val.map_comp f _).symm p
       }⟩
       naturality := fun {X Y} f ↦ by
-        apply SheafOfTypes.Hom.ext; ext n p; refine DSmoothMap.ext fun x ↦ ?_
+        apply Sheaf.Hom.ext; ext n p; refine DSmoothMap.ext fun x ↦ ?_
         dsimp at p ⊢
         change Y.val.map (Opposite.op ⟨fun _ ↦ x, dsmooth_const⟩) (f.val.app n p) =
           f.val.app (.op 0) (X.val.map _ _)

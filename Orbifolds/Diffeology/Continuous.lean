@@ -1,5 +1,5 @@
 import Orbifolds.Diffeology.DSmoothMap
-import Orbifolds.ForMathlib.DeltaGeneratedSpace
+import Mathlib.Topology.Compactness.DeltaGeneratedSpace
 
 /-!
 # Continuous diffeology
