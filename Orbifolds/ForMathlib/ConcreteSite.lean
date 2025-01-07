@@ -39,8 +39,58 @@ lemma Presieve.isJointlySurjective_iff_iUnion_range_eq_univ [ConcreteCategory.{w
   morphisms from a terminal object, and all sieves are jointly surjective. -/
 class ConcreteSite (J : GrothendieckTopology C)
     extends ChosenTerminal C, ConcreteCategory.{v} C where
+  /-- The forgetful functor is given by morphisms from the terminal object. Since a forgetful
+    functor might already exists, this is encoded here as a natural isomorphism. -/
   forget_natIso_coyoneda : (CategoryTheory.forget C) ≅ coyoneda.obj (.op (⊤_ C))
-  sieves_isJointlySurjective {X : C} (S : J.sieves X) : S.1.arrows.IsJointlySurjective
+  /-- Said isomorphism takes `x : X` to a morphism with underlying map `fun _ ↦ x`. -/
+  forget_natIso_coyoneda_apply {X : C} {x : X} :
+    (DFunLike.coe (F := ⊤_ C ⟶ X) <| forget_natIso_coyoneda.hom.app X x) = fun _ ↦ x
+  /-- All covering sieves are jointly surjective. -/
+  sieves_isJointlySurjective {X : C} {S : Sieve X} :
+    S ∈ J.sieves X → S.arrows.IsJointlySurjective
+
+/-- The terminal object of a concrete site has exactly one point. -/
+noncomputable instance ConcreteSite.instUniqueTerminal (J : GrothendieckTopology C) [ConcreteSite J] :
+    Unique (⊤_ C) :=
+  (forget_natIso_coyoneda.app (⊤_ C)).toEquiv.unique (β := ⊤_ C ⟶ ⊤_ C)
+
+/-- The global sections functor on sheaves of types. Points of a sheaf `X` correspond to
+  morphisms from the terminal sheaf into `X`; this corresponds to sections on the terminal
+  of `C` when `C` has a terminal object, but is a bit more general. -/
+noncomputable def Sheaf.Γ {J : GrothendieckTopology C} : Sheaf J (Type w) ⥤ Type (max u w) :=
+  coyoneda.obj (.op (⊤_ _))
+
+/-- The right adjoint to the global sections functor that exists over any concrete site.
+  Takes a type `X` to the sheaf that sends each `Y : C` to the type of functions `Y → X`. -/
+noncomputable def Sheaf.codisc (J : GrothendieckTopology C) [ConcreteSite J] :
+    Type w ⥤ Sheaf J (Type (max v w)) where
+  obj X := {
+    val := {
+      obj := fun Y ↦ Y.unop → X
+      map := fun f g ↦ Function.comp g f.unop
+    }
+    cond := (isSheaf_iff_isSheaf_of_type J _).2 fun Y S hS f hf ↦ by
+      choose Z g hg z hgz using ConcreteSite.sieves_isJointlySurjective hS
+      refine ⟨fun y ↦ f (g y) (hg y) (z y), ?_, ?_⟩
+      · intro Z' g' hg'; dsimp; ext z'
+        dsimp
+        have h := hf (ConcreteSite.forget_natIso_coyoneda.hom.app (Z (g' z')) (z (g' z')))
+          ((ConcreteSite.forget_natIso_coyoneda).hom.app Z' z') (hg (g' z')) hg' ?_
+        · dsimp at h; simp_rw [ConcreteSite.forget_natIso_coyoneda_apply] at h
+          exact congrFun h (default)
+        · exact (NatTrans.naturality_apply (ConcreteSite.forget_natIso_coyoneda).hom
+            (g (g' z')) (z (g' z'))).symm.trans <| Eq.trans (congrArg _ (hgz (g' z'))) <|
+            NatTrans.naturality_apply (ConcreteSite.forget_natIso_coyoneda).hom g' z'
+      · intro f' hf'; ext y
+        nth_rewrite 1 [← hgz y]
+        exact congrFun (hf' (g y) (hg y)) (z y)
+  }
+  map {X Y} (f : X → Y) := ⟨{
+    app := fun Z g ↦ f ∘ g
+    naturality := fun _ _ _ ↦ rfl
+  }⟩
+  map_id _ := rfl
+  map_comp _ _ := rfl
 
 variable (J : GrothendieckTopology C) [ConcreteSite J]
 
