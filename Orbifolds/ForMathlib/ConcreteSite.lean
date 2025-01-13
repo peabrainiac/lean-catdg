@@ -3,7 +3,7 @@ import Mathlib.CategoryTheory.ChosenFiniteProducts
 
 universe u v w u₂ v₂ w₂
 
-open CategoryTheory Limits Sheaf
+open CategoryTheory Limits Sheaf Opposite
 
 namespace CategoryTheory
 
@@ -13,12 +13,37 @@ class ChosenTerminal (C : Type u) [Category.{v} C] where
   /-- A choice of a terminal object. -/
   terminal : LimitCone (Functor.empty.{0} C)
 
-namespace ChosenTerminal
-
 instance (C : Type u) [Category.{v} C] [ChosenTerminal C] : HasTerminal C where
-  has_limit _ := @hasLimitOfIso _ _ _ _ _ _ ⟨⟨terminal⟩⟩ (Functor.uniqueFromEmpty _).symm
+  has_limit _ := @hasLimitOfIso _ _ _ _ _ _ ⟨⟨ChosenTerminal.terminal⟩⟩
+    (Functor.uniqueFromEmpty _).symm
 
-end ChosenTerminal
+/-- The chosen terminal object in a category endowed with such a choice. -/
+def Limits.chosenTerminal (C : Type u) [Category.{v} C] [ChosenTerminal C] : C :=
+  ChosenTerminal.terminal.cone.pt
+
+/-- The chosen terminal object is indeed terminal. -/
+def Limits.chosenTerminalIsTerminal {C : Type u} [Category.{v} C] [ChosenTerminal C] :
+    IsTerminal (chosenTerminal C) :=
+  (ChosenTerminal.terminal (C := C)).isLimit.ofIsoLimit <| Cones.ext (Iso.refl _) default
+
+def ChosenTerminal.ofIsTerminal {C : Type u } [Category.{v} C] (X : C) (h : IsTerminal X) :
+    ChosenTerminal C where
+  terminal := ⟨_, h⟩
+
+noncomputable instance : ChosenTerminal (Type u) :=
+  ChosenTerminal.ofIsTerminal PUnit Types.isTerminalPunit
+
+/-- The chosen terminal sheaf is the constant functor on the chosen terminal object. -/
+instance {C : Type u} [Category.{v} C] (J : GrothendieckTopology C) (A : Type u₂)
+    [Category.{v₂} A] [ChosenTerminal A] : ChosenTerminal (Sheaf J A) :=
+  .ofIsTerminal {
+    val := (Functor.const _).obj (chosenTerminal A)
+    cond := fun _ _ _ _ _ _ ↦ ⟨chosenTerminalIsTerminal.from _,
+      fun _ _ _ ↦ chosenTerminalIsTerminal.hom_ext _ _,
+      fun _ _ ↦ chosenTerminalIsTerminal.hom_ext _ _⟩
+  } <| IsTerminal.ofUniqueHom (fun X ↦ ⟨{
+    app X := chosenTerminalIsTerminal.from _
+  }⟩) fun _ _ ↦ by ext; exact chosenTerminalIsTerminal.hom_ext _ _
 
 attribute [local instance] ConcreteCategory.hasCoeToSort
 attribute [local instance] ConcreteCategory.instFunLike
@@ -59,6 +84,45 @@ noncomputable instance ConcreteSite.instUniqueTerminal (J : GrothendieckTopology
   of `C` when `C` has a terminal object, but is a bit more general. -/
 noncomputable def Sheaf.Γ {J : GrothendieckTopology C} : Sheaf J (Type w) ⥤ Type (max u w) :=
   coyoneda.obj (.op (⊤_ _))
+
+/-- The sections functor on sheaves over a concrete site as evaluation over the terminal
+  object. -/
+noncomputable def Sheaf.Γ' {J : GrothendieckTopology C} [ConcreteSite J] :
+    Sheaf J (Type w) ⥤ Type _ where
+  obj X := X.val.obj (op (⊤_ C))
+  map f := f.val.app (op (⊤_ C))
+
+noncomputable def Sheaf.Γ_natIso_Γ' {J : GrothendieckTopology C} [ConcreteSite J] :
+    (Γ : Sheaf J (Type max u w) ⥤ _) ≅ Γ' where
+  hom := {
+    app X f := f.val.app (op (⊤_ C)) <|
+      ((chosenTerminalIsTerminal (C := Sheaf J (Type _))).uniqueUpToIso
+        terminalIsTerminal).hom.val.app (op (⊤_ C)) (default : PUnit)
+  }
+  inv := {
+    app X := fun x ↦ ⟨{
+      app Y := fun y ↦ X.val.map (op (terminalIsTerminal.from _)) x
+      naturality := fun _ _ _ ↦ by
+        ext _
+        convert FunctorToTypes.map_comp_apply X.val _ _ _
+        refine congrFun (congrArg X.val.map ((op_inj_iff _ _).2 ?_)) x
+        exact terminalIsTerminal.hom_ext _ _
+    }⟩
+    naturality X Y f := by
+      ext x; apply Sheaf.hom_ext; ext y
+      exact congrFun (f.val.naturality _).symm x
+  }
+  hom_inv_id := by
+    ext X f; apply Sheaf.hom_ext; ext Y (y : (⊤_ Sheaf J _).val.obj Y)
+    dsimp
+    have h := @f.val.naturality (op (⊤_ _)) Y (op (terminalIsTerminal.from _))
+    dsimp at h
+    have := congrFun h <| ((chosenTerminalIsTerminal (C := Sheaf J (Type _))).uniqueUpToIso
+        terminalIsTerminal).hom.val.app (op (⊤_ C)) (default : PUnit)
+    sorry
+  inv_hom_id := by
+    ext X x; dsimp; rw [terminalIsTerminal.from_self]
+    exact congrFun (X.val.map_id _) x
 
 /-- The right adjoint to the global sections functor that exists over any concrete site.
   Takes a type `X` to the sheaf that sends each `Y : C` to the type of functions `Y → X`. -/
