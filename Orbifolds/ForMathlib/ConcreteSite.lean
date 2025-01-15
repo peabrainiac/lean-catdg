@@ -48,6 +48,38 @@ instance {C : Type u} [Category.{v} C] (J : GrothendieckTopology C) (A : Type u�
 attribute [local instance] ConcreteCategory.hasCoeToSort
 attribute [local instance] ConcreteCategory.instFunLike
 
+/-- A terminal sheaf is also terminal as a presheaf. -/
+noncomputable def Limits.IsTerminal.isTerminalSheafVal {C : Type u} [Category.{v} C]
+    {J : GrothendieckTopology C} {A : Type u₂} [Category.{v₂} A] [HasLimits A]
+    {X : Sheaf J A} (hX : IsTerminal X) : IsTerminal X.val :=
+  hX.isTerminalObj (sheafToPresheaf J A)
+
+/-- Evaluating a terminal functor yields terminal objects. -/
+noncomputable def Limits.IsTerminal.isTerminalObj_functor {C : Type u} [Category.{v} C] {D : Type u₂}
+    [Category.{v₂} D] [HasLimits D] {F : C ⥤ D} (hF : IsTerminal F) (X : C) :
+    IsTerminal (F.obj X) :=
+  hF.isTerminalObj ((evaluation C D).obj X)
+
+/-- Sections of a terminal sheaf are terminal objects. -/
+noncomputable def Limits.IsTerminal.isTerminalSheafValObj {C : Type u} [Category.{v} C]
+    {J : GrothendieckTopology C} {A : Type u₂} [Category.{v₂} A] [HasLimits A]
+    {X : Sheaf J A} (hX : IsTerminal X) (Y : Cᵒᵖ) : IsTerminal (X.val.obj Y) :=
+  hX.isTerminalSheafVal.isTerminalObj_functor Y
+
+/-- For sheaves valued in a concrete category whose terminal object is a point,
+  sections of the terminal sheaf are unique. -/
+noncomputable instance Sheaf.instUniqueTerminalValObjForget {C : Type u} [Category.{v} C]
+    {J : GrothendieckTopology C} {A : Type u₂} [Category.{v₂} A] [HasLimits A]
+    [ConcreteCategory.{w} A] [PreservesLimit (Functor.empty _) (forget A)] (Y : Cᵒᵖ) :
+    Unique ((⊤_ Sheaf J A).val.obj Y) :=
+  Concrete.uniqueOfTerminalOfPreserves _ <| terminalIsTerminal.isTerminalSheafValObj Y
+
+/-- Sections of the terminal sheaf are unique. -/
+noncomputable instance Sheaf.instUniqueTerminalValObj {C : Type u} [Category.{v} C]
+    {J : GrothendieckTopology C}  (Y : Cᵒᵖ) :
+    Unique ((⊤_ Sheaf J (Type w)).val.obj Y) :=
+  Types.isTerminalEquivUnique _ <| terminalIsTerminal.isTerminalSheafValObj Y
+
 variable {C : Type u} [Category.{v} C]
 
 /-- A presieve `S` on `X` in a concrete category is jointly surjective if every `x : X` is in
@@ -95,9 +127,7 @@ noncomputable def Sheaf.Γ' {J : GrothendieckTopology C} [ConcreteSite J] :
 noncomputable def Sheaf.Γ_natIso_Γ' {J : GrothendieckTopology C} [ConcreteSite J] :
     (Γ : Sheaf J (Type max u w) ⥤ _) ≅ Γ' where
   hom := {
-    app X f := f.val.app (op (⊤_ C)) <|
-      ((chosenTerminalIsTerminal (C := Sheaf J (Type _))).uniqueUpToIso
-        terminalIsTerminal).hom.val.app (op (⊤_ C)) (default : PUnit)
+    app X f := f.val.app (op (⊤_ C)) default
   }
   inv := {
     app X := fun x ↦ ⟨{
@@ -114,12 +144,9 @@ noncomputable def Sheaf.Γ_natIso_Γ' {J : GrothendieckTopology C} [ConcreteSite
   }
   hom_inv_id := by
     ext X f; apply Sheaf.hom_ext; ext Y (y : (⊤_ Sheaf J _).val.obj Y)
-    dsimp
     have h := @f.val.naturality (op (⊤_ _)) Y (op (terminalIsTerminal.from _))
-    dsimp at h
-    have := congrFun h <| ((chosenTerminalIsTerminal (C := Sheaf J (Type _))).uniqueUpToIso
-        terminalIsTerminal).hom.val.app (op (⊤_ C)) (default : PUnit)
-    sorry
+    replace h := congrFun h.symm <| default
+    dsimp at h; convert h; exact Subsingleton.elim _ _
   inv_hom_id := by
     ext X x; dsimp; rw [terminalIsTerminal.from_self]
     exact congrFun (X.val.map_id _) x
@@ -156,7 +183,47 @@ noncomputable def Sheaf.codisc (J : GrothendieckTopology C) [ConcreteSite J] :
   map_id _ := rfl
   map_comp _ _ := rfl
 
+/- The global sections functor on concrete sites is left-adjoint to the codiscrete functor. -/
+noncomputable def Sheaf.ΓCodiscAdjunction (J : GrothendieckTopology C) [ConcreteSite J] :
+    Γ.{u,v,max u v w} ⊣ codisc J :=
+  Adjunction.ofNatIsoLeft (Adjunction.mkOfUnitCounit {
+    unit := {
+      app := fun X => ⟨{
+        app Y (x : X.val.obj Y) y :=
+          X.val.map (op (ConcreteSite.forget_natIso_coyoneda.hom.app (unop Y) y)) x
+        naturality Y Z f := by
+          ext (x : X.val.obj Y); dsimp [codisc, Γ']; ext z
+          have h := NatTrans.naturality_apply
+            (ConcreteSite.forget_natIso_coyoneda (J := J)).hom f.unop z
+          refine ((congrFun (congrArg X.val.map (congrArg Opposite.op h)) x).trans ?_).symm
+          exact congrFun (X.val.map_comp _ _) x
+      }⟩
+      naturality X Y f := by
+        ext Z (x : X.val.obj Z); dsimp [codisc, Γ']; ext z
+        exact Eq.symm <| NatTrans.naturality_apply f.val
+          (op (ConcreteSite.forget_natIso_coyoneda.hom.app (unop Z) z)) x
+    }
+    counit := { app := fun X x => by exact x default }
+    left_triangle := by
+      ext X (x : X.val.obj _)
+      dsimp [Γ']
+      convert congrFun (X.val.map_id _) x
+      exact congrArg op <| ((uniqueToTerminal (⊤_ C)).instSubsingleton).allEq _ _
+    right_triangle := by
+      ext X Y (f : _ → _); dsimp [codisc, Γ']; ext y
+      exact congrArg f (congrFun ConcreteSite.forget_natIso_coyoneda_apply _)
+  }) (Γ_natIso_Γ'.{u,v,max u v w} (J := J)).symm
+
 variable (J : GrothendieckTopology C) [ConcreteSite J]
+
+instance : (Γ.{u,v,max u v w} (J := J)).IsLeftAdjoint :=
+  ⟨codisc J, ⟨ΓCodiscAdjunction J⟩⟩
+
+instance : (Γ'.{u,v,max u v w} (J := J)).IsLeftAdjoint :=
+  ⟨codisc J, ⟨Adjunction.ofNatIsoLeft (ΓCodiscAdjunction J) (Γ_natIso_Γ'.{u,v,max u v w})⟩⟩
+
+instance : (codisc.{u,v,max u v w} J).IsRightAdjoint :=
+  ⟨Γ, ⟨ΓCodiscAdjunction J⟩⟩
 
 def Presheaf.IsConcrete (P :  Cᵒᵖ ⥤ Type w) : Prop :=
   ∀ X : C, Function.Injective fun p : P.obj (.op X) ↦ fun f : (⊤_ C ⟶ X) ↦ P.map (.op f) p
