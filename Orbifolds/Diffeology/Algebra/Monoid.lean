@@ -1,7 +1,7 @@
 import Orbifolds.Diffeology.Algebra.MulAction
 
 /-!
-# Smooth  monoids
+# Smooth monoids
 Adapted from `Mathlib.Topology.Algebra.Monoid`.
 For now this just contains a few basic definitions and lemmas, used to build up the theory of
 diffeological groups and vector spaces.
