@@ -210,6 +210,11 @@ instance {X : Type*} [NormedAddCommGroup X] [NormedSpace ℝ X]
     [FiniteDimensional ℝ X] : @ContDiffCompatible X _ _ euclideanDiffeology :=
   let _ := euclideanDiffeology (X := X); ⟨Iff.rfl⟩
 
+lemma contDiffCompatible_iff_eq_euclideanDiffeology {X : Type*} [NormedAddCommGroup X]
+    [NormedSpace ℝ X] [FiniteDimensional ℝ X] [d : DiffeologicalSpace X] :
+    ContDiffCompatible X ↔ d = euclideanDiffeology :=
+  ⟨fun _ ↦ by ext n p; exact ContDiffCompatible.isPlot_iff, fun h ↦ h ▸ inferInstance⟩
+
 instance {X : Type*} [NormedAddCommGroup X] [NormedSpace ℝ X]
     [FiniteDimensional ℝ X] : @DTopCompatible X _ euclideanDiffeology :=
   let _ := euclideanDiffeology (X := X); ⟨rfl⟩

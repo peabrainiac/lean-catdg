@@ -105,6 +105,16 @@ instance Submonoid.dsmoothMul (S : Submonoid M) : DSmoothMul S :=
   S.toSubsemigroup.dsmoothMul
 
 @[to_additive]
+theorem dsmooth_list_prod {X : Type*} [DiffeologicalSpace X] {ι : Type*} {f : ι → X → M}
+    (l : List ι) (hf : ∀ i ∈ l, DSmooth (f i)) :
+    DSmooth fun a ↦ (l.map fun i ↦ f i a).prod := by
+  induction l with
+  | nil => simp [dsmooth_const]
+  | cons i is h =>
+    simp_rw [List.map_cons, List.prod_cons]
+    exact (hf i (List.mem_cons_self _ _)).mul (h (fun i hi ↦ hf i (is.mem_cons_of_mem _ hi)))
+
+@[to_additive]
 theorem dsmooth_pow : ∀ n : ℕ, DSmooth fun a : M => a ^ n
   | 0 => by simp [dsmooth_const]
   | k + 1 => by simp_rw [pow_succ']; exact dsmooth_id.mul (dsmooth_pow _)
@@ -147,6 +157,19 @@ theorem DSmooth.units_map {M : Type*} [DiffeologicalSpace M] [Monoid M]
     {N : Type*} [DiffeologicalSpace N] [Monoid N] (f : M →* N) (hf : DSmooth f) :
     DSmooth (Units.map f) :=
   Units.dsmooth_iff.2 ⟨hf.comp Units.dsmooth_val, hf.comp Units.dsmooth_coe_inv⟩
+
+@[to_additive]
+theorem dsmooth_multiset_prod {M : Type*} [DiffeologicalSpace M] [CommMonoid M] [DSmoothMul M]
+    {X : Type*} [DiffeologicalSpace X] {ι : Type*} {f : ι → X → M} (s : Multiset ι) :
+    (∀ i ∈ s, DSmooth (f i)) → DSmooth fun a ↦ (s.map fun i ↦ f i a).prod := by
+  rcases s with ⟨l⟩
+  simpa using dsmooth_list_prod l
+
+@[to_additive]
+theorem dsmooth_finset_prod {M : Type*} [DiffeologicalSpace M] [CommMonoid M] [DSmoothMul M]
+    {X : Type*} [DiffeologicalSpace X] {ι : Type*} {f : ι → X → M} (s : Finset ι) :
+    (∀ i ∈ s, DSmooth (f i)) → DSmooth fun a ↦ ∏ i ∈ s, f i a :=
+  dsmooth_multiset_prod _
 
 instance {M : Type*} [DiffeologicalSpace M] [Mul M] [DSmoothMul M] :
     DSmoothAdd (Additive M) :=
