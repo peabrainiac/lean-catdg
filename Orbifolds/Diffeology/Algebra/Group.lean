@@ -128,12 +128,23 @@ theorem dsmoothInv_inf {G : Type*} [Inv G] {d₁ d₂ : DiffeologicalSpace G}
     (h₁ : @DSmoothInv G d₁ _) (h₂ : @DSmoothInv G d₂ _) : @DSmoothInv G (d₁ ⊓ d₂) _ :=
   inf_eq_iInf d₁ d₂ ▸ dsmoothInv_iInf fun b => (by cases b <;> assumption)
 
--- TODO: remove injectivity hypothesis
+/-
+  TODO: replace the `Induction` hypothesis here with something that does not include
+  injectivity, once that exists. In the meantime, see `dsmoothInv_induced`. -/
 @[to_additive]
 theorem Induction.dsmoothInv {G H : Type*} [Inv G] [Inv H] [DiffeologicalSpace G]
     [DiffeologicalSpace H] [DSmoothInv H] {f : G → H} (hf : Induction f)
     (hf_inv : ∀ x, f x⁻¹ = (f x)⁻¹) : DSmoothInv G :=
   ⟨hf.dsmooth_iff.2 <| by simpa only [Function.comp_def, hf_inv] using hf.dsmooth.inv⟩
+
+@[to_additive]
+theorem dsmoothInv_induced {G H : Type*} [Inv G] [Inv H] [DiffeologicalSpace H] [DSmoothInv H]
+    (f : G → H) (hf_inv : ∀ x, f x⁻¹ = (f x)⁻¹) :
+    @DSmoothInv G (DiffeologicalSpace.induced f ‹_›) _ := by
+  letI := DiffeologicalSpace.induced f ‹_›; constructor
+  suffices h : DSmooth (f ∘ fun g : G ↦ g⁻¹) by
+    simpa [dsmooth_iff_le_induced, ← DiffeologicalSpace.induced_compose] using h
+  simpa [Function.comp_def, hf_inv] using dsmooth_induced_dom.inv
 
 /-!
 ### Diffeological groups
@@ -221,7 +232,7 @@ open MulOpposite
 
 @[to_additive]
 instance {G : Type*} [DiffeologicalSpace G] [Inv G] [DSmoothInv G] : DSmoothInv Gᵐᵒᵖ :=
-  by sorry--opDDiffeomorph.symm.induction.dsmoothInv unop_inv
+  by exact opDDiffeomorph.symm.induction.dsmoothInv unop_inv
 
 /-- If multiplication is continuous in `α`, then it also is in `αᵐᵒᵖ`. -/
 @[to_additive "If addition is continuous in `α`, then it also is in `αᵃᵒᵖ`."]
@@ -250,21 +261,24 @@ theorem DDiffeomorph.shearMulRight_symm_coe :
 variable {G}
 
 omit [DiffeologicalSpace H] [Group H] [DiffeologicalGroup H] in
--- TODO: remove injectivity hypothesis
-@[to_additive]
+/-- For any group homomorphism to a diffeological group, the induced diffeology makes the
+  domain a diffeological group too.
+  TODO: replace the `Induction` hypothesis here with something that does not include
+  injectivity, once that exists. In the meantime, see `diffeologicalGroup_induced`. -/
+@[to_additive "For any group homomorphism to a diffeological group, the induced diffeology makes
+  the domain a diffeological group too."]
 protected theorem Induction.diffeologicalGroup {F : Type*} [Group H] [DiffeologicalSpace H]
     [FunLike F H G] [MonoidHomClass F H G] (f : F) (hf : Induction f) : DiffeologicalGroup H :=
   { toDSmoothMul := hf.dsmoothMul _
     toDSmoothInv := hf.dsmoothInv (map_inv f) }
 
 omit [DiffeologicalSpace H] [Group H] [DiffeologicalGroup H] in
--- TODO: remove injectivity hypothesis
 @[to_additive]
 theorem diffeologicalGroup_induced {F : Type*} [Group H] [FunLike F H G] [MonoidHomClass F H G]
-    (f : F) (hf : Function.Injective f):
-    @DiffeologicalGroup H (DiffeologicalSpace.induced f ‹_›) _ :=
+    (f : F) : @DiffeologicalGroup H (DiffeologicalSpace.induced f ‹_›) _ :=
   letI := DiffeologicalSpace.induced f ‹_›
-  Induction.diffeologicalGroup f ⟨hf,rfl⟩
+  { toDSmoothMul := dsmoothMul_induced f
+    toDSmoothInv := dsmoothInv_induced f (map_inv f) }
 
 namespace Subgroup
 

@@ -49,10 +49,23 @@ instance MulOpposite.dsmoothSMul [SMul M X] [DSmoothSMul M X] : DSmoothSMul M X�
   ⟨MulOpposite.dsmooth_op.comp <|
       dsmooth_smul.comp <| dsmooth_id.prod_map MulOpposite.dsmooth_unop⟩
 
+omit dY in
+/-- For any action homomorphism where the action on the codomain is smooth, the induced
+  diffeology makes the action on the domain smooth too. -/
+@[to_additive "For any action homomorphism where the action on the codomain is smooth, the induced
+  diffeology makes the action on the domain smooth too."]
+theorem dsmoothSMul_induced [SMul M X] [DSmoothSMul M X] {N : Type*} [SMul N Y]
+    [DiffeologicalSpace N] (g : Y → X) {f : N → M} (hf : DSmooth f)
+    (hsmul : ∀ {c x}, g (c • x) = f c • g x) : @DSmoothSMul N Y _ _ (dX.induced g) := by
+  let dY := dX.induced g; have hg : DSmooth g := dsmooth_induced_dom; constructor
+  suffices h : DSmooth (g ∘ fun p : N × Y ↦ p.1 • p.2) by
+    simpa [dsmooth_iff_le_induced, ← DiffeologicalSpace.induced_compose] using h
+  simpa only [Function.comp_def, hsmul] using (hf.comp dsmooth_fst).smul <| hg.comp dsmooth_snd
+
 /-- For any action homomorphism where the action on the codomain is smooth, the induced
   diffeology makes the action on the domain smooth too.
-  TODO: weaken assumption from `Induction g` (which includes injectivity of `g`) to
-  just `dY = dX.induced g`. -/
+  TODO: replace the `Induction` hypothesis here with something that does not include
+  injectivity, once that exists. In the meantime, see `dsmoothSMul_induced`. -/
 @[to_additive "For any action homomorphism where the action on the codomain is smooth, the induced
   diffeology makes the action on the domain smooth too."]
 lemma Induction.dsmoothSMul [SMul M X] [DSmoothSMul M X] {N : Type*} [SMul N Y]

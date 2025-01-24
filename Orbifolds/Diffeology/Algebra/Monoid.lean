@@ -1,7 +1,7 @@
 import Orbifolds.Diffeology.Algebra.MulAction
 
 /-!
-# Smooth monoids
+# Diffeological monoids
 Adapted from `Mathlib.Topology.Algebra.Monoid`.
 For now this just contains a few basic definitions and lemmas, used to build up the theory of
 diffeological groups and vector spaces.
@@ -10,7 +10,7 @@ diffeological groups and vector spaces.
 @[to_additive (attr := fun_prop)]
 theorem dsmooth_one {M X : Type*} [DiffeologicalSpace M] [One M] [DiffeologicalSpace X] :
     DSmooth (1 : X → M) :=
-  @dsmooth_const _ _ _ _ 1
+  dsmooth_const
 
 class DSmoothAdd (M : Type*) [DiffeologicalSpace M] [Add M] : Prop where
   dsmooth_add : DSmooth fun p : M × M => p.1 + p.2
@@ -70,23 +70,23 @@ instance Pi.dsmoothMul {ι : Type*} {M : ι → Type*} [∀ i, DiffeologicalSpac
 
 -- TODO: DSmoothMul instance on discrete spaces, once those are available as a typeclass
 
-/-- For any monoid homomorphism to a smooth monoid, the induced diffeology makes the
-  action on the domain a smooth monoid too.
-  TODO: weaken assumption from `Induction f` (which includes injectivity of `f`) to just
-  `dM = dN.induced f`. -/
-@[to_additive]
+/-- For any monoid homomorphism to a diffeological monoid, the induced diffeology makes
+  the domain a diffeological monoid too.
+  TODO: replace the `Induction` hypothesis here with something that does not include
+  injectivity, once that exists. In the meantime, see `dsmoothMul_induced`. -/
+@[to_additive "For any monoid homomorphism to a diffeological monoid, the induced diffeology makes
+  the domain a diffeological monoid too."]
 theorem Induction.dsmoothMul {M N F : Type*} [Mul M] [Mul N] [FunLike F M N] [MulHomClass F M N]
     [DiffeologicalSpace M] [DiffeologicalSpace N] [DSmoothMul N] (f : F) (hf : Induction f) :
     DSmoothMul M :=
   ⟨(hf.dsmoothSMul hf.dsmooth (map_mul f _ _)).1⟩
 
--- TODO: remove injectivity hypothesis
 @[to_additive]
 theorem dsmoothMul_induced {M N F : Type*} [Mul M] [Mul N] [FunLike F M N] [MulHomClass F M N]
-    [DiffeologicalSpace N] [DSmoothMul N] (f : F) (hf : Function.Injective f):
-    @DSmoothMul M (DiffeologicalSpace.induced f ‹_›) _ :=
+    [DiffeologicalSpace N] [DSmoothMul N] (f : F) :
+    @DSmoothMul M (DiffeologicalSpace.induced f ‹_›) _ := by
   letI := DiffeologicalSpace.induced f ‹_›
-  Induction.dsmoothMul f ⟨hf,rfl⟩
+  exact ⟨(dsmoothSMul_induced f dsmooth_induced_dom (map_mul f _ _)).1⟩
 
 end DSmoothMul
 
