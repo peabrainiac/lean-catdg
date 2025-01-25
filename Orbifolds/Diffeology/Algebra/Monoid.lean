@@ -198,3 +198,34 @@ theorem dsmoothMul_inf {M : Type*} [Mul M] {d₁ d₂ : DiffeologicalSpace M}
   rw [inf_eq_iInf]
   refine' dsmoothMul_iInf fun b => _
   cases b <;> assumption
+
+section Topology
+
+/-- If the D-topology makes `M` locally compact, then any smooth multiplication on `X` is also
+  continuous. Local compactness is needed here because multiplication is a priori only
+  continuous with respect to the D-topology on `M × M`, not the product topology - when `M` is
+  locally compact the topologies agree, but otherwise the product topology could be
+  fine enough for multiplication to not be continuous. -/
+@[to_additive "If the D-topology makes `M` locally compact, then any smooth addition on `X`
+  is also continuous. Local compactness is needed here because addition is a priori only
+  continuous with respect to the D-topology on `M × M`, not the product topology - when `M` is
+  locally compact the topologies agree, but otherwise the product topology could be
+  fine enough for addition to not be continuous."]
+lemma DSmoothMul.continuousMul {M : Type*} [DiffeologicalSpace M] [Monoid M] [DSmoothMul M]
+    [@LocallyCompactSpace M DTop] : @ContinuousMul M DTop _ := by
+  letI := @DTop M _
+  constructor
+  convert (dsmooth_mul (M := M)).continuous
+  exact dTop_prod_eq_prod_dTop_of_locallyCompact_right.symm
+
+/-- Variant of `DSmoothMul.continuousMul` phrased in terms of spaces equipped with
+  `DTopCompatible` topologies. -/
+@[to_additive "Variant of `DSmoothAdd.continuousAdd` phrased in terms of spaces equipped with
+  `DTopCompatible` topologies."]
+instance {M : Type*} [Monoid M] [DiffeologicalSpace M] [TopologicalSpace M] [DTopCompatible M]
+    [DSmoothMul M] [LocallyCompactSpace M] : ContinuousMul M := by
+  rw [← dTop_eq M]
+  letI : @LocallyCompactSpace M DTop := dTop_eq M ▸ ‹_›
+  exact DSmoothMul.continuousMul
+
+end Topology

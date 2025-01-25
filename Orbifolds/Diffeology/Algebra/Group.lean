@@ -580,3 +580,40 @@ instance : CompleteLattice (GroupDiffeology G) :=
     bot := ⊥ }
 
 end GroupDiffeology
+
+section Topology
+
+@[to_additive]
+lemma DSmoothInv.continuousInv {G : Type*} [DiffeologicalSpace G] [Inv G] [DSmoothInv G] :
+    @ContinuousInv G DTop _ :=
+  letI := @DTop G _; ⟨dsmooth_inv.continuous⟩
+
+@[to_additive]
+instance {G : Type*} [DiffeologicalSpace G] [TopologicalSpace G] [DTopCompatible G]
+    [Inv G] [DSmoothInv G] : ContinuousInv G :=
+  dTop_eq G ▸ DSmoothInv.continuousInv
+
+/-- If a diffeological group `G` is locally compact under the D-topology, then it is also a
+  topological group. Local compactness is needed here because multiplication is a priori only
+  continuous with respect to the D-topology on `G × G`, not the product topology - when `G` is
+  locally compact the topologies agree, but otherwise the product topology could be
+  fine enough for multiplication to not be continuous. -/
+@[to_additive "If a diffeological group `G` is locally compact under the D-topology, then it is
+  also a topological group. Local compactness is needed here because addition is a priori only
+  continuous with respect to the D-topology on `G × G`, not the product topology - when `G` is
+  locally compact the topologies agree, but otherwise the product topology could be
+  fine enough for addition to not be continuous."]
+lemma DiffeologicalGroup.topologicalGroup {G : Type*} [DiffeologicalSpace G] [Group G]
+    [DiffeologicalGroup G] [@LocallyCompactSpace G DTop] : @TopologicalGroup G DTop _ := by
+  letI := @DTop G _
+  exact { toContinuousMul := DSmoothMul.continuousMul
+          toContinuousInv := DSmoothInv.continuousInv }
+
+/-- Variant of `DiffeologicalGroup.topologicalGroup` phrased in terms of spaces equipped with
+  `DTopCompatible` topologies. -/
+@[to_additive "Variant of `DiffeologicalAddGroup.topologicalAddGroup` phrased in terms of
+  spaces equipped with `DTopCompatible` topologies."]
+instance {G : Type*} [Group G] [DiffeologicalSpace G] [TopologicalSpace G] [DTopCompatible G]
+    [DiffeologicalGroup G] [LocallyCompactSpace G] : TopologicalGroup G where
+
+end Topology

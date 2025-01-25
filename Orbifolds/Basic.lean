@@ -11,6 +11,7 @@ instance : IsOrbifold (n + m) (X × Y) where
     let ⟨u, hu, hxu, Γ, u', hu', ⟨du⟩⟩ := hX.locally_modelled x
     let ⟨v, hv, hyv, Γ', v', hv', ⟨dv⟩⟩ := hY.locally_modelled y
     have := @IsOrbifold.locallyCompactSpace X DTop _ ⟨rfl⟩ _ hX
-    refine ⟨u ×ˢ v, by rw [dTop_prod_eq_prod_dTop]; exact hu.prod hv, ⟨hxu, hyv⟩, ?_⟩
+    refine ⟨u ×ˢ v, by
+      rw [dTop_prod_eq_prod_dTop_of_locallyCompact_left]; exact hu.prod hv, ⟨hxu, hyv⟩, ?_⟩
 
     sorry

@@ -61,6 +61,18 @@ lemma LinearMap.isPlot (X : Type*) [AddCommGroup X] [Module ℝ X] [Diffeologica
   refine (dsmooth_finset_sum _ fun i _ ↦ ?_).isPlot
   exact (EuclideanSpace.proj (𝕜 := ℝ) i).contDiff.dsmooth.smul dsmooth_const
 
+/-- If a diffeological module is locally compact with respect to the D-topology, then it is
+  also a topological module. Notice that due to the D-topology not commuting with products
+  in general, `X` being locally compact is necessary here to ensure that addition and scalar
+  multiplication are continuous (although for the latter, `R` being locally compact would also
+  suffice). An example of a diffeological vector space over `ℝ` whose addition is
+  discontinuous is described in https://arxiv.org/abs/2205.09562. -/
+example {R : Type*} [Ring R] [DiffeologicalSpace R] [TopologicalSpace R] [DTopCompatible R]
+    [DiffeologicalRing R] {X : Type*} [AddCommGroup X] [Module R X] [DiffeologicalSpace X]
+    [TopologicalSpace X] [DTopCompatible X] [DiffeologicalModule R X] [LocallyCompactSpace X] :
+    ContinuousSMul R X ∧ TopologicalAddGroup X :=
+  ⟨inferInstance, inferInstance⟩
+
 section
 
 variable {R : Type*} [DiffeologicalSpace R] [Ring R] [DiffeologicalRing R]

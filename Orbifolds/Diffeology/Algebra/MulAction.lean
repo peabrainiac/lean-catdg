@@ -134,3 +134,36 @@ theorem dsmoothSMul_iInf {X ι : Type*} [SMul M X] {D : ι → DiffeologicalSpac
 theorem dsmoothSMul_inf {X : Type*} [SMul M X] {d₁ d₂ : DiffeologicalSpace X}
     [@DSmoothSMul M X _ _ d₁] [@DSmoothSMul M X _ _ d₂] : @DSmoothSMul M X _ _ (d₁ ⊓ d₂) :=
   inf_eq_iInf d₁ d₂ ▸ dsmoothSMul_iInf fun b => (by cases b <;> assumption)
+
+section Topology
+
+/-- If the D-topology makes `X` locally compact, then any smooth action on `X` is also
+  continuous. Local compactness is needed here because scalar multiplication is a priori only
+  continuous with respect to the D-topology on `M × X`, not the product topology - if either
+  space is locally compact the topologies agree, but otherwise the product topology could be
+  fine enough for multiplication to not be continuous. -/
+@[to_additive "If the D-topology makes `X` locally compact, then any smooth action on `X` is
+  also continuous. Local compactness is needed here because the action is a priori
+  only continuous with respect to the D-topology on `M × X`, not the product topology - if
+  either space is locally compact the topologies agree, but otherwise the product topology
+  could be fine enough for the action to not be continuous."]
+lemma DSmoothSMul.continuousSMul {M X : Type*} [SMul M X] [DiffeologicalSpace M]
+    [DiffeologicalSpace X] [DSmoothSMul M X] [@LocallyCompactSpace X DTop] :
+    @ContinuousSMul M X _ DTop DTop := by
+  letI := @DTop M _; letI := @DTop X _
+  constructor
+  convert (dsmooth_smul (M := M) (X := X)).continuous
+  exact dTop_prod_eq_prod_dTop_of_locallyCompact_right.symm
+
+/-- Variant of `DSmoothSMul.continuousSMul` phrased in terms of spaces equipped with
+  `DTopCompatible` topologies. -/
+@[to_additive "Variant of `DSmoothVAdd.continuousVAdd` phrased in terms of spaces equipped
+  with `DTopCompatible` topologies."]
+instance {M X : Type*} [SMul M X] [DiffeologicalSpace M] [DiffeologicalSpace X]
+    [TopologicalSpace M] [TopologicalSpace X] [DTopCompatible M] [DTopCompatible X]
+    [DSmoothSMul M X] [LocallyCompactSpace X] : ContinuousSMul M X := by
+  rw [← dTop_eq M, ← dTop_eq X]
+  letI : @LocallyCompactSpace X DTop := dTop_eq X ▸ ‹_›
+  exact DSmoothSMul.continuousSMul
+
+end Topology

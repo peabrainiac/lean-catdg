@@ -900,7 +900,7 @@ lemma coinduced_sigma' {ι Y : Type*} {X : ι → Type v} [tX : (i : ι) → Top
   however, according to a remark in https://arxiv.org/abs/1302.2935 it should be always true
   if one takes the product in the category of delta-generated spaces instead of in Top.
   TODO: work this all out more generally -/
-theorem dTop_prod_eq_prod_dTop [@LocallyCompactSpace X DTop] :
+theorem dTop_prod_eq_prod_dTop_of_locallyCompact_left [@LocallyCompactSpace X DTop] :
     (DTop : TopologicalSpace (X × Y)) = @instTopologicalSpaceProd _ _ DTop DTop := by
   let _ := @DTop X _; let _ := @DTop Y _
   refine le_antisymm dTop_prod_le_prod_dTop ?_
@@ -917,6 +917,15 @@ theorem dTop_prod_eq_prod_dTop [@LocallyCompactSpace X DTop] :
   intro p₁ p₂
   exact (((IsPlot.dsmooth p₂.2.2).prod_map (IsPlot.dsmooth p₁.2.2)).comp
     toEuclidean.symm.contDiff.dsmooth).continuous.coinduced_le
+
+/-- Version of `dTop_prod_eq_prod_dTop_of_locallyCompact_left` where the second factor
+  is assumed to be locally compact instead of the first one. -/
+theorem dTop_prod_eq_prod_dTop_of_locallyCompact_right [@LocallyCompactSpace Y DTop] :
+    (DTop : TopologicalSpace (X × Y)) = @instTopologicalSpaceProd _ _ DTop DTop := by
+  letI := @DTop X _; letI := @DTop Y _
+  refine le_antisymm dTop_prod_le_prod_dTop (le_trans ?_ dsmooth_swap.continuous.coinduced_le)
+  rw [dTop_prod_eq_prod_dTop_of_locallyCompact_left, ← (Homeomorph.prodComm X Y).coinduced_eq]
+  simp [coinduced_compose, coinduced_id]
 
 end Prod
 
