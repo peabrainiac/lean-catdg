@@ -1,6 +1,8 @@
 import Mathlib.CategoryTheory.Monad.Limits
 import Orbifolds.Diffeology.Sites
 import Orbifolds.Diffeology.DiffSp
+import Orbifolds.Diffeology.Algebra.Module
+import Mathlib.LinearAlgebra.Multilinear.FiniteDimensional
 
 /-!
 # Smooth Spaces
@@ -157,3 +159,33 @@ instance DiffSp.toSmoothSp.reflective : Reflective toSmoothSp where
 
 noncomputable instance DiffSp.toSmoothSp.createsLimits : CreatesLimits toSmoothSp :=
   monadicCreatesLimits _
+
+section DifferentialForms
+
+#check Module.Finite.multilinearMap
+
+local instance (M N : Type*) [AddCommGroup M] [Module ℝ M] [DiffeologicalSpace M]
+    [DiffeologicalModule ℝ M] [AddCommGroup N] [Module ℝ N] [DiffeologicalSpace N]
+    [DiffeologicalModule ℝ N] (ι : Type*) : DiffeologicalSpace (M [⋀^ι]→ₗ[ℝ] N) :=
+  fineDiffeology ℝ _
+
+/-- One possible future target for formalisation: the smooth spaces `Ω k` of smooth
+  `k`-forms. Maps `X → Ω k` correspond to smooth `k`-forms on `X`, so they can be used to
+  define differential forms and the De-Rham-cohomology on all smooth spaces.
+
+  Right now, one major obstactle to this is showing that pullbacks of smooth `k`-forms along
+  smooth maps are smooth (i.e. the first `sorry`); it requires showing that
+  `AlternatingMap.compLinearMap` is a smooth function of `f` and `g` and that `fderiv`
+  is a smooth function of `x`, but we have not yet even put a diffeology on the involved spaces
+  of continuous linear functions. -/
+noncomputable def SmoothSp.Ω {k : ℕ} : SmoothSp where
+  val := {
+    obj n := DSmoothMap (Eucl n.unop) ((Eucl n.unop) [⋀^(Fin k)]→ₗ[ℝ] ℝ)
+    map {n m} f := fun ω ↦
+      ⟨fun x ↦ (ω (f.unop x)).compLinearMap (fderiv ℝ f.unop x).toLinearMap, by
+        have := (f.unop.dsmooth.contDiff.fderiv_right (m := (⊤ : ℕ∞)) (by simp))
+        sorry⟩
+  }
+  cond := by sorry
+
+end DifferentialForms
