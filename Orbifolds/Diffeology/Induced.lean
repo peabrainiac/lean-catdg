@@ -95,9 +95,8 @@ theorem induced_id : dX.induced id = dX :=
 theorem induced_compose {f : X → Y} {g : Y → Z} :
     (dZ.induced g).induced f = dZ.induced (g ∘ f) := rfl
 
-/-- TODO: requires explicit characterisation of the indiscrete diffeology. -/
-theorem induced_const {y : Y} : (dY.induced fun _ : X => y) = ⊤ := by
-  sorry
+theorem induced_const {y : Y} : (dY.induced fun _ : X => y) = ⊤ :=
+  eq_top_iff.2 <| le_iff'.2 fun _ _ _ ↦ dsmooth_const.isPlot
 
 theorem coinduced_id : dX.coinduced id = dX := by
   simp_rw [coinduced,dsmooth_iff_le_induced,induced_id]
@@ -108,9 +107,8 @@ theorem coinduced_compose {f : X → Y} {g : Y → Z} :
   simp_rw [coinduced,dsmooth_iff_le_induced (Y := Z),←induced_compose]
   congr 1; ext d; exact coinduced_le_iff_le_induced
 
-/-- TODO: requires explicit characterisation of the discrete diffeology. -/
-theorem coinduced_const {y : Y} : (dX.coinduced fun _ : X => y) = ⊥ := by
-  sorry
+theorem coinduced_const {y : Y} : (dX.coinduced fun _ : X => y) = ⊥ :=
+  eq_bot_iff.2 <| sInf_le <| @dsmooth_const _ _ _ (_) _
 
 end DiffeologicalSpace
 
@@ -124,15 +122,6 @@ theorem Equiv.induced_diffeology_symm (e : X ≃ Y) :
 theorem Equiv.coinduced_diffeology_symm (e : X ≃ Y) :
     DiffeologicalSpace.coinduced e.symm = DiffeologicalSpace.induced e :=
   e.symm.induced_diffeology_symm.symm
-
-/-- TODO: figure out if this is even true. -/
-theorem DiffeologicalSpace.induced_generateFrom_eq {g : Set ((n : ℕ) × (Eucl n → Y))} {f : X → Y} :
-    (generateFrom g).induced f = generateFrom {⟨n,p⟩ | ⟨n,f ∘ p⟩ ∈ g } := by
-  refine' le_antisymm _ _
-  · sorry
-  · refine' generateFrom_le_iff_subset_toPlots.2 fun ⟨n,p⟩ hp => _
-    have h := Set.mem_of_mem_of_subset (Set.mem_setOf_eq ▸ hp) <| self_subset_toPlots_generateFrom g
-    exact h
 
 theorem dsmooth_generateFrom_iff {g : Set ((n : ℕ) × (Eucl n → X))} {f : X → Y} :
     DSmooth[DiffeologicalSpace.generateFrom g,dY] f ↔ ∀ n p, ⟨n,p⟩ ∈ g → IsPlot (f ∘ p) := by

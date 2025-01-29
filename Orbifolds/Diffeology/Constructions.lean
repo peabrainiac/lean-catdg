@@ -117,42 +117,6 @@ theorem subduction_ofDual : Subduction (ofDual : Xᵒᵈ → X) := subduction_id
 
 end OrderDual
 
-section Pi
-
-variable {ι : Type*} {Y : ι → Type*} [(i : ι) → DiffeologicalSpace (Y i)]
-  {X : Type*} [DiffeologicalSpace X] {f : X → ((i : ι) → Y i)}
-
-theorem dsmooth_pi_iff : DSmooth f ↔ ∀ i, DSmooth fun x => f x i := by
-  simp_rw [dsmooth_iff_coinduced_le,Pi.diffeologicalSpace,le_iInf_iff]
-  refine' forall_congr' fun i => _
-  rw [←DiffeologicalSpace.coinduced_le_iff_le_induced,DiffeologicalSpace.coinduced_compose]; rfl
-
-@[fun_prop]
-theorem dsmooth_pi (h : ∀ i, DSmooth fun a => f a i) : DSmooth f :=
-  dsmooth_pi_iff.2 h
-
-@[fun_prop]
-theorem dsmooth_apply (i : ι) : DSmooth fun p : (i : ι) → Y i => p i :=
-  dsmooth_pi_iff.1 dsmooth_id i
-
-theorem isPlot_pi_iff {n} {p : Eucl n → ((i : ι) → Y i)} :
-    IsPlot p ↔ ∀ i, IsPlot fun x => p x i := by
-  simp_rw [isPlot_iff_dsmooth,dsmooth_pi_iff]
-
--- TODO. something like this should be true, but I haven't yet figured out the exact details.
-instance [Fintype ι] [(i : ι) → TopologicalSpace (Y i)] [(i : ι) → LocallyCompactSpace (Y i)]
-    [(i : ι) → DTopCompatible (Y i)] : DTopCompatible ((i : ι) → Y i) := ⟨by
-  ext s; rw [isOpen_pi_iff',isOpen_iff_preimages_plots]
-  refine' ⟨fun h => _, fun h n p hp => _⟩
-  all_goals sorry⟩
-
-instance {ι : Type*} [Fintype ι] {Y : ι → Type*} [(i : ι) → NormedAddCommGroup (Y i)]
-    [(i : ι) → NormedSpace ℝ (Y i)] [(i : ι) → DiffeologicalSpace (Y i)]
-    [(i : ι) → ContDiffCompatible (Y i)] : ContDiffCompatible ((i : ι) → Y i) :=
-  ⟨fun {_ _} => by simp_rw [contDiff_pi,←ContDiffCompatible.isPlot_iff,isPlot_pi_iff]⟩
-
-end Pi
-
 section Subtype
 
 variable {X : Type*} [DiffeologicalSpace X] {s : Set X} {p : X → Prop}
@@ -928,6 +892,43 @@ theorem dTop_prod_eq_prod_dTop_of_locallyCompact_right [@LocallyCompactSpace Y D
   simp [coinduced_compose, coinduced_id]
 
 end Prod
+
+section Pi
+
+variable {ι : Type*} {Y : ι → Type*} [(i : ι) → DiffeologicalSpace (Y i)]
+  {X : Type*} [DiffeologicalSpace X] {f : X → ((i : ι) → Y i)}
+
+theorem dsmooth_pi_iff : DSmooth f ↔ ∀ i, DSmooth fun x => f x i := by
+  simp_rw [dsmooth_iff_coinduced_le,Pi.diffeologicalSpace,le_iInf_iff]
+  refine' forall_congr' fun i => _
+  rw [←DiffeologicalSpace.coinduced_le_iff_le_induced,DiffeologicalSpace.coinduced_compose]; rfl
+
+@[fun_prop]
+theorem dsmooth_pi (h : ∀ i, DSmooth fun a => f a i) : DSmooth f :=
+  dsmooth_pi_iff.2 h
+
+@[fun_prop]
+theorem dsmooth_apply (i : ι) : DSmooth fun p : (i : ι) → Y i => p i :=
+  dsmooth_pi_iff.1 dsmooth_id i
+
+theorem isPlot_pi_iff {n} {p : Eucl n → ((i : ι) → Y i)} :
+    IsPlot p ↔ ∀ i, IsPlot fun x => p x i := by
+  simp_rw [isPlot_iff_dsmooth,dsmooth_pi_iff]
+
+/-
+  TODO: mathematically, this follows easily from
+  `dTop_prod_eq_prod_dTop_of_locallyCompact_left`, but I'm not yet sure how to best formalise
+  that in lean. -/
+instance [Fintype ι] [(i : ι) → TopologicalSpace (Y i)] [(i : ι) → LocallyCompactSpace (Y i)]
+    [(i : ι) → DTopCompatible (Y i)] : DTopCompatible ((i : ι) → Y i) := ⟨by
+  all_goals sorry⟩
+
+instance {ι : Type*} [Fintype ι] {Y : ι → Type*} [(i : ι) → NormedAddCommGroup (Y i)]
+    [(i : ι) → NormedSpace ℝ (Y i)] [(i : ι) → DiffeologicalSpace (Y i)]
+    [(i : ι) → ContDiffCompatible (Y i)] : ContDiffCompatible ((i : ι) → Y i) :=
+  ⟨fun {_ _} => by simp_rw [contDiff_pi,←ContDiffCompatible.isPlot_iff,isPlot_pi_iff]⟩
+
+end Pi
 
 section ULift
 
