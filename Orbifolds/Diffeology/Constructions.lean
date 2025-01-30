@@ -315,13 +315,6 @@ theorem DiffeologicalSpace.eq_bot_iff {X : Type*} {dX : DiffeologicalSpace X} :
     exact le_iff'.1 (h.symm ▸ bot_le (a := d)) n p hp
   · exact le_iff'.2 fun n p hp => (h n p hp).choose_spec ▸ isPlot_const
 
-theorem dTop_mono {X : Type*} {d₁ d₂ : DiffeologicalSpace X} (h : d₁ ≤ d₂) :
-    DTop[d₁] ≤ DTop[d₂] := by
-  refine' TopologicalSpace.le_def.2 fun u hu => _
-  rw [@isOpen_iff_preimages_plots] at hu ⊢
-  rw [DiffeologicalSpace.le_iff'] at h
-  exact fun n p => hu n p ∘ h n p
-
 /-- The D-topology of the indiscrete diffeology is indiscrete. -/
 theorem dTop_top {X : Type*} : DTop[⊤] = (⊤ : TopologicalSpace X) := by
   let f : X → Unit := default
@@ -460,26 +453,6 @@ theorem Function.Surjective.isPlot_coinduced_iff {X Y : Type*} {dX : Diffeologic
   refine' _root_.isPlot_coinduced_iff.trans ⟨fun h => Or.elim h (fun ⟨y,hy⟩ x => _) id,Or.inr⟩
   let ⟨x',hx'⟩ := hf y
   exact ⟨_,isOpen_univ,mem_univ x,fun _ => x',dsmooth_const,funext fun x => hy ▸ hx' ▸ rfl⟩
-
-open Classical in
-/-- The D-topology of the coinduced diffeology agrees with the coinduced topology.
-  TODO: refactor definitions to make this a definitional equality. -/
-theorem dTop_coinduced_comm {X Y : Type*} {dX : DiffeologicalSpace X} {f : X → Y} :
-    DTop[dX.coinduced f] = DTop[dX].coinduced f := by
-  let _ := dX.coinduced f; let _ := @DTop X _
-  let hf : DSmooth f := by rw [dsmooth_iff_coinduced_le]
-  refine' le_antisymm (TopologicalSpace.le_def.2 fun u hu => _) _
-  · rw [isOpen_iff_preimages_plots]; intro n p hp
-    rw [isOpen_coinduced] at hu
-    obtain ⟨y,hy⟩ | hp := isPlot_coinduced_iff.1 hp
-    · by_cases h : y ∈ u; all_goals simp [hy,h]
-    · refine' isOpen_iff_mem_nhds.2 fun x hx => _
-      let ⟨v,hv,hxv,p',hp',hp⟩ := hp x
-      --refine' mem_nhds_iff.2 ⟨_,_,hv,hxv⟩
-      refine' mem_nhds_iff.2 ⟨_,@inter_subset_right _ v _,_,hxv,hx⟩
-      rw [←Subtype.image_preimage_val,←preimage_comp,hp,preimage_comp]
-      exact hv.isOpenMap_subtype_val _ (hu.preimage (hv.dTopCompatible.dTop_eq ▸ hp'.continuous))
-  · exact continuous_iff_coinduced_le.1 <| hf.continuous
 
 /-- The D-topology is coinduced by all plots. -/
 lemma dTop_eq_iSup_coinduced {X : Type*} [dX : DiffeologicalSpace X] :

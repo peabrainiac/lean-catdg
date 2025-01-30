@@ -330,6 +330,12 @@ lemma generateFrom_le_iff_subset_toPlots {g : Set ((n : ℕ) × (Eucl n → X))}
     {d : DiffeologicalSpace X} : generateFrom g ≤ d ↔ g ⊆ d.toPlots :=
   ⟨fun h => (self_subset_toPlots_generateFrom g).trans h,fun h => le_def.2 (Set.iInter₂_subset d h)⟩
 
+/-- Version of `generateFrom_le_iff_subset_toPlots` that is stated in terms of `IsPlot` instead
+  of `toPlots`. -/
+lemma generateFrom_le_iff {g : Set ((n : ℕ) × (Eucl n → X))} {d : DiffeologicalSpace X} :
+    generateFrom g ≤ d ↔ ∀ n (p : Eucl n → X), ⟨n, p⟩ ∈ g → IsPlot[d] p :=
+  generateFrom_le_iff_subset_toPlots.trans ⟨fun h _ _ hp ↦ h hp, fun h _ hp ↦ h _ _ hp⟩
+
 /-- The diffeology defined by `g`. Same as `generateFrom g`, except that its set of plots is
 definitionally equal to `g`. -/
 protected def mkOfClosure (g : Set ((n : ℕ) × (Eucl n → X))) (hg : (generateFrom g).toPlots = g) :
@@ -432,3 +438,10 @@ theorem isPlot_sInf_iff {D : Set (DiffeologicalSpace X)} {n : ℕ} {p : Eucl n �
 end DiffeologicalSpace
 
 end CompleteLattice
+
+theorem dTop_mono {X : Type*} {d₁ d₂ : DiffeologicalSpace X} (h : d₁ ≤ d₂) :
+    DTop[d₁] ≤ DTop[d₂] := by
+  refine' TopologicalSpace.le_def.2 fun u hu => _
+  rw [@isOpen_iff_preimages_plots] at hu ⊢
+  rw [DiffeologicalSpace.le_iff'] at h
+  exact fun n p => hu n p ∘ h n p

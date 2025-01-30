@@ -1,4 +1,4 @@
-import Orbifolds.Diffeology.DSmoothMap
+import Orbifolds.Diffeology.Basic
 import Mathlib.Topology.Compactness.DeltaGeneratedSpace
 
 /-!
