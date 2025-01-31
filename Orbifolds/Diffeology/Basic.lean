@@ -355,13 +355,13 @@ theorem gc_generateFrom (X : Type*) : GaloisConnection generateFrom (@toPlots X)
 /-- The Galois insertion between `DiffeologicalSpace α` and `Set ((n : ℕ) × (Eucl n → X))` whose
   lower part sends a collection of plots in `X` to the diffeology they generate, and whose upper
   part sends a diffeology to its collection of plots. -/
-def gciGenerateFrom (X : Type*) : GaloisInsertion generateFrom (@toPlots X) where
+def giGenerateFrom (X : Type*) : GaloisInsertion generateFrom (@toPlots X) where
   gc := gc_generateFrom X
   le_l_u := fun _ => le_def.2 (self_subset_toPlots_generateFrom _)
   choice g hg := DiffeologicalSpace.mkOfClosure g (hg.antisymm (self_subset_toPlots_generateFrom g))
   choice_eq _ _ := mkOfClosure_eq_generateFrom
 
-instance : CompleteLattice (DiffeologicalSpace X) := (gciGenerateFrom X).liftCompleteLattice
+instance : CompleteLattice (DiffeologicalSpace X) := (giGenerateFrom X).liftCompleteLattice
 
 @[mono]
 theorem generateFrom_mono {g₁ g₂ : Set ((n : ℕ) × (Eucl n → X))} (h : g₁ ⊆ g₂) :
@@ -370,14 +370,14 @@ theorem generateFrom_mono {g₁ g₂ : Set ((n : ℕ) × (Eucl n → X))} (h : g
 
 theorem generateFrom_toPlots (d : DiffeologicalSpace X) :
     generateFrom d.toPlots = d :=
-  (gciGenerateFrom X).l_u_eq d
+  (giGenerateFrom X).l_u_eq d
 
 theorem leftInverse_generateFrom :
     Function.LeftInverse generateFrom (@toPlots X) :=
-  (gciGenerateFrom X).leftInverse_l_u
+  (giGenerateFrom X).leftInverse_l_u
 
 theorem generateFrom_surjective : Function.Surjective (@generateFrom X) :=
-  (gciGenerateFrom X).l_surjective
+  (giGenerateFrom X).l_surjective
 
 theorem generateFrom_union (g₁ g₂ : Set ((n : ℕ) × (Eucl n → X))) :
     generateFrom (g₁ ∪ g₂) = generateFrom g₁ ⊔ generateFrom g₂ :=
@@ -403,25 +403,25 @@ theorem toPlots_sInf {D : Set (DiffeologicalSpace X)} : (sInf D).toPlots = ⋂ d
 
 theorem generateFrom_union_toPlots (d₁ d₂ : DiffeologicalSpace X) :
     generateFrom (d₁.toPlots ∪ d₂.toPlots) = d₁ ⊔ d₂ :=
-  (gciGenerateFrom X).l_sup_u _ _
+  (giGenerateFrom X).l_sup_u _ _
 
 theorem generateFrom_iUnion_toPlots {ι : Type*} (D : ι → DiffeologicalSpace X) :
     generateFrom (⋃ i, (D i).toPlots) = ⨆ i, D i :=
-  (gciGenerateFrom X).l_iSup_u _
+  (giGenerateFrom X).l_iSup_u _
 
 theorem generateFrom_inter_toPlots (d₁ d₂ : DiffeologicalSpace X) :
     generateFrom (d₁.toPlots ∩ d₂.toPlots) = d₁ ⊓ d₂ :=
-  (gciGenerateFrom X).l_inf_u _ _
+  (giGenerateFrom X).l_inf_u _ _
 
 theorem generateFrom_iInter_toPlots {ι : Type*} (D : ι → DiffeologicalSpace X) :
     generateFrom (⋂ i, (D i).toPlots) = ⨅ i, D i :=
-  (gciGenerateFrom X).l_iInf_u _
+  (giGenerateFrom X).l_iInf_u _
 
 theorem generateFrom_iInter_of_generateFrom_eq_self {ι : Type*}
     (G : ι → Set ((n : ℕ) × (Eucl n → X)))
     (hG : ∀ i, (generateFrom (G i)).toPlots = G i) :
     generateFrom (⋂ i, G i) = ⨅ i, generateFrom (G i) :=
-  (gciGenerateFrom X).l_iInf_of_ul_eq_self G hG
+  (giGenerateFrom X).l_iInf_of_ul_eq_self G hG
 
 theorem isPlot_inf_iff {d₁ d₂ : DiffeologicalSpace X} {n : ℕ} {p : Eucl n → X} :
     IsPlot[d₁ ⊓ d₂] p ↔ IsPlot[d₁] p ∧ IsPlot[d₂] p :=
@@ -438,10 +438,3 @@ theorem isPlot_sInf_iff {D : Set (DiffeologicalSpace X)} {n : ℕ} {p : Eucl n �
 end DiffeologicalSpace
 
 end CompleteLattice
-
-theorem dTop_mono {X : Type*} {d₁ d₂ : DiffeologicalSpace X} (h : d₁ ≤ d₂) :
-    DTop[d₁] ≤ DTop[d₂] := by
-  refine' TopologicalSpace.le_def.2 fun u hu => _
-  rw [@isOpen_iff_preimages_plots] at hu ⊢
-  rw [DiffeologicalSpace.le_iff'] at h
-  exact fun n p => hu n p ∘ h n p

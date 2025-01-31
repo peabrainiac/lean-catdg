@@ -5,8 +5,11 @@ import Mathlib.Topology.Compactness.DeltaGeneratedSpace
 # Continuous diffeology
 
 Defines the continuous diffeology on topological spaces, i.e. the diffeology consisting of all
-continuous plots. This is used mainly to show in `Orbifolds.Diffeology.DiffSp` that the
-D-topology functor has a right adjoint.
+continuous plots. On the level of categories, this forms a right-adjoint to the D-topology
+functor (which is proven in `Orbifolds.Diffeology.DiffSp`); on the level of individual types,
+this means that it forms a Galois connection with
+`@DTop X : DiffeologicalSpace X → TopologicalSpace X`. This is also used to show a few more
+properties of the D-topology.
 See https://ncatlab.org/nlab/show/adjunction+between+topological+spaces+and+diffeological+spaces.
 -/
 
@@ -57,3 +60,55 @@ lemma Continuous.dsmooth {X Y : Type u} [TopologicalSpace X] [TopologicalSpace Y
 lemma Continuous.dsmooth' {X Y : Type u} {dX : DiffeologicalSpace X} {tY : TopologicalSpace Y}
     {f : X → Y} (hf : Continuous[DTop,_] f) : DSmooth[_,continuousDiffeology Y] f := by
   let _ : TopologicalSpace X := DTop; exact fun n p hp => hf.comp hp.continuous
+
+lemma dTop_le_iff_le_continuousDiffeology {X : Type u} {d : DiffeologicalSpace X}
+    {t : TopologicalSpace X} : DTop[d] ≤ t ↔ d ≤ @continuousDiffeology X t :=
+  ⟨fun h ↦ DiffeologicalSpace.le_iff'.2 fun _ _ hp ↦ continuous_le_rng h hp.continuous,
+    fun h ↦ TopologicalSpace.le_def.2 fun _ hu ↦ isOpen_iff_preimages_plots.2 fun _ _ hp ↦
+      hu.preimage <| DiffeologicalSpace.le_iff'.1 h _ _ hp⟩
+
+/-- The D-topology and continuous diffeology form a Galois connection between diffeologies
+  and topologies on `X`. -/
+theorem gc_dTop (X : Type*) : GaloisConnection (@DTop X) (@continuousDiffeology X) :=
+  @dTop_le_iff_le_continuousDiffeology X
+
+lemma dTop_mono {X : Type*} {d₁ d₂ : DiffeologicalSpace X} (h : d₁ ≤ d₂) :
+    DTop[d₁] ≤ DTop[d₂] :=
+  (gc_dTop X).monotone_l h
+
+lemma continuousDiffeology_mono {X : Type*} {t₁ t₂ : TopologicalSpace X} (h : t₁ ≤ t₂) :
+    @continuousDiffeology X t₁ ≤ @continuousDiffeology X t₂ :=
+  (gc_dTop X).monotone_u h
+
+lemma dTop_continuousDiffeology_le {X : Type u} {t : TopologicalSpace X} :
+    DTop[@continuousDiffeology X t] ≤ t :=
+  (gc_dTop X).l_u_le t
+
+lemma le_continuousDiffeology_dTop {X : Type u} {d : DiffeologicalSpace X} :
+    d ≤ @continuousDiffeology X DTop[d] :=
+  (gc_dTop X).le_u_l d
+
+lemma dTop_sup {X : Type u} (d₁ d₂ : DiffeologicalSpace X) :
+    DTop[d₁ ⊔ d₂] = DTop[d₁] ⊔ DTop[d₂] :=
+  (gc_dTop X).l_sup (a₁ := d₁)
+
+lemma dTop_iSup {X : Type u} {ι : Type*}  {D : ι → DiffeologicalSpace X} :
+    DTop[⨆ i, D i] = ⨆ i, DTop[D i] :=
+  (gc_dTop X).l_iSup
+
+lemma dTop_sSup {X : Type u} {D : Set (DiffeologicalSpace X)} :
+    DTop[sSup D] = ⨆ d ∈ D, DTop[d] :=
+  (gc_dTop X).l_sSup
+
+lemma continuousDiffeology_inf {X : Type u} (t₁ t₂ : TopologicalSpace X) :
+    @continuousDiffeology X (t₁ ⊓ t₂) =
+    @continuousDiffeology X t₁ ⊓ @continuousDiffeology X t₂ :=
+  (gc_dTop X).u_inf (b₁ := t₁)
+
+lemma continuousDiffeology_iInf {X : Type u} {ι : Type*}  {T : ι → TopologicalSpace X} :
+    @continuousDiffeology X (⨅ i, T i) = ⨅ i, @continuousDiffeology X (T i) :=
+  (gc_dTop X).u_iInf
+
+lemma continuousDiffeology_sInf {X : Type u} {T : Set (TopologicalSpace X)} :
+    @continuousDiffeology X (sInf T) = ⨅ t ∈ T, @continuousDiffeology X t :=
+  (gc_dTop X).u_sInf
