@@ -102,6 +102,18 @@ theorem DSmooth.comp' {f : X → Y} {g : Y → Z} (hg : DSmooth g) (hf : DSmooth
 theorem dsmooth_const {y : Y} : DSmooth fun _ : X => y :=
   fun _ _ _ => isPlot_const
 
+/-- Replaces the D-topology of a diffeology with another topology equal to it. Useful
+  to construct diffeologies with better definitional equalities. -/
+def DiffeologicalSpace.withDTopology {X : Type*} (d : DiffeologicalSpace X)
+    (t : TopologicalSpace X) (h : DTop[d] = t) : DiffeologicalSpace X where
+  dTopology := t
+  isOpen_iff_preimages_plots := by intro _; rw [← d.isOpen_iff_preimages_plots, ← h]
+  __ := d
+
+lemma DiffeologicalSpace.withDTopology_eq {X : Type*} {d : DiffeologicalSpace X}
+    {t : TopologicalSpace X} {h : DTop[d] = t} : d.withDTopology t h = d := by
+  ext; rfl
+
 /-- A structure with plots specified on open subsets of ℝⁿ rather than ℝⁿ itself. Useful
   for constructing diffeologies, as it often makes the locality condition easiert to prove. -/
 structure DiffeologicalSpace.CorePlotsOn (X : Type*) where

@@ -438,8 +438,8 @@ theorem isPlot_coinduced_iff {X Y : Type*} {dX : DiffeologicalSpace X} {f : X �
         · right; intro x; let ⟨u,hu,hxu,_,hu'⟩ := h x
           exact ⟨u,hu,hxu,hu' (h'.symm ▸ mem_univ x:)⟩
     }
-    have hd : dY ≤ d := sInf_le fun n p hp => Or.inr fun x => ⟨_,isOpen_univ,mem_univ x,
-      p ∘ (Equiv.Set.univ _),hp.dsmooth.comp dsmooth_subtype_val,rfl⟩
+    have hd : dY ≤ d := (dX.coinduced_eq_sInf).trans_le <| sInf_le fun n p hp ↦ Or.inr fun x ↦
+      ⟨_, isOpen_univ, mem_univ x, p ∘ (Equiv.Set.univ _), hp.dsmooth.comp dsmooth_subtype_val, rfl⟩
     exact DiffeologicalSpace.le_iff'.1 hd n p hp
   · refine' isPlot_iff_locally_dsmooth.2 fun x => Exists.imp (fun u ⟨hu,hxu,p',hp'⟩ => _) (h x)
     rw [Set.restrict_eq,hp'.2]
