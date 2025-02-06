@@ -12,7 +12,7 @@ abbrev Eucl (n : ℕ) := EuclideanSpace ℝ (Fin n)
 /-- A diffeology on `X`, given by the smooth functions (or "plots") from ℝⁿ to `X`. -/
 class DiffeologicalSpace (X : Type*) where
   plots (n : ℕ) : Set (Eucl n → X)
-  constant_plots {n : ℕ} (x : X) : (fun _ => x) ∈ plots n
+  constant_plots {n : ℕ} (x : X) : (fun _ ↦ x) ∈ plots n
   plot_reparam {n m : ℕ} {p : Eucl m → X} {f : Eucl n → Eucl m} :
     p ∈ plots m → (ContDiff ℝ ∞ f) → (p ∘ f ∈ plots n)
   -- TODO this is currently a little awkward, since it can't be stated in terms of smooth maps
@@ -21,12 +21,12 @@ class DiffeologicalSpace (X : Type*) where
     ∀ {m : ℕ} {f : Eucl m → Eucl n}, (hfu : ∀ x, f x ∈ u) → ContDiff ℝ ∞ f → p ∘ f ∈ plots m) →
       p ∈ plots n
   dTopology : TopologicalSpace X := {
-    IsOpen := fun u => ∀ {n : ℕ}, ∀ p ∈ plots n, TopologicalSpace.IsOpen (p ⁻¹' u)
-    isOpen_univ := fun _ _ => isOpen_univ
-    isOpen_inter := fun _ _ hs ht _ p hp =>
+    IsOpen := fun u ↦ ∀ {n : ℕ}, ∀ p ∈ plots n, TopologicalSpace.IsOpen (p ⁻¹' u)
+    isOpen_univ := fun _ _ ↦ isOpen_univ
+    isOpen_inter := fun _ _ hs ht _ p hp ↦
       Set.preimage_inter.symm ▸ (IsOpen.inter (hs p hp) (ht p hp))
-    isOpen_sUnion := fun _ hs _ p hp =>
-      Set.preimage_sUnion ▸ isOpen_biUnion fun u hu => hs u hu p hp
+    isOpen_sUnion := fun _ hs _ p hp ↦
+      Set.preimage_sUnion ▸ isOpen_biUnion fun u hu ↦ hs u hu p hp
   }
   isOpen_iff_preimages_plots {u : Set X} : dTopology.IsOpen u ↔
       ∀ {n : ℕ}, ∀ p ∈ plots n, TopologicalSpace.IsOpen (p ⁻¹' u) := by rfl
@@ -63,7 +63,7 @@ protected theorem DiffeologicalSpace.ext {d₁ d₂ : DiffeologicalSpace X}
   congr 1; ext s
   exact ((show p₁ = p₂ by exact h) ▸ @h₁ s).trans (@h₂ s).symm
 
-lemma isPlot_const {n : ℕ} {x : X} : IsPlot (fun _ => x : Eucl n → X) :=
+lemma isPlot_const {n : ℕ} {x : X} : IsPlot (fun _ ↦ x : Eucl n → X) :=
   DiffeologicalSpace.constant_plots x
 
 lemma isPlot_reparam {n m : ℕ} {p : Eucl m → X} {f : Eucl n → Eucl m}
@@ -76,11 +76,11 @@ lemma isOpen_iff_preimages_plots {u : Set X} :
 
 protected lemma IsPlot.continuous {n : ℕ} {p : Eucl n → X} (hp : IsPlot p) :
     Continuous[_,DTop] p :=
-  continuous_def.2 fun _ hu => isOpen_iff_preimages_plots.1 hu n p hp
+  continuous_def.2 fun _ hu ↦ isOpen_iff_preimages_plots.1 hu n p hp
 
 protected theorem DSmooth.continuous {f : X → Y} (hf : DSmooth f) : Continuous[DTop,DTop] f := by
   simp_rw [continuous_def,isOpen_iff_preimages_plots (X:=X),isOpen_iff_preimages_plots (X:=Y)]
-  exact fun u hu n p hp => hu n (f ∘ p) (hf n p hp)
+  exact fun u hu n p hp ↦ hu n (f ∘ p) (hf n p hp)
 
 theorem dsmooth_iff {f : X → Y} : DSmooth f ↔
     ∀ (n : ℕ) (p : Eucl n → X), IsPlot p → IsPlot (f ∘ p) := by rfl
@@ -88,19 +88,19 @@ theorem dsmooth_iff {f : X → Y} : DSmooth f ↔
 theorem dsmooth_id : DSmooth (@id X) := by simp [DSmooth]
 
 @[fun_prop]
-theorem dsmooth_id' : DSmooth fun x : X => x := dsmooth_id
+theorem dsmooth_id' : DSmooth fun x : X ↦ x := dsmooth_id
 
 theorem DSmooth.comp {f : X → Y} {g : Y → Z} (hg : DSmooth g) (hf : DSmooth f) :
     DSmooth (g ∘ f) :=
-  fun _ _ hp => hg _ _ (hf _ _ hp)
+  fun _ _ hp ↦ hg _ _ (hf _ _ hp)
 
 @[fun_prop]
 theorem DSmooth.comp' {f : X → Y} {g : Y → Z} (hg : DSmooth g) (hf : DSmooth f) :
-    DSmooth (fun x => g (f x)) := hg.comp hf
+    DSmooth (fun x ↦ g (f x)) := hg.comp hf
 
 @[fun_prop]
-theorem dsmooth_const {y : Y} : DSmooth fun _ : X => y :=
-  fun _ _ _ => isPlot_const
+theorem dsmooth_const {y : Y} : DSmooth fun _ : X ↦ y :=
+  fun _ _ _ ↦ isPlot_const
 
 /-- Replaces the D-topology of a diffeology with another topology equal to it. Useful
   to construct diffeologies with better definitional equalities. -/
@@ -122,9 +122,9 @@ structure DiffeologicalSpace.CorePlotsOn (X : Type*) where
     (h : Set.EqOn p q u) : isPlotOn hu p ↔ isPlotOn hu q
   /-- The predicate that the diffeology built from this structure will use. Can be overwritten
     to allow for better definitional equalities. -/
-  isPlot {n : ℕ} : (Eucl n → X) → Prop := fun p => isPlotOn isOpen_univ p
+  isPlot {n : ℕ} : (Eucl n → X) → Prop := fun p ↦ isPlotOn isOpen_univ p
   isPlotOn_univ {n : ℕ} {p : Eucl n → X} : isPlotOn isOpen_univ p ↔ isPlot p := by simp
-  isPlot_const {n : ℕ} (x : X) : isPlot fun (_ : Eucl n) => x
+  isPlot_const {n : ℕ} (x : X) : isPlot fun (_ : Eucl n) ↦ x
   isPlotOn_reparam {n m : ℕ} {u : Set (Eucl n)} {v : Set (Eucl m)} {hu : IsOpen u}
     (hv : IsOpen v) {p : Eucl n → X} {f : Eucl m → Eucl n} (h : Set.MapsTo f v u) :
     isPlotOn hu p → ContDiffOn ℝ ∞ f v → isPlotOn hv (p ∘ f)
@@ -134,12 +134,12 @@ structure DiffeologicalSpace.CorePlotsOn (X : Type*) where
   /-- The D-topology that the diffeology built from this structure will use. Can be overwritten
     to allow for better definitional equalities. -/
   dTopology : TopologicalSpace X := {
-    IsOpen := fun u => ∀ {n : ℕ}, ∀ p : Eucl n → X, isPlot p → TopologicalSpace.IsOpen (p ⁻¹' u)
-    isOpen_univ := fun _ _ => isOpen_univ
-    isOpen_inter := fun _ _ hs ht _ p hp =>
+    IsOpen := fun u ↦ ∀ {n : ℕ}, ∀ p : Eucl n → X, isPlot p → TopologicalSpace.IsOpen (p ⁻¹' u)
+    isOpen_univ := fun _ _ ↦ isOpen_univ
+    isOpen_inter := fun _ _ hs ht _ p hp ↦
       Set.preimage_inter.symm ▸ (IsOpen.inter (hs p hp) (ht p hp))
-    isOpen_sUnion := fun _ hs _ p hp =>
-      Set.preimage_sUnion ▸ isOpen_biUnion fun u hu => hs u hu p hp
+    isOpen_sUnion := fun _ hs _ p hp ↦
+      Set.preimage_sUnion ▸ isOpen_biUnion fun u hu ↦ hs u hu p hp
   }
   isOpen_iff_preimages_plots {u : Set X} : dTopology.IsOpen u ↔
     ∀ {n : ℕ}, ∀ p : Eucl n → X, isPlot p → TopologicalSpace.IsOpen (p ⁻¹' u) := by rfl
@@ -155,10 +155,10 @@ def DiffeologicalSpace.mkOfPlotsOn {X : Type*} (d : CorePlotsOn X) : Diffeologic
     d.isPlotOn_reparam _ (Set.mapsTo_univ _ _) (d.isPlotOn_univ.mpr hp) hf.contDiffOn
   locality {n p} h := by
     dsimp at h
-    refine' d.isPlotOn_univ.mp <| d.locality _ fun x _ => _
+    refine' d.isPlotOn_univ.mp <| d.locality _ fun x _ ↦ _
     let ⟨u,hu,hxu,hu'⟩ := h x
     let ⟨ε,hε,hε'⟩ := Metric.isOpen_iff.mp hu x hxu
-    have h := hu' (f := PartialHomeomorph.univBall x ε) (fun x' => by
+    have h := hu' (f := PartialHomeomorph.univBall x ε) (fun x' ↦ by
       have h := (PartialHomeomorph.univBall x ε).map_source (x := x')
       rw [PartialHomeomorph.univBall_source, PartialHomeomorph.univBall_target x hε] at h
       exact hε' (h (Set.mem_univ _))) PartialHomeomorph.contDiff_univBall
@@ -179,18 +179,18 @@ cause instance diamonds on spaces like `Fin n → ℝ`. -/
 def euclideanDiffeology {X : Type*} [NormedAddCommGroup X] [NormedSpace ℝ X]
     [FiniteDimensional ℝ X] : DiffeologicalSpace X :=
   DiffeologicalSpace.mkOfPlotsOn {
-    isPlotOn := fun {_ u} _ p => ContDiffOn ℝ ∞ p u
-    isPlotOn_congr := fun _ _ _ h => contDiffOn_congr h
-    isPlot := fun p => ContDiff ℝ ∞ p
+    isPlotOn := fun {_ u} _ p ↦ ContDiffOn ℝ ∞ p u
+    isPlotOn_congr := fun _ _ _ h ↦ contDiffOn_congr h
+    isPlot := fun p ↦ ContDiff ℝ ∞ p
     isPlotOn_univ := contDiffOn_univ
-    isPlot_const := fun _ => contDiff_const
-    isPlotOn_reparam := fun _ _ _ h hp hf => hp.comp hf h.subset_preimage
-    locality := fun _ _ h => fun x hxu => by
+    isPlot_const := fun _ ↦ contDiff_const
+    isPlotOn_reparam := fun _ _ _ h hp hf ↦ hp.comp hf h.subset_preimage
+    locality := fun _ _ h ↦ fun x hxu ↦ by
       let ⟨v,hv,hxv,hv'⟩ := h x hxu
       exact ((hv' x hxv).contDiffAt (hv.mem_nhds hxv)).contDiffWithinAt
     dTopology := inferInstance
-    isOpen_iff_preimages_plots := fun {u} => by
-      refine' ⟨fun hu _ _ hp => IsOpen.preimage (hp.continuous) hu, fun h => _⟩
+    isOpen_iff_preimages_plots := fun {u} ↦ by
+      refine' ⟨fun hu _ _ hp ↦ IsOpen.preimage (hp.continuous) hu, fun h ↦ _⟩
       rw [←toEuclidean.preimage_symm_preimage u]
       exact toEuclidean.continuous.isOpen_preimage _ (h _ toEuclidean.symm.contDiff) }
 
@@ -245,7 +245,7 @@ example {ι : Type*} [Fintype ι] : ContDiffCompatible (EuclideanSpace ℝ ι) :
 example {ι : Type*} [Fintype ι] : DTopCompatible (EuclideanSpace ℝ ι) := inferInstance
 
 protected theorem IsPlot.dsmooth {n : ℕ} {p : Eucl n → X} (hp : IsPlot p) : DSmooth p :=
-  fun _ _ => isPlot_reparam hp
+  fun _ _ ↦ isPlot_reparam hp
 
 protected theorem DSmooth.isPlot {n : ℕ} {p : Eucl n → X} (hp : DSmooth p) : IsPlot p :=
   hp n id <| @contDiff_id ℝ _ (Eucl n) _ _ ∞
@@ -261,7 +261,7 @@ theorem isPlot_iff_contDiff {n : ℕ} {p : Eucl n → X} : IsPlot p ↔ ContDiff
   ContDiffCompatible.isPlot_iff
 
 protected theorem ContDiff.dsmooth {f : X → Y} (hf: ContDiff ℝ ∞ f) : DSmooth f :=
-  fun _ _ hp => isPlot_iff_contDiff.2 (hf.comp (isPlot_iff_contDiff.1 hp))
+  fun _ _ hp ↦ isPlot_iff_contDiff.2 (hf.comp (isPlot_iff_contDiff.1 hp))
 
 protected theorem DSmooth.contDiff [FiniteDimensional ℝ X] {f : X → Y} (hf : DSmooth f) : ContDiff ℝ ∞ f := by
   let g := toEuclidean (E := X)
@@ -286,9 +286,9 @@ class ReflexiveDiffeologicalSpace (X : Type*) [DiffeologicalSpace X] : Prop wher
 
 instance {X : Type*} [NormedAddCommGroup X] [NormedSpace ℝ X] [FiniteDimensional ℝ X]
     [DiffeologicalSpace X] [ContDiffCompatible X] : ReflexiveDiffeologicalSpace X where
-  isPlot_if := fun {n} p hp => by
+  isPlot_if := fun {n} p hp ↦ by
     let Φ := (toEuclidean (E := X)).trans (EuclideanSpace.equiv _ ℝ)
-    refine' isPlot_iff_contDiff.2 <| Φ.comp_contDiff_iff.1 (contDiff_pi.2 fun i => _)
+    refine' isPlot_iff_contDiff.2 <| Φ.comp_contDiff_iff.1 (contDiff_pi.2 fun i ↦ _)
     exact (hp _ (((ContinuousLinearMap.proj i).contDiff).comp Φ.contDiff).dsmooth).contDiff
 
 end Reflexive
@@ -303,7 +303,7 @@ variable {X : Type*}
 def toPlots (_ : DiffeologicalSpace X) : Set ((n : ℕ) × (Eucl n → X)) :=
   {p | IsPlot p.2}
 
-lemma injective_toPlots : Function.Injective (@toPlots X) := fun d d' h => by
+lemma injective_toPlots : Function.Injective (@toPlots X) := fun d d' h ↦ by
   ext n p; exact Set.ext_iff.1 h ⟨n,p⟩
 
 /-- The plots belonging to the diffeology generated by `g`. -/
@@ -313,16 +313,16 @@ def generatePlots (g : Set ((n : ℕ) × (Eucl n → X))) : Set ((n : ℕ) × (E
 /-- The diffeology generated by a set `g` of plots. -/
 def generateFrom (g : Set ((n : ℕ) × (Eucl n → X))) : DiffeologicalSpace X where
   plots n := {p | ⟨n,p⟩ ∈ generatePlots g}
-  constant_plots {n} x := Set.mem_iInter₂.2 fun _ _ => constant_plots x
-  plot_reparam {n m p f} := fun hp hf => Set.mem_iInter₂.2 fun d hd =>
+  constant_plots {n} x := Set.mem_iInter₂.2 fun _ _ ↦ constant_plots x
+  plot_reparam {n m p f} := fun hp hf ↦ Set.mem_iInter₂.2 fun d hd ↦
     @plot_reparam X d n m p f (Set.mem_iInter₂.1 hp _ hd) hf
-  locality {n p} := fun hp => Set.mem_iInter₂.2 fun d hd => @locality X d n p fun x => by
+  locality {n p} := fun hp ↦ Set.mem_iInter₂.2 fun d hd ↦ @locality X d n p fun x ↦ by
     let ⟨u,hxu,hu,hu'⟩ := hp x
-    exact ⟨u,hxu,hu,fun {m f} hfu hf => Set.mem_iInter₂.1 (hu' hfu hf) _ hd⟩
+    exact ⟨u,hxu,hu,fun {m f} hfu hf ↦ Set.mem_iInter₂.1 (hu' hfu hf) _ hd⟩
 
 lemma self_subset_toPlots_generateFrom (g : Set ((n : ℕ) × (Eucl n → X))) :
     g ⊆ (generateFrom g).toPlots :=
-  Set.subset_iInter₂ fun _ hd => hd
+  Set.subset_iInter₂ fun _ hd ↦ hd
 
 lemma isPlot_generatedFrom_of_mem {g : Set ((n : ℕ) × (Eucl n → X))} {n : ℕ} {p : Eucl n → X}
     (hp : ⟨n, p⟩ ∈ g) : IsPlot[generateFrom g] p :=
@@ -333,14 +333,14 @@ instance : PartialOrder (DiffeologicalSpace X) := PartialOrder.lift _ injective_
 lemma le_def {d₁ d₂ : DiffeologicalSpace X} : d₁ ≤ d₂ ↔ d₁.toPlots ⊆ d₂.toPlots := by rfl
 
 lemma le_iff {d₁ d₂ : DiffeologicalSpace X} : d₁ ≤ d₂ ↔ ∀ n, d₁.plots n ⊆ d₂.plots n :=
-  le_def.trans ⟨fun h n p h' => (h h' : ⟨n,p⟩ ∈ d₂.toPlots),fun h _ hp => h _ hp⟩
+  le_def.trans ⟨fun h n p h' ↦ (h h' : ⟨n,p⟩ ∈ d₂.toPlots),fun h _ hp ↦ h _ hp⟩
 
 lemma le_iff' {d₁ d₂ : DiffeologicalSpace X} : d₁ ≤ d₂ ↔
     ∀ n (p : Eucl n → X), IsPlot[d₁] p → IsPlot[d₂] p := le_iff
 
 lemma generateFrom_le_iff_subset_toPlots {g : Set ((n : ℕ) × (Eucl n → X))}
     {d : DiffeologicalSpace X} : generateFrom g ≤ d ↔ g ⊆ d.toPlots :=
-  ⟨fun h => (self_subset_toPlots_generateFrom g).trans h,fun h => le_def.2 (Set.iInter₂_subset d h)⟩
+  ⟨fun h ↦ (self_subset_toPlots_generateFrom g).trans h,fun h ↦ le_def.2 (Set.iInter₂_subset d h)⟩
 
 /-- Version of `generateFrom_le_iff_subset_toPlots` that is stated in terms of `IsPlot` instead
   of `toPlots`. -/
@@ -369,7 +369,7 @@ theorem gc_generateFrom (X : Type*) : GaloisConnection generateFrom (@toPlots X)
   part sends a diffeology to its collection of plots. -/
 def giGenerateFrom (X : Type*) : GaloisInsertion generateFrom (@toPlots X) where
   gc := gc_generateFrom X
-  le_l_u := fun _ => le_def.2 (self_subset_toPlots_generateFrom _)
+  le_l_u := fun _ ↦ le_def.2 (self_subset_toPlots_generateFrom _)
   choice g hg := DiffeologicalSpace.mkOfClosure g (hg.antisymm (self_subset_toPlots_generateFrom g))
   choice_eq _ _ := mkOfClosure_eq_generateFrom
 

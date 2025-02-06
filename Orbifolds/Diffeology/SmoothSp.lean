@@ -36,21 +36,21 @@ instance : Category.{u,u+1} SmoothSp.{u} := by unfold SmoothSp; infer_instance
 /-- The embedding of diffeological spaces into smooth spaces. -/
 def DiffSp.toSmoothSp : DiffSp.{u} ⥤ SmoothSp.{u} where
   obj X := ⟨{
-    obj := fun n => DSmoothMap n.unop X
-    map := fun f g => g.comp f.unop
-    map_id := fun _ => rfl
-    map_comp := fun _ _ => rfl
+    obj := fun n ↦ DSmoothMap n.unop X
+    map := fun f g ↦ g.comp f.unop
+    map_id := fun _ ↦ rfl
+    map_comp := fun _ _ ↦ rfl
   }, by
     rw [CartSp.openCoverTopology, isSheaf_iff_isSheaf_of_type, Presieve.isSheaf_coverage]
-    refine fun {n} s hs f hf => ?_
-    have hs' : ∀ x : n, _ := fun x => Set.mem_iUnion.1 <| hs.2.symm ▸ Set.mem_univ x
-    let k := fun x => (hs' x).choose
-    have hk : ∀ x, ∃ f' : k x ⟶ n, _ := fun x => Set.mem_iUnion₂.1 (hs' x).choose_spec
-    let f' := fun x => (hk x).choose
+    refine fun {n} s hs f hf ↦ ?_
+    have hs' : ∀ x : n, _ := fun x ↦ Set.mem_iUnion.1 <| hs.2.symm ▸ Set.mem_univ x
+    let k := fun x ↦ (hs' x).choose
+    have hk : ∀ x, ∃ f' : k x ⟶ n, _ := fun x ↦ Set.mem_iUnion₂.1 (hs' x).choose_spec
+    let f' := fun x ↦ (hk x).choose
     have hf' : ∀ x, s (f' x) ∧ x ∈ Set.range (f' x).1 :=
-      fun x => exists_prop.1 (hk x).choose_spec
-    let f'' := fun x => f (f' x) (hf' x).1 (hf' x).2.choose
-    have hf'' : ∀ l (g : l ⟶ n) (hg : s g), f'' ∘ g = f g hg := fun l g hg => by
+      fun x ↦ exists_prop.1 (hk x).choose_spec
+    let f'' := fun x ↦ f (f' x) (hf' x).1 (hf' x).2.choose
+    have hf'' : ∀ l (g : l ⟶ n) (hg : s g), f'' ∘ g = f g hg := fun l g hg ↦ by
       ext x
       dsimp [f'']
       have h := @hf _ _ 0 (DSmoothMap.const (hf' (g x)).2.choose)
@@ -58,7 +58,7 @@ def DiffSp.toSmoothSp : DiffSp.{u} ⥤ SmoothSp.{u} where
         (by ext; exact (hf' (g x)).2.choose_spec)
       exact DFunLike.congr_fun h 0
     refine ⟨⟨f'', ?_⟩, ?_, ?_⟩
-    · refine dsmooth_iff_locally_dsmooth.2 fun x : n =>
+    · refine dsmooth_iff_locally_dsmooth.2 fun x : n ↦
         ⟨_, (hs.1 _ _ (hf' x).1).2.isOpen_range, (hf' x).2, ?_⟩
       rw [(DDiffeomorph.ofInduction (hs.1 _ _ (hf' x).1).1).subduction.dsmooth_iff]
       convert (f (f' x) (hf' x).1).2; exact hf'' (k x) (f' x) (hf' x).1
@@ -68,11 +68,11 @@ def DiffSp.toSmoothSp : DiffSp.{u} ⥤ SmoothSp.{u} where
       exact (DFunLike.congr_fun (hf''' (f' x) (hf' x).1) _).trans
         (congr_fun (hf'' _ (f' x) (hf' x).1) _).symm⟩
   map f := ⟨{
-    app := fun _ g => f.comp g
-    naturality := fun _ _ _ => rfl
+    app := fun _ g ↦ f.comp g
+    naturality := fun _ _ _ ↦ rfl
   }⟩
-  map_id := fun _ => rfl
-  map_comp := fun _ _ => rfl
+  map_id := fun _ ↦ rfl
+  map_comp := fun _ _ ↦ rfl
 
 /-- `DiffSp.toSmoothSp` is fully faithful. -/
 def DiffSp.toSmoothSp.fullyFaithful : DiffSp.toSmoothSp.{u}.FullyFaithful where

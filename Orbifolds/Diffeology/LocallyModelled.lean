@@ -21,26 +21,26 @@ class LocallyModelled {ι : Type*} (M : ι → Type*) [(i : ι) → Diffeologica
 /-- A diffeological space is a manifold if it is locally modelled by R^n.
   We do not require Hausdorffness or second-countability here. -/
 abbrev IsManifold (n : ℕ) (X : Type*) [DiffeologicalSpace X] :=
-  LocallyModelled (fun _ : Unit => Eucl n) X
+  LocallyModelled (fun _ : Unit ↦ Eucl n) X
 
 /-- A diffeological space is a manifold with boundary if it is locally modelled by the half-space H^n.
   We do not require Hausdorffness or second-countability here. -/
 abbrev IsManifoldWithBoundary (n : ℕ) [Zero (Fin n)] (X : Type*) [DiffeologicalSpace X] :=
-  LocallyModelled (fun _ : Unit => {x : Eucl n | 0 ≤ x 0}) X
+  LocallyModelled (fun _ : Unit ↦ {x : Eucl n | 0 ≤ x 0}) X
 
 /-- A diffeological space is an orbifold if it is locally modelled by quotients of R^n by finite
   subgroups of GL(n). -/
 abbrev IsOrbifold (n : ℕ) (X : Type*) [DiffeologicalSpace X] := LocallyModelled
-  (fun Γ : {Γ : Subgroup ((Eucl n) ≃ₗ[ℝ] (Eucl n)) | Finite Γ} => MulAction.orbitRel.Quotient Γ (Eucl n)) X
+  (fun Γ : {Γ : Subgroup ((Eucl n) ≃ₗ[ℝ] (Eucl n)) | Finite Γ} ↦ MulAction.orbitRel.Quotient Γ (Eucl n)) X
 
 /-- Any D-open subset of a locally modelled space is locally modelled by the same family of
   spaces. -/
 protected theorem IsOpen.locallyModelled {X ι : Type*} [DiffeologicalSpace X] {M : ι → Type*}
     [(i : ι) → DiffeologicalSpace (M i)] (h : LocallyModelled M X) {u : Set X} (hu : IsOpen[DTop] u) :
-    LocallyModelled M u := ⟨fun x => by
-    let _ : TopologicalSpace X := DTop; let _ : (i : ι) → TopologicalSpace (M i) := fun _ => DTop
+    LocallyModelled M u := ⟨fun x ↦ by
+    let _ : TopologicalSpace X := DTop; let _ : (i : ι) → TopologicalSpace (M i) := fun _ ↦ DTop
     have : DTopCompatible X := ⟨rfl⟩; have : DTopCompatible u := hu.dTopCompatible
-    have _ : (i : ι) → DTopCompatible (M i) := fun _ => ⟨rfl⟩
+    have _ : (i : ι) → DTopCompatible (M i) := fun _ ↦ ⟨rfl⟩
     let ⟨v,hv,hxv,i,v',hv',⟨d⟩⟩ := h.locally_modelled x
     have := hv.dTopCompatible; have := hv'.dTopCompatible
     refine' ⟨(↑) ⁻¹' v,_,hxv,i,_⟩
@@ -72,28 +72,28 @@ protected theorem IsOpen.isOrbifold {X : Type*} [DiffeologicalSpace X] {n : ℕ}
 
 /-- `Eucl n` is a diffeological manifold. -/
 instance {n : ℕ} : IsManifold n (Eucl n) :=
-  ⟨fun x => ⟨_,isOpen_univ,Set.mem_univ x,(),Set.univ,isOpen_univ,⟨DDiffeomorph.refl _⟩⟩⟩
+  ⟨fun x ↦ ⟨_,isOpen_univ,Set.mem_univ x,(),Set.univ,isOpen_univ,⟨DDiffeomorph.refl _⟩⟩⟩
 
 /-- Any diffeological manifold is also a diffeological manifold with boundary. -/
 instance {n : ℕ} {X : Type*} [Zero (Fin n)] [DiffeologicalSpace X] [hm : IsManifold n X] :
-    IsManifoldWithBoundary n X := ⟨fun x => by
+    IsManifoldWithBoundary n X := ⟨fun x ↦ by
   let ⟨u,hu,hxu,i,v,hv,⟨d⟩⟩ := hm.locally_modelled x
   -- TODO: requires diffeomorphism of R^n to a ball in H^n
   sorry⟩
 
 /-- Any diffeological manifold is also a diffeological orbifold. -/
 instance {n : ℕ} {X : Type*} [DiffeologicalSpace X] [hm : IsManifold n X] :
-    IsOrbifold n X := ⟨fun x => by
+    IsOrbifold n X := ⟨fun x ↦ by
   let ⟨u,hu,hxu,_,v,hv,⟨d⟩⟩ := hm.locally_modelled x
   refine' ⟨u,hu,hxu,⟨⊥,Set.mem_setOf_eq ▸ inferInstance⟩,_⟩
   -- TODO: generalise, move somewhere else
   have h : MulAction.orbitRel (⊥ : Subgroup ((Eucl n) ≃ₗ[ℝ] (Eucl n))) (Eucl n) = ⊥ := by
     ext a b; dsimp; rw [MulAction.orbitRel_apply,MulAction.mem_orbit_iff]
-    refine' ⟨fun ⟨g,hg⟩ => hg ▸ _,fun h => ⟨1,by rw [h,one_smul]⟩⟩
+    refine' ⟨fun ⟨g,hg⟩ ↦ hg ▸ _,fun h ↦ ⟨1,by rw [h,one_smul]⟩⟩
     rw [Unique.eq_default g,unique_one,one_smul]
   dsimp [MulAction.orbitRel.Quotient]; rw [h]
   have e := d.trans ((DDiffeomorph.quotient_bot (Eucl n)).restrictPreimage v).symm
-  refine' ⟨(Quotient.lift id fun a b => id) ⁻¹' v,_,⟨e⟩⟩
+  refine' ⟨(Quotient.lift id fun a b ↦ id) ⁻¹' v,_,⟨e⟩⟩
   exact @IsOpen.preimage _ _ DTop DTop _ (dsmooth_id.quotient_lift _).continuous _ hv⟩
 
 /-- Spaces that are modelled on locally compact spaces are locally compact. -/

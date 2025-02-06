@@ -188,7 +188,7 @@ noncomputable def Sheaf.ΓCodiscAdjunction (J : GrothendieckTopology C) [Concret
     Γ.{u,v,max u v w} ⊣ codisc J :=
   Adjunction.ofNatIsoLeft (Adjunction.mkOfUnitCounit {
     unit := {
-      app := fun X => ⟨{
+      app := fun X ↦ ⟨{
         app Y (x : X.val.obj Y) y :=
           X.val.map (op (ConcreteSite.forget_natIso_coyoneda.hom.app (unop Y) y)) x
         naturality Y Z f := by
@@ -203,7 +203,7 @@ noncomputable def Sheaf.ΓCodiscAdjunction (J : GrothendieckTopology C) [Concret
         exact Eq.symm <| NatTrans.naturality_apply f.val
           (op (ConcreteSite.forget_natIso_coyoneda.hom.app (unop Z) z)) x
     }
-    counit := { app := fun X x => by exact x default }
+    counit := { app := fun X x ↦ by exact x default }
     left_triangle := by
       ext X (x : X.val.obj _)
       dsimp [Γ']

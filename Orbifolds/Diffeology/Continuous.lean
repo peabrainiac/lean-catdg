@@ -20,18 +20,18 @@ open Topology
 /-- The continuous diffeology on a topological space `X`. -/
 def continuousDiffeology (X : Type u) [TopologicalSpace X] : DiffeologicalSpace X :=
   DiffeologicalSpace.mkOfPlotsOn {
-    isPlotOn := fun {_ u} _ p => ContinuousOn p u
-    isPlotOn_congr := fun _ _ _ h => continuousOn_congr h
-    isPlot := fun p => Continuous p
+    isPlotOn := fun {_ u} _ p ↦ ContinuousOn p u
+    isPlotOn_congr := fun _ _ _ h ↦ continuousOn_congr h
+    isPlot := fun p ↦ Continuous p
     isPlotOn_univ := continuous_iff_continuousOn_univ.symm
-    isPlot_const := fun _ => continuous_const
-    isPlotOn_reparam := fun _ _ _ h hp hf => hp.comp hf.continuousOn h.subset_preimage
-    locality := fun _ _ h => fun x hxu => by
+    isPlot_const := fun _ ↦ continuous_const
+    isPlotOn_reparam := fun _ _ _ h hp hf ↦ hp.comp hf.continuousOn h.subset_preimage
+    locality := fun _ _ h ↦ fun x hxu ↦ by
       let ⟨v,hv,hxv,hv'⟩ := h x hxu
       exact ((hv' x hxv).continuousAt (hv.mem_nhds hxv)).continuousWithinAt
     dTopology := .deltaGenerated X
     isOpen_iff_preimages_plots := isOpen_deltaGenerated_iff.trans <|
-      forall_congr' fun n => ⟨fun h p hp => h ⟨p,hp⟩,fun h p => h p p.2⟩ }
+      forall_congr' fun n ↦ ⟨fun h p hp ↦ h ⟨p,hp⟩,fun h p ↦ h p p.2⟩ }
 
 /-- The D-topology of the continuous diffeology is the delta-generification of the
   original topology. -/
@@ -54,12 +54,12 @@ instance (X : Type u) [TopologicalSpace X] : DiffeologicalSpace (withContinuousD
 /-- Every continuous map is smooth with respect to the continuous diffeologies. -/
 lemma Continuous.dsmooth {X Y : Type u} [TopologicalSpace X] [TopologicalSpace Y] {f : X → Y}
     (hf : Continuous f) : DSmooth[continuousDiffeology X,continuousDiffeology Y] f :=
-  fun _ _ hp => hf.comp hp
+  fun _ _ hp ↦ hf.comp hp
 
 /-- Every continuous map into a space carrying the continuous diffeology is smooth. -/
 lemma Continuous.dsmooth' {X Y : Type u} {dX : DiffeologicalSpace X} {tY : TopologicalSpace Y}
     {f : X → Y} (hf : Continuous[DTop,_] f) : DSmooth[_,continuousDiffeology Y] f := by
-  let _ : TopologicalSpace X := DTop; exact fun n p hp => hf.comp hp.continuous
+  let _ : TopologicalSpace X := DTop; exact fun n p hp ↦ hf.comp hp.continuous
 
 lemma dTop_le_iff_le_continuousDiffeology {X : Type u} {d : DiffeologicalSpace X}
     {t : TopologicalSpace X} : DTop[d] ≤ t ↔ d ≤ @continuousDiffeology X t :=

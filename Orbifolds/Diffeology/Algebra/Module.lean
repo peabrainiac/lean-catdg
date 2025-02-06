@@ -124,7 +124,7 @@ theorem diffeologicalModule_inf {X : Type*} [AddCommGroup X] [Module R X]
     {d₁ d₂ : DiffeologicalSpace X}
     (h₁ : @DiffeologicalModule R _ _ _ X d₁ _ _) (h₂ : @DiffeologicalModule R _ _ _ X d₂ _ _) :
     @DiffeologicalModule R _ _ _ X (d₁ ⊓ d₂) _ _ :=
-  inf_eq_iInf d₁ d₂ ▸ diffeologicalModule_iInf fun b => (by cases b <;> assumption)
+  inf_eq_iInf d₁ d₂ ▸ diffeologicalModule_iInf fun b ↦ (by cases b <;> assumption)
 
 end
 
@@ -155,7 +155,7 @@ def toAddGroupDiffeology (d : ModuleDiffeology R X) : AddGroupDiffeology X :=
 /-- A version of the global `dsmooth_add` suitable for dot notation. -/
 theorem dsmooth_add' (d : ModuleDiffeology R X) :
     haveI := d.toDiffeologicalSpace
-    DSmooth fun p : X × X => p.1 + p.2 :=
+    DSmooth fun p : X × X ↦ p.1 + p.2 :=
   d.toAddGroupDiffeology.dsmooth_add'
 
 /-- A version of the global `dsmooth_neg` suitable for dot notation. -/
@@ -167,14 +167,14 @@ theorem dsmooth_neg' (d : ModuleDiffeology R X) :
 /-- A version of the global `dsmooth_smul` suitable for dot notation. -/
 theorem dsmooth_smul' (d : ModuleDiffeology R X) :
     haveI := d.toDiffeologicalSpace
-    DSmooth fun p : R × X => p.1 • p.2 := by
+    DSmooth fun p : R × X ↦ p.1 • p.2 := by
   letI := d.toDiffeologicalSpace
   haveI := d.toDiffeologicalModule
   exact dsmooth_smul
 
 theorem toDiffeologicalSpace_injective :
     Function.Injective (toDiffeologicalSpace : ModuleDiffeology R X → DiffeologicalSpace X) :=
-  fun f g h => by cases f; cases g; congr
+  fun f g h ↦ by cases f; cases g; congr
 
 theorem toAddGroupDiffeology_injective :
     Function.Injective (toAddGroupDiffeology : ModuleDiffeology R X → AddGroupDiffeology X) :=

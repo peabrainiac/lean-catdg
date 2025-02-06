@@ -97,11 +97,11 @@ protected def trans (h₁ : X ᵈ≃ Y) (h₂ : Y ᵈ≃ Z) : X ᵈ≃ Z where
 
 @[simp]
 theorem trans_refl (h : X ᵈ≃ Y) : h.trans (DDiffeomorph.refl Y) = h :=
-  ext fun _ => rfl
+  ext fun _ ↦ rfl
 
 @[simp]
 theorem refl_trans (h : X ᵈ≃ Y) : (DDiffeomorph.refl X).trans h = h :=
-  ext fun _ => rfl
+  ext fun _ ↦ rfl
 
 @[simp]
 theorem coe_trans (h₁ : X ᵈ≃ Y) (h₂ : Y ᵈ≃ Z) : ⇑(h₁.trans h₂) = h₂ ∘ h₁ :=
@@ -124,7 +124,7 @@ theorem symm_apply_apply (h : X ᵈ≃ Y) (x : X) : h.symm (h x) = x :=
 
 @[simp]
 theorem symm_refl : (DDiffeomorph.refl X).symm = DDiffeomorph.refl X :=
-  ext fun _ => rfl
+  ext fun _ ↦rfl
 
 @[simp]
 theorem self_trans_symm (h : X ᵈ≃ Y) : h.trans h.symm = DDiffeomorph.refl X :=
@@ -226,14 +226,14 @@ theorem coe_toHomeomorph_symm' [TopologicalSpace X] [TopologicalSpace Y] [DTopCo
 @[simp]
 theorem dsmooth_comp_ddiffeomorph_iff (h : X ᵈ≃ Y) {f : Y → Z} :
     DSmooth (f ∘ h) ↔ DSmooth f := by
-  refine' ⟨fun h' => _, fun hf => hf.comp h.dsmooth⟩
+  refine' ⟨fun h' ↦ _, fun hf ↦ hf.comp h.dsmooth⟩
   rw [←comp_id f, ←coe_refl, ←symm_trans_self h, coe_trans, ←comp_assoc]
   exact h'.comp h.symm.dsmooth
 
 @[simp]
 theorem dsmooth_ddiffeomorph_comp_iff (h : X ᵈ≃ Y) {f : Z → X} :
     DSmooth (h ∘ f) ↔ DSmooth f := by
-  refine' ⟨fun h' => _, fun hf => h.dsmooth.comp hf⟩
+  refine' ⟨fun h' ↦ _, fun hf ↦ h.dsmooth.comp hf⟩
   rw [←id_comp f, ←coe_refl, ←self_trans_symm h, coe_trans, comp_assoc]
   exact h.symm.dsmooth.comp h'
 
@@ -269,10 +269,10 @@ def Set.univ (X : Type*) [DiffeologicalSpace X] : (univ : Set X) ᵈ≃ X where
 def Set.nested {u : Set X} (v : Set u) : v ᵈ≃ ((↑) '' v : Set X) where
   toEquiv := {
     toFun := (v.mapsTo_image (@Subtype.val X u)).restrict
-    invFun := fun x => ⟨⟨↑x,by have ⟨y,hy⟩ := x.2; exact hy.2 ▸ y.2⟩,
+    invFun := fun x ↦ ⟨⟨↑x,by have ⟨y,hy⟩ := x.2; exact hy.2 ▸ y.2⟩,
       by have ⟨y,hy⟩ := x.2; exact (show y = ⟨↑x,_⟩ by ext; exact hy.2) ▸ hy.1⟩
-    left_inv := fun _ => rfl
-    right_inv := fun _ => rfl
+    left_inv := fun _ ↦ rfl
+    right_inv := fun _ ↦ rfl
   }
   dsmooth_toFun := by dsimp; exact dsmooth_subtype_val.restrict _
   dsmooth_invFun := by exact (dsmooth_subtype_val.subtype_mk _).subtype_mk _
@@ -281,8 +281,8 @@ protected def restrict (d : X ᵈ≃ Y) (u : Set X) : u ᵈ≃ (d.symm ⁻¹' u)
   toEquiv := {
     toFun := (d.image_eq_preimage _ ▸ Set.mapsTo_image d u).restrict
     invFun := u.restrictPreimage d.symm
-    left_inv := fun x => by ext; exact d.left_inv x.1
-    right_inv := fun y => by ext; exact d.right_inv y.1
+    left_inv := fun x ↦ by ext; exact d.left_inv x.1
+    right_inv := fun y ↦ by ext; exact d.right_inv y.1
   }
   dsmooth_toFun := by dsimp; exact d.dsmooth_toFun.restrict _
   dsmooth_invFun := by dsimp; exact d.dsmooth_invFun.restrict _
@@ -291,8 +291,8 @@ protected def restrictPreimage (d : X ᵈ≃ Y) (u : Set Y) : (d ⁻¹' u) ᵈ�
   toEquiv := {
     toFun := u.restrictPreimage d
     invFun := (d.symm.image_eq_preimage _ ▸ Set.mapsTo_image d.symm u).restrict
-    left_inv := fun x => by ext; exact d.left_inv x.1
-    right_inv := fun y => by ext; exact d.right_inv y.1
+    left_inv := fun x ↦ by ext; exact d.left_inv x.1
+    right_inv := fun y ↦ by ext; exact d.right_inv y.1
   }
   dsmooth_toFun := by dsimp; exact d.dsmooth_toFun.restrict _
   dsmooth_invFun := by dsimp; exact d.dsmooth_invFun.restrict _
@@ -301,11 +301,11 @@ protected def restrictPreimage (d : X ᵈ≃ Y) (u : Set Y) : (d ⁻¹' u) ᵈ�
 @[simps! (config := .asFn)]
 def quotient_bot (X : Type*) [DiffeologicalSpace X] : @Quotient X ⊥ ᵈ≃ X where
   toEquiv := {
-    toFun := Quotient.lift id fun a b => id
+    toFun := Quotient.lift id fun a b ↦ id
     invFun := @Quotient.mk' X ⊥
-    left_inv := fun x => by
+    left_inv := fun x ↦ by
       rw [←show @Quotient.mk' X ⊥ _ = x from @Quotient.out_eq X ⊥ x,@Quotient.eq']; rfl
-    right_inv := fun _ => rfl
+    right_inv := fun _ ↦ rfl
   }
   dsmooth_toFun := dsmooth_id.quotient_lift _
   dsmooth_invFun := dsmooth_quotient_mk'
@@ -315,8 +315,8 @@ def quotient_bot (X : Type*) [DiffeologicalSpace X] : @Quotient X ⊥ ᵈ≃ X w
 def prodComm : X × Y ᵈ≃ Y × X where
   toFun := Prod.swap
   invFun := Prod.swap
-  left_inv := fun _ => rfl
-  right_inv := fun _ => rfl
+  left_inv := fun _ ↦ rfl
+  right_inv := fun _ ↦ rfl
   dsmooth_toFun := dsmooth_swap
   dsmooth_invFun := dsmooth_swap
 
@@ -324,26 +324,26 @@ def prodComm : X × Y ᵈ≃ Y × X where
 def curry : DSmoothMap (X × Y) Z ᵈ≃ DSmoothMap X (DSmoothMap Y Z) where
   toFun := DSmoothMap.curry
   invFun := DSmoothMap.uncurry
-  left_inv := fun _ => rfl
-  right_inv := fun _ => rfl
+  left_inv := fun _ ↦ rfl
+  right_inv := fun _ ↦ rfl
   dsmooth_toFun := DSmoothMap.dsmooth_curry
   dsmooth_invFun := DSmoothMap.dsmooth_uncurry
 
 /-- Postcomposition with `d : Y ᵈ≃ Z` as a diffeomorphism `DSmoothMap X Y ᵈ≃ DSmoothMap X Z`. -/
 def comp_left (d : Y ᵈ≃ Z) : DSmoothMap X Y ᵈ≃ DSmoothMap X Z where
-  toFun := fun f => d.toDSmoothMap.comp f
-  invFun := fun f => d.symm.toDSmoothMap.comp f
-  left_inv := fun f => by ext x; exact symm_apply_apply d (f x)
-  right_inv := fun f => by ext x; exact apply_symm_apply d (f x)
+  toFun := fun f ↦ d.toDSmoothMap.comp f
+  invFun := fun f ↦ d.symm.toDSmoothMap.comp f
+  left_inv := fun f ↦ by ext x; exact symm_apply_apply d (f x)
+  right_inv := fun f ↦ by ext x; exact apply_symm_apply d (f x)
   dsmooth_toFun := DSmoothMap.dsmooth_comp.curry_right
   dsmooth_invFun := DSmoothMap.dsmooth_comp.curry_right
 
 /-- Precomposition with `d : X ᵈ≃ Y` as a diffeomorphism `DSmoothMap Y Z ᵈ≃ DSmoothMap X Z`. -/
 def comp_right (d : X ᵈ≃ Y) : DSmoothMap Y Z ᵈ≃ DSmoothMap X Z where
-  toFun := fun f => f.comp d
-  invFun := fun f => f.comp d.symm
-  left_inv := fun f => by ext x; exact congrArg f <| apply_symm_apply d x
-  right_inv := fun f => by ext x; exact congrArg f <| symm_apply_apply d x
+  toFun := fun f ↦ f.comp d
+  invFun := fun f ↦ f.comp d.symm
+  left_inv := fun f ↦ by ext x; exact congrArg f <| apply_symm_apply d x
+  right_inv := fun f ↦ by ext x; exact congrArg f <| symm_apply_apply d x
   dsmooth_toFun := DSmoothMap.dsmooth_comp.curry_left
   dsmooth_invFun := DSmoothMap.dsmooth_comp.curry_left
 

@@ -44,13 +44,13 @@ instance (n : ℕ) : OfNat CartSp n where
   ofNat := n
 
 instance : SmallCategory CartSp where
-  Hom := fun n m => DSmoothMap n m
-  id := fun n => DSmoothMap.id
-  comp := fun f g => g.comp f
+  Hom := fun n m ↦ DSmoothMap n m
+  id := fun n ↦ DSmoothMap.id
+  comp := fun f g ↦ g.comp f
 
 instance : ConcreteCategory CartSp where
-  forget := { obj := fun n => n, map := fun f => f.1 }
-  forget_faithful := { map_injective := fun {_ _} => DSmoothMap.coe_injective }
+  forget := { obj := fun n ↦ n, map := fun f ↦ f.1 }
+  forget_faithful := { map_injective := fun {_ _} ↦ DSmoothMap.coe_injective }
 
 instance CartSp.instFunLike (n m : CartSp) : FunLike (n ⟶ m) n m where
   coe := Subtype.val
@@ -70,10 +70,10 @@ def CartSp.openCoverCoverage : Coverage CartSp where
   covering n := {s | (∀ (m : _) (f : m ⟶ n), s f → Induction f.1 ∧ IsOpenMap f.1) ∧
     ⋃ (m : CartSp) (f ∈ s (Y := m)), Set.range f.1 = Set.univ}
   pullback n m g s hs := by
-    use fun k => {f | (∃ (k : _) (f' : k ⟶ n), s f' ∧ Set.range (g.1 ∘ f.1) ⊆ Set.range f'.1)
+    use fun k ↦ {f | (∃ (k : _) (f' : k ⟶ n), s f' ∧ Set.range (g.1 ∘ f.1) ⊆ Set.range f'.1)
       ∧ Induction f.1 ∧ IsOpenMap f.1}
-    refine ⟨⟨fun k f hf => hf.2, ?_⟩, ?_⟩
-    · refine Set.iUnion_eq_univ_iff.2 fun x => ?_
+    refine ⟨⟨fun k f hf ↦ hf.2, ?_⟩, ?_⟩
+    · refine Set.iUnion_eq_univ_iff.2 fun x ↦ ?_
       let ⟨k,hk⟩ := Set.iUnion_eq_univ_iff.1 hs.2 (g x)
       let ⟨f,hf,hgx⟩ := Set.mem_iUnion₂.1 hk
       refine ⟨m, Set.mem_iUnion₂.2 ?_⟩
@@ -92,7 +92,7 @@ def CartSp.openCoverCoverage : Coverage CartSp where
     · intro k f ⟨⟨k',f',hf'⟩,_⟩; use k'
       let f'' := (DDiffeomorph.ofInduction (hs.1 k' f' hf'.1).1)
       use ⟨_,(f''.dsmooth_invFun.comp <|
-        (f ≫ g).2.subtype_mk (fun x => hf'.2 (Set.mem_range_self x)))⟩
+        (f ≫ g).2.subtype_mk (fun x ↦ hf'.2 (Set.mem_range_self x)))⟩
       refine ⟨f', hf'.1, ?_⟩; ext x; change f'.1 (f''.invFun _) = _
       simp_rw [show f'.1 = Subtype.val ∘ f'' by rfl]
       dsimp; rw [DDiffeomorph.apply_symm_apply,comp_apply]; rfl
@@ -107,13 +107,13 @@ instance : CoeSort EuclOp Type where
   coe u := u.2
 
 instance : SmallCategory EuclOp where
-  Hom := fun u v => DSmoothMap u v
-  id := fun n => DSmoothMap.id
-  comp := fun f g => g.comp f
+  Hom := fun u v ↦ DSmoothMap u v
+  id := fun n ↦ DSmoothMap.id
+  comp := fun f g ↦ g.comp f
 
 instance : ConcreteCategory EuclOp where
-  forget := { obj := fun u => u, map := fun f => f.1 }
-  forget_faithful := { map_injective := fun {_ _} => DSmoothMap.coe_injective }
+  forget := { obj := fun u ↦ u, map := fun f ↦ f.1 }
+  forget_faithful := { map_injective := fun {_ _} ↦ DSmoothMap.coe_injective }
 
 instance EuclOp.instFunLike (u v : EuclOp) : FunLike (u ⟶ v) u v where
   coe := Subtype.val
@@ -133,10 +133,10 @@ def EuclOp.openCoverCoverage : Coverage EuclOp where
   covering u := {s | (∀ (v : _) (f : v ⟶ u), s f → Induction f.1 ∧ IsOpenMap f.1) ∧
     ⋃ (v : EuclOp) (f ∈ s (Y := v)), Set.range f.1 = Set.univ}
   pullback u v g s hs := by
-    use fun k => {f | (∃ (k : _) (f' : k ⟶ u), s f' ∧ Set.range (g.1 ∘ f.1) ⊆ Set.range f'.1)
+    use fun k ↦ {f | (∃ (k : _) (f' : k ⟶ u), s f' ∧ Set.range (g.1 ∘ f.1) ⊆ Set.range f'.1)
       ∧ Induction f.1 ∧ IsOpenMap f.1}
-    refine ⟨⟨fun k f hf => hf.2, ?_⟩, ?_⟩
-    · refine Set.iUnion_eq_univ_iff.2 fun x => ?_
+    refine ⟨⟨fun k f hf ↦ hf.2, ?_⟩, ?_⟩
+    · refine Set.iUnion_eq_univ_iff.2 fun x ↦ ?_
       let ⟨w,hw⟩ := Set.iUnion_eq_univ_iff.1 hs.2 (g x)
       let ⟨f,hf,hgx⟩ := Set.mem_iUnion₂.1 hw
       have h := v.2.2.isOpenMap_subtype_val _ ((hs.1 _ _ hf).2.isOpen_range.preimage g.2.continuous')
@@ -153,7 +153,7 @@ def EuclOp.openCoverCoverage : Coverage EuclOp where
     · intro k f ⟨⟨k',f',hf'⟩,_⟩; use k'
       let f'' := (DDiffeomorph.ofInduction (hs.1 k' f' hf'.1).1)
       use ⟨_,(f''.dsmooth_invFun.comp <|
-        (f ≫ g).2.subtype_mk (fun x => hf'.2 (Set.mem_range_self x)))⟩
+        (f ≫ g).2.subtype_mk (fun x ↦ hf'.2 (Set.mem_range_self x)))⟩
       refine ⟨f', hf'.1, ?_⟩; ext x; change f'.1 (f''.invFun _) = _
       simp_rw [show f'.1 = Subtype.val ∘ f'' by rfl]
       dsimp; rw [DDiffeomorph.apply_symm_apply,comp_apply]; rfl
@@ -178,7 +178,7 @@ instance : CartSp.toEuclOp.IsCoverDense EuclOp.openCoverTopology := by
         ⟨_, dsmooth_id.restrict (by convert Set.mapsTo_univ _ _; exact hf.1)⟩
       exact e ≫ f
     · ext x; rfl
-  · refine ⟨fun v f hf ↦ hf.2, Set.iUnion_eq_univ_iff.2 fun x => ?_⟩
+  · refine ⟨fun v f hf ↦ hf.2, Set.iUnion_eq_univ_iff.2 fun x ↦ ?_⟩
     use ⟨u.1, ⊤⟩; apply Set.mem_iUnion₂.2
     let ⟨ε, hε, hxε⟩ := Metric.isOpen_iff.1 u.2.2 x.1 x.2
     let e := (DDiffeomorph.Set.univ _).trans (DDiffeomorph.univBall x.1 hε)

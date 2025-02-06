@@ -48,7 +48,7 @@ end DSmoothMulGroup
 /-- Class saying that negation in a type is smooth. A diffeological additive group is then
   a type with the instances `AddGroup G`, `DSmoothAdd G` and `DSmoothNeg G`. -/
 class DSmoothNeg (G : Type*) [DiffeologicalSpace G] [Neg G] : Prop where
-  dsmooth_neg : DSmooth fun a : G => -a
+  dsmooth_neg : DSmooth fun a : G ↦ -a
 
 export DSmoothNeg (dsmooth_neg)
 
@@ -56,7 +56,7 @@ export DSmoothNeg (dsmooth_neg)
   a type with the instances `Group G`, `DSmoothMul G` and `DSmoothInv G`. -/
 @[to_additive]
 class DSmoothInv (G : Type*) [DiffeologicalSpace G] [Inv G] : Prop where
-  dsmooth_inv : DSmooth fun a : G => a⁻¹
+  dsmooth_inv : DSmooth fun a : G ↦ a⁻¹
 
 export DSmoothInv (dsmooth_inv)
 
@@ -70,7 +70,7 @@ instance : DSmoothInv (ULift G) :=
 
 @[to_additive (attr := fun_prop)]
 theorem DSmooth.inv {X : Type*} [DiffeologicalSpace X] {f : X → G} (hf : DSmooth f) :
-    DSmooth fun x => (f x)⁻¹ :=
+    DSmooth fun x ↦ (f x)⁻¹ :=
   dsmooth_inv.comp hf
 
 @[to_additive]
@@ -81,7 +81,7 @@ instance Prod.dsmoothInv {H : Type*} [DiffeologicalSpace H] [Inv H] [DSmoothInv 
 @[to_additive]
 instance Pi.dsmoothInv {ι : Type*} {G : ι → Type*} [∀ i, DiffeologicalSpace (G i)]
     [∀ i, Inv (G i)] [∀ i, DSmoothInv (G i)] : DSmoothInv (∀ i, G i) :=
-  ⟨dsmooth_pi fun i => (dsmooth_apply i).inv⟩
+  ⟨dsmooth_pi fun i ↦ (dsmooth_apply i).inv⟩
 
 -- TODO: DSmoothInv instance on discrete spaces, once those are available as a typeclass
 
@@ -115,7 +115,7 @@ end DSmoothInvolutiveInv
 theorem dsmoothInv_sInf {G : Type*} [Inv G] {D : Set (DiffeologicalSpace G)}
     (h : ∀ d ∈ D, @DSmoothInv G d _) : @DSmoothInv G (sInf D) _ :=
   letI := sInf D
-  ⟨dsmooth_sInf_rng.2 fun d hd => dsmooth_sInf_dom hd
+  ⟨dsmooth_sInf_rng.2 fun d hd ↦ dsmooth_sInf_dom hd
     (@DSmoothInv.dsmooth_inv G d _ (h d hd))⟩
 
 @[to_additive]
@@ -126,7 +126,7 @@ theorem dsmoothInv_iInf {G ι : Type*} [Inv G] {D : ι → DiffeologicalSpace G}
 @[to_additive]
 theorem dsmoothInv_inf {G : Type*} [Inv G] {d₁ d₂ : DiffeologicalSpace G}
     (h₁ : @DSmoothInv G d₁ _) (h₂ : @DSmoothInv G d₂ _) : @DSmoothInv G (d₁ ⊓ d₂) _ :=
-  inf_eq_iInf d₁ d₂ ▸ dsmoothInv_iInf fun b => (by cases b <;> assumption)
+  inf_eq_iInf d₁ d₂ ▸ dsmoothInv_iInf fun b ↦ (by cases b <;> assumption)
 
 /-
   TODO: replace the `Induction` hypothesis here with something that does not include
@@ -176,13 +176,13 @@ variable {G : Type*} [DiffeologicalSpace G] [Inv G] [Mul G] [DSmoothMul G]
 @[to_additive
   "Conjugation is jointly smooth on `G × G` when both `add` and `neg` are smooth."]
 theorem DiffeologicalGroup.dsmooth_conj_prod [DSmoothInv G] :
-    DSmooth fun g : G × G => g.fst * g.snd * g.fst⁻¹ :=
+    DSmooth fun g : G × G ↦ g.fst * g.snd * g.fst⁻¹ :=
   dsmooth_mul.mul (dsmooth_inv.comp dsmooth_fst)
 
 /-- Conjugation by a fixed element is smooth when `mul` is smooth. -/
 @[to_additive
   "Conjugation by a fixed element is smooth when `add` is smooth."]
-theorem DiffeologicalGroup.dsmooth_conj (g : G) : DSmooth fun h : G => g * h * g⁻¹ :=
+theorem DiffeologicalGroup.dsmooth_conj (g : G) : DSmooth fun h : G ↦ g * h * g⁻¹ :=
   (dsmooth_mul_right g⁻¹).comp (dsmooth_mul_left g)
 
 /-- Conjugation acting on fixed element of the group is smooth when both `mul` and
@@ -191,7 +191,7 @@ theorem DiffeologicalGroup.dsmooth_conj (g : G) : DSmooth fun h : G => g * h * g
   "Conjugation acting on fixed element of the additive group is smooth when both
     `add` and `neg` are smooth."]
 theorem DiffeologicalGroup.dsmooth_conj' [DSmoothInv G] (h : G) :
-    DSmooth fun g : G => g * h * g⁻¹ :=
+    DSmooth fun g : G ↦ g * h * g⁻¹ :=
   (dsmooth_mul_right h).mul dsmooth_inv
 
 end Conj
@@ -203,7 +203,7 @@ instance : DiffeologicalGroup (ULift G) where
 section ZPow
 
 @[to_additive]
-theorem dsmooth_zpow : ∀ z : ℤ, DSmooth fun a : G => a ^ z
+theorem dsmooth_zpow : ∀ z : ℤ, DSmooth fun a : G ↦ a ^ z
   | Int.ofNat n => by simpa using dsmooth_pow n
   | Int.negSucc n => by simpa using (dsmooth_pow (n + 1)).inv
 
@@ -213,7 +213,7 @@ theorem dsmooth_zpow : ∀ z : ℤ, DSmooth fun a : G => a ^ z
 
 @[to_additive (attr := fun_prop)]
 theorem DSmooth.zpow {X : Type*} [DiffeologicalSpace X] {f : X → G} (h : DSmooth f) (z : ℤ) :
-    DSmooth fun b => f b ^ z :=
+    DSmooth fun b ↦ f b ^ z :=
   (dsmooth_zpow z).comp h
 
 end ZPow
@@ -250,12 +250,12 @@ protected def DDiffeomorph.shearMulRight : G × G ᵈ≃ G × G :=
 
 @[to_additive (attr := simp)]
 theorem DDiffeomorph.shearMulRight_coe :
-    ⇑(DDiffeomorph.shearMulRight G) = fun z : G × G => (z.1, z.1 * z.2) :=
+    ⇑(DDiffeomorph.shearMulRight G) = fun z : G × G ↦ (z.1, z.1 * z.2) :=
   rfl
 
 @[to_additive (attr := simp)]
 theorem DDiffeomorph.shearMulRight_symm_coe :
-    ⇑(DDiffeomorph.shearMulRight G).symm = fun z : G × G => (z.1, z.1⁻¹ * z.2) :=
+    ⇑(DDiffeomorph.shearMulRight G).symm = fun z : G × G ↦ (z.1, z.1⁻¹ * z.2) :=
   rfl
 
 variable {G}
@@ -319,14 +319,14 @@ end QuotientDiffeologicalGroup
 /-- A typeclass saying that `p : G × G ↦ p.1 - p.2` is a smooth function. This property
 automatically holds for diffeological additive groups but it also holds, e.g., for `ℝ≥0`. -/
 class DSmoothSub (G : Type*) [DiffeologicalSpace G] [Sub G] : Prop where
-  dsmooth_sub : DSmooth fun p : G × G => p.1 - p.2
+  dsmooth_sub : DSmooth fun p : G × G ↦ p.1 - p.2
 
 /-- A typeclass saying that `p : G × G ↦ p.1 / p.2` is a smooth function. This property
 automatically holds for diffeological groups. Lemmas using this class have primes.
 The unprimed version is for `GroupWithZero`. -/
 @[to_additive]
 class DSmoothDiv (G : Type*) [DiffeologicalSpace G] [Div G] : Prop where
-  dsmooth_div' : DSmooth fun p : G × G => p.1 / p.2
+  dsmooth_div' : DSmooth fun p : G × G ↦ p.1 / p.2
 
 @[to_additive]
 instance (priority := 100) DiffeologicalGroup.to_dsmoothDiv {G : Type*} [DiffeologicalSpace G]
@@ -343,7 +343,7 @@ variable {G : Type*} [DiffeologicalSpace G] [Group G] [DiffeologicalGroup G]
 
 @[to_additive (attr := fun_prop) sub]
 theorem DSmooth.div' {X : Type*} [DiffeologicalSpace X] {f g : X → G}
-    (hf : DSmooth f) (hg : DSmooth g) : DSmooth fun x => f x / g x :=
+    (hf : DSmooth f) (hg : DSmooth g) : DSmooth fun x ↦ f x / g x :=
   dsmooth_div'.comp (hf.prod_mk hg : _)
 
 @[to_additive dsmooth_sub_left]
@@ -422,9 +422,9 @@ theorem diffeologicalGroup_sInf {G : Type*} [Group G] {D : Set (DiffeologicalSpa
     (h : ∀ d ∈ D, @DiffeologicalGroup G d _) : @DiffeologicalGroup G (sInf D) _ :=
   letI := sInf D
   { toDSmoothInv :=
-      @dsmoothInv_sInf _ _ _ fun d hd => @DiffeologicalGroup.toDSmoothInv G d _ <| h d hd
+      @dsmoothInv_sInf _ _ _ fun d hd ↦ @DiffeologicalGroup.toDSmoothInv G d _ <| h d hd
     toDSmoothMul :=
-      @dsmoothMul_sInf _ _ _ fun d hd => @DiffeologicalGroup.toDSmoothMul G d _ <| h d hd }
+      @dsmoothMul_sInf _ _ _ fun d hd ↦ @DiffeologicalGroup.toDSmoothMul G d _ <| h d hd }
 
 @[to_additive]
 theorem diffeologicalGroup_iInf {G ι : Type*} [Group G] {D : ι → DiffeologicalSpace G}
@@ -435,7 +435,7 @@ theorem diffeologicalGroup_iInf {G ι : Type*} [Group G] {D : ι → Diffeologic
 theorem diffeologicalGroup_inf {G : Type*} [Group G] {d₁ d₂ : DiffeologicalSpace G}
     (h₁ : @DiffeologicalGroup G d₁ _) (h₂ : @DiffeologicalGroup G d₂ _) :
     @DiffeologicalGroup G (d₁ ⊓ d₂) _ :=
-  inf_eq_iInf d₁ d₂ ▸ diffeologicalGroup_iInf fun b => (by cases b <;> assumption)
+  inf_eq_iInf d₁ d₂ ▸ diffeologicalGroup_iInf fun b ↦ (by cases b <;> assumption)
 
 /-!
 ### Lattice of group diffeologies
@@ -470,7 +470,7 @@ variable {G : Type*} [Group G]
 @[to_additive "A version of the global `dsmooth_add` suitable for dot notation."]
 theorem dsmooth_mul' (d : GroupDiffeology G) :
     haveI := d.toDiffeologicalSpace
-    DSmooth fun p : G × G => p.1 * p.2 := by
+    DSmooth fun p : G × G ↦ p.1 * p.2 := by
   letI := d.toDiffeologicalSpace
   haveI := d.toDiffeologicalGroup
   exact dsmooth_mul
@@ -487,7 +487,7 @@ theorem dsmooth_inv' (d : GroupDiffeology G) :
 @[to_additive]
 theorem toDiffeologicalSpace_injective :
     Function.Injective (toDiffeologicalSpace : GroupDiffeology G → DiffeologicalSpace G) :=
-  fun f g h => by cases f; cases g; congr
+  fun f g h ↦ by cases f; cases g; congr
 
 @[to_additive (attr := ext)]
 theorem ext' {d₁ d₂ : GroupDiffeology G} (h : d₁.1 = d₂.1) : d₁ = d₂ :=
@@ -548,7 +548,7 @@ instance : Inhabited (GroupDiffeology G) := ⟨⊤⟩
 @[to_additive "Infimum of a collection of additive group diffeologies"]
 instance : InfSet (GroupDiffeology G) where
   sInf D := ⟨sInf (toDiffeologicalSpace '' D),
-    diffeologicalGroup_sInf <| Set.forall_mem_image.2 fun d _ => d.2⟩
+    diffeologicalGroup_sInf <| Set.forall_mem_image.2 fun d _ ↦ d.2⟩
 
 @[to_additive (attr := simp)]
 theorem toDiffeologicalSpace_sInf (s : Set (GroupDiffeology G)) :
@@ -563,7 +563,7 @@ theorem toDiffeologicalSpace_iInf {ι : Type*} (s : ι → GroupDiffeology G) :
 instance : CompleteSemilatticeInf (GroupDiffeology G) :=
   { inferInstanceAs (InfSet (GroupDiffeology G)),
     inferInstanceAs (PartialOrder (GroupDiffeology G)) with
-    sInf_le := fun S a haS => toDiffeologicalSpace_le.1 <| sInf_le ⟨a, haS, rfl⟩
+    sInf_le := fun S a haS ↦ toDiffeologicalSpace_le.1 <| sInf_le ⟨a, haS, rfl⟩
     le_sInf := by
       intro S a hab
       apply (inferInstanceAs (CompleteLattice (DiffeologicalSpace G))).le_sInf

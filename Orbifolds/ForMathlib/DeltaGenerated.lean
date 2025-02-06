@@ -29,7 +29,7 @@ structure DeltaGenerated where
 namespace DeltaGenerated
 
 instance : CoeSort DeltaGenerated Type* :=
-  ⟨fun X => X.toTop⟩
+  ⟨fun X ↦ X.toTop⟩
 
 attribute [instance] deltaGenerated
 
@@ -63,8 +63,8 @@ def topToDeltaGenerated : TopCat.{u} ⥤ DeltaGenerated.{u} where
 def coreflectorAdjunction : deltaGeneratedToTop ⊣ topToDeltaGenerated :=
   Adjunction.mkOfUnitCounit {
     unit := {
-      app := fun X => ⟨id,continuous_iff_coinduced_le.mpr (eq_deltaGenerated (X := X)).le⟩ }
+      app := fun X ↦ ⟨id,continuous_iff_coinduced_le.mpr (eq_deltaGenerated (X := X)).le⟩ }
     counit := {
-      app := fun X => ⟨DeltaGeneratedSpace.counit,DeltaGeneratedSpace.continuous_counit⟩ }}
+      app := fun X ↦ ⟨DeltaGeneratedSpace.counit,DeltaGeneratedSpace.continuous_counit⟩ }}
 
 end DeltaGenerated

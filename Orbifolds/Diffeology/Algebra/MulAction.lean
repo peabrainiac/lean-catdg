@@ -12,7 +12,7 @@ diffeological groups and vector spaces.
   is smooth in both arguments. -/
 class DSmoothVAdd (M X : Type*) [VAdd M X] [DiffeologicalSpace M] [DiffeologicalSpace X] :
     Prop where
-  dsmooth_vadd : DSmooth fun p : M × X => p.1 +ᵥ p.2
+  dsmooth_vadd : DSmooth fun p : M × X ↦ p.1 +ᵥ p.2
 
 export DSmoothVAdd (dsmooth_vadd)
 
@@ -21,7 +21,7 @@ export DSmoothVAdd (dsmooth_vadd)
 @[to_additive]
 class DSmoothSMul (M X : Type*) [SMul M X] [DiffeologicalSpace M] [DiffeologicalSpace X] :
     Prop where
-  dsmooth_smul : DSmooth fun p : M × X => p.1 • p.2
+  dsmooth_smul : DSmooth fun p : M × X ↦ p.1 • p.2
 
 export DSmoothSMul (dsmooth_smul)
 
@@ -34,15 +34,15 @@ instance [SMul M X] [DSmoothSMul M X] : DSmoothSMul (ULift M) X :=
 
 @[to_additive (attr := fun_prop)]
 theorem DSmooth.smul [SMul M X] [DSmoothSMul M X] {f : Y → M} {g : Y → X}
-    (hf : DSmooth f) (hg : DSmooth g) : DSmooth fun x => f x • g x :=
+    (hf : DSmooth f) (hg : DSmooth g) : DSmooth fun x ↦ f x • g x :=
   dsmooth_smul.comp (hf.prod_mk hg)
 
 @[to_additive]
 instance DSmoothSMul.op [SMul M X] [DSmoothSMul M X] [SMul Mᵐᵒᵖ X] [IsCentralScalar M X] :
     DSmoothSMul Mᵐᵒᵖ X := ⟨by
-  suffices DSmooth fun p : M × X => MulOpposite.op p.fst • p.snd from
+  suffices DSmooth fun p : M × X ↦ MulOpposite.op p.fst • p.snd from
     this.comp (MulOpposite.dsmooth_unop.prod_map dsmooth_id)
-  simpa only [op_smul_eq_smul] using (dsmooth_smul : DSmooth fun p : M × X => _)⟩
+  simpa only [op_smul_eq_smul] using (dsmooth_smul : DSmooth fun p : M × X ↦ _)⟩
 
 @[to_additive]
 instance MulOpposite.dsmoothSMul [SMul M X] [DSmoothSMul M X] : DSmoothSMul M Xᵐᵒᵖ :=
@@ -115,14 +115,14 @@ instance Prod.dsmoothSMul [SMul M X] [SMul M Y] [DSmoothSMul M X] [DSmoothSMul M
 @[to_additive]
 instance {ι : Type*} {γ : ι → Type*} [∀ i, DiffeologicalSpace (γ i)] [∀ i, SMul M (γ i)]
     [∀ i, DSmoothSMul M (γ i)] : DSmoothSMul M (∀ i, γ i) :=
-  ⟨dsmooth_pi fun i => (dsmooth_fst.smul dsmooth_snd).comp <|
+  ⟨dsmooth_pi fun i ↦ (dsmooth_fst.smul dsmooth_snd).comp <|
     dsmooth_fst.prod_mk ((dsmooth_apply i).comp dsmooth_snd)⟩
 
 @[to_additive]
 theorem dsmoothSMul_sInf {X : Type*} [SMul M X] {D : Set (DiffeologicalSpace X)}
     (h : ∀ d ∈ D, @DSmoothSMul M X _ _ d) : @DSmoothSMul M X _ _ (sInf D) :=
   @DSmoothSMul.mk M X _ _ (_) <| @sInf_singleton _ _ ‹DiffeologicalSpace M› ▸
-    dsmooth_sInf_rng.2 fun t ht => dsmooth_sInf_dom₂ rfl ht
+    dsmooth_sInf_rng.2 fun t ht ↦ dsmooth_sInf_dom₂ rfl ht
       (@DSmoothSMul.dsmooth_smul _ _ _ _ t (h t ht))
 
 @[to_additive]
@@ -133,7 +133,7 @@ theorem dsmoothSMul_iInf {X ι : Type*} [SMul M X] {D : ι → DiffeologicalSpac
 @[to_additive]
 theorem dsmoothSMul_inf {X : Type*} [SMul M X] {d₁ d₂ : DiffeologicalSpace X}
     [@DSmoothSMul M X _ _ d₁] [@DSmoothSMul M X _ _ d₂] : @DSmoothSMul M X _ _ (d₁ ⊓ d₂) :=
-  inf_eq_iInf d₁ d₂ ▸ dsmoothSMul_iInf fun b => (by cases b <;> assumption)
+  inf_eq_iInf d₁ d₂ ▸ dsmoothSMul_iInf fun b ↦ (by cases b <;> assumption)
 
 section Topology
 
