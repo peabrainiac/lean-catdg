@@ -35,7 +35,7 @@ variable {X Y Z : Type*} [DiffeologicalSpace X] [DiffeologicalSpace Y] [Diffeolo
 
 section Defs
 
-/-- D-topoloy of a diffeological space. This is a definition rather than an instance
+/-- D-topology of a diffeological space. This is a definition rather than an instance
 because the D-topology might not agree with already registered topologies like the one
 on normed spaces.-/
 def DTop : TopologicalSpace X := DiffeologicalSpace.dTopology
@@ -272,26 +272,6 @@ theorem dsmooth_iff_contDiff [FiniteDimensional ℝ X] {f : X → Y} : DSmooth f
   ⟨DSmooth.contDiff,ContDiff.dsmooth⟩
 
 end FiniteDimensionalNormedSpace
-
-section Reflexive
-
-/-- A diffeological space is called reflexive if the diffeology induced by the
-differential structure induced by the diffeology is again the diffeology itself.
-Since we don't have differential spaces yet, this is formulated as every function
-`p : Eucl n → X` for which all compositions with functions `X → ℝ` are smooth
-being a plot. -/
-class ReflexiveDiffeologicalSpace (X : Type*) [DiffeologicalSpace X] : Prop where
-  isPlot_if : ∀ {n : ℕ} (p : Eucl n → X),
-    (∀ f : X → ℝ, DSmooth f → DSmooth (f ∘ p)) → IsPlot p
-
-instance {X : Type*} [NormedAddCommGroup X] [NormedSpace ℝ X] [FiniteDimensional ℝ X]
-    [DiffeologicalSpace X] [ContDiffCompatible X] : ReflexiveDiffeologicalSpace X where
-  isPlot_if := fun {n} p hp ↦ by
-    let Φ := (toEuclidean (E := X)).trans (EuclideanSpace.equiv _ ℝ)
-    refine' isPlot_iff_contDiff.2 <| Φ.comp_contDiff_iff.1 (contDiff_pi.2 fun i ↦ _)
-    exact (hp _ (((ContinuousLinearMap.proj i).contDiff).comp Φ.contDiff).dsmooth).contDiff
-
-end Reflexive
 
 section CompleteLattice
 

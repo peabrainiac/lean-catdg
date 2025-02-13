@@ -1,4 +1,5 @@
 import Orbifolds.Diffeology.DSmoothMap
+import Orbifolds.Diffeology.Reflexive
 import Mathlib.Topology.Compactness.DeltaGeneratedSpace
 import Mathlib.Analysis.InnerProductSpace.Calculus
 

@@ -92,7 +92,7 @@ lemma dTop_sup {X : Type u} (d₁ d₂ : DiffeologicalSpace X) :
     DTop[d₁ ⊔ d₂] = DTop[d₁] ⊔ DTop[d₂] :=
   (gc_dTop X).l_sup (a₁ := d₁)
 
-lemma dTop_iSup {X : Type u} {ι : Type*}  {D : ι → DiffeologicalSpace X} :
+lemma dTop_iSup {X : Type u} {ι : Type*} {D : ι → DiffeologicalSpace X} :
     DTop[⨆ i, D i] = ⨆ i, DTop[D i] :=
   (gc_dTop X).l_iSup
 
@@ -105,7 +105,7 @@ lemma continuousDiffeology_inf {X : Type u} (t₁ t₂ : TopologicalSpace X) :
     @continuousDiffeology X t₁ ⊓ @continuousDiffeology X t₂ :=
   (gc_dTop X).u_inf (b₁ := t₁)
 
-lemma continuousDiffeology_iInf {X : Type u} {ι : Type*}  {T : ι → TopologicalSpace X} :
+lemma continuousDiffeology_iInf {X : Type u} {ι : Type*} {T : ι → TopologicalSpace X} :
     @continuousDiffeology X (⨅ i, T i) = ⨅ i, @continuousDiffeology X (T i) :=
   (gc_dTop X).u_iInf
 
