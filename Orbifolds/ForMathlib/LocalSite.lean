@@ -1,4 +1,4 @@
-import Mathlib.CategoryTheory.Sites.Sheaf
+import Orbifolds.ForMathlib.GlobalSections
 
 /-!
 # Local sites
@@ -45,7 +45,7 @@ noncomputable example [HasTerminal C] : Type max v w ⥤ (Cᵒᵖ ⥤ Type max v
 
 /-- The right adjoint to the global sections functor that exists over any local site.
 Takes a type `X` to the sheaf that sends each `Y : C` to the type of functions `Y → X`. -/
-noncomputable def Sheaf.codisc (J : GrothendieckTopology C) [LocalSite J] :
+noncomputable def Sheaf.codisc [LocalSite J] :
     Type w ⥤ Sheaf J (Type (max v w)) where
   obj X := {
     val := Presheaf.codisc.obj X
@@ -61,5 +61,35 @@ noncomputable def Sheaf.codisc (J : GrothendieckTopology C) [LocalSite J] :
   map {X Y} (f : X → Y) := ⟨Presheaf.codisc.map f⟩
   map_id _ := rfl
   map_comp _ _ := rfl
+
+/-- On local sites, the global sections functor `Γ` is left-adjoint to the codiscrete functor. -/
+noncomputable def Sheaf.ΓCodiscAdj [LocalSite J] : Γ J (Type max u v w) ⊣ codisc J := by
+  refine Adjunction.ofNatIsoLeft ?_ (ΓNatIsoSheafSections J _ terminalIsTerminal).symm
+  exact Adjunction.mkOfUnitCounit {
+    unit := {
+      app X := ⟨{
+        app Y (x : X.val.obj Y) y := ⟨X.val.map (op y.down) x⟩
+        naturality Y Z f := by
+          ext (x : X.val.obj Y); dsimp [codisc, Presheaf.codisc]; ext z
+          exact (FunctorToTypes.map_comp_apply X.val _ _ x).symm
+      }⟩
+      naturality X Y f := by
+        ext Z (x : X.val.obj Z); dsimp [codisc, Presheaf.codisc]; ext z
+        exact (NatTrans.naturality_apply f.val _ x).symm
+    }
+    counit := { app X := fun f : ULift (_ ⟶ _) → _ ↦ (f default).down }
+    left_triangle := by
+      ext X (x : X.val.obj _)
+      dsimp; convert congrFun (X.val.map_id _) x; exact Subsingleton.elim _ _
+    right_triangle := by
+      ext X Y (f : _ → _); dsimp [codisc, Presheaf.codisc]; ext y
+      dsimp; congr; convert Category.id_comp _; exact Subsingleton.elim _ _
+  }
+
+instance [LocalSite J] : (Γ J (Type max u v w)).IsLeftAdjoint :=
+  ⟨codisc J, ⟨ΓCodiscAdj J⟩⟩
+
+instance [LocalSite J] : (codisc.{u,v,max u v w} J).IsRightAdjoint :=
+  ⟨Γ J _, ⟨ΓCodiscAdj J⟩⟩
 
 end CategoryTheory
