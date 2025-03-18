@@ -41,7 +41,7 @@ instance {C : Type u} [Category.{v} C] : (trivial C).IsLocallyConnectedSite wher
 variable [J.IsLocallyConnectedSite]
 
 /-- On locally connected sites, every constant presheaf is a sheaf. -/
-lemma isSheaf_const_obj {X : Type max u} : Presheaf.IsSheaf J ((Functor.const _).obj X) := by
+lemma isSheaf_const_obj {X : Type max u w} : Presheaf.IsSheaf J ((Functor.const _).obj X) := by
   refine (isSheaf_iff_isSheaf_of_type J _).2 fun Y S hS x hx ↦ ?_
   let ⟨f, hf⟩ := (IsLocallyConnectedSite.isConnected_of_mem S hS).is_nonempty
   refine ⟨@x f.left f.hom hf, ?_, ?_⟩
@@ -53,3 +53,20 @@ lemma isSheaf_const_obj {X : Type max u} : Presheaf.IsSheaf J ((Functor.const _)
     simpa using hx (𝟙 _) h.left f.property g.property
   · intro x hx
     exact hx f.hom hf
+
+/-- The connected components functor on sheaves of types on any local site, defined as taking
+colimits of the underlying presheaves. -/
+noncomputable def Sheaf.π₀ : Sheaf J (Type max u w) ⥤ Type max u w :=
+  sheafToPresheaf J _ ⋙ colim
+
+/-- The connected components functor on local sites is left-adjoint to the constant sheaf functor.
+TODO: remove `HasSheafify` instance. -/
+noncomputable def π₀ConstantSheafAdj [HasWeakSheafify J (Type max u w)] :
+    Sheaf.π₀ J ⊣ constantSheaf J (Type max u w) := by
+  refine colimConstAdj.restrictFullyFaithful (fullyFaithfulSheafToPresheaf J _) (.id _) ?_ ?_
+  · exact (Functor.rightUnitor _).symm
+  · refine ((Functor.leftUnitor _).trans ((Functor.rightUnitor _).symm.trans ?_)).trans
+      (Functor.associator _ _ _).symm
+    refine @asIso _ _ _ _ (whiskerLeft _ (toSheafification _ _)) ?_
+    rw [NatTrans.isIso_iff_isIso_app]
+    exact fun X ↦ isIso_toSheafify J <| isSheaf_const_obj J
