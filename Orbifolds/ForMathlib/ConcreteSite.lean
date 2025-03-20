@@ -9,32 +9,6 @@ namespace CategoryTheory
 attribute [local instance] ConcreteCategory.hasCoeToSort
 attribute [local instance] ConcreteCategory.instFunLike
 
-/-- A terminal sheaf is also terminal as a presheaf. -/
-noncomputable def Limits.IsTerminal.isTerminalSheafVal {C : Type u} [Category.{v} C]
-    {J : GrothendieckTopology C} {A : Type u₂} [Category.{v₂} A] [HasLimits A]
-    {X : Sheaf J A} (hX : IsTerminal X) : IsTerminal X.val :=
-  hX.isTerminalObj (sheafToPresheaf J A)
-
-/-- Sections of a terminal sheaf are terminal objects. -/
-noncomputable def Limits.IsTerminal.isTerminalSheafValObj {C : Type u} [Category.{v} C]
-    {J : GrothendieckTopology C} {A : Type u₂} [Category.{v₂} A] [HasLimits A]
-    {X : Sheaf J A} (hX : IsTerminal X) (Y : Cᵒᵖ) : IsTerminal (X.val.obj Y) :=
-  hX.isTerminalSheafVal.isTerminalObj_functor Y
-
-/-- For sheaves valued in a concrete category whose terminal object is a point,
-  sections of the terminal sheaf are unique. -/
-noncomputable instance Sheaf.instUniqueTerminalValObjForget {C : Type u} [Category.{v} C]
-    {J : GrothendieckTopology C} {A : Type u₂} [Category.{v₂} A] [HasLimits A]
-    [ConcreteCategory.{w} A] [PreservesLimit (Functor.empty _) (forget A)] (Y : Cᵒᵖ) :
-    Unique ((⊤_ Sheaf J A).val.obj Y) :=
-  Concrete.uniqueOfTerminalOfPreserves _ <| terminalIsTerminal.isTerminalSheafValObj Y
-
-/-- Sections of the terminal sheaf are unique. -/
-noncomputable instance Sheaf.instUniqueTerminalValObj {C : Type u} [Category.{v} C]
-    {J : GrothendieckTopology C}  (Y : Cᵒᵖ) :
-    Unique ((⊤_ Sheaf J (Type w)).val.obj Y) :=
-  Types.isTerminalEquivUnique _ <| terminalIsTerminal.isTerminalSheafValObj Y
-
 variable {C : Type u} [Category.{v} C]
 
 /-- A presieve `S` on `X` in a concrete category is jointly surjective if every `x : X` is in

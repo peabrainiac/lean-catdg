@@ -1,12 +1,34 @@
 import Mathlib.CategoryTheory.Limits.FullSubcategory
+import Mathlib.CategoryTheory.Limits.Sifted
 import Orbifolds.ForMathlib.GlobalSections
 
 /-!
 # Locally connected sites
+Locally connected sites are sites for which all covering sieves are connected as subcategories
+of the corresponding slice category. This is useful because it guarantees the existence of a
+further left adjoint `π₀` of the constant sheaf functor, making sheaf topoi on locally connected
+sites locally connected.
+
 See https://ncatlab.org/nlab/show/locally+connected+site.
+
+## Main definitions / results
+* `J.IsLocallyConnectedSite`: typeclass stating that (C,J) is locally connected.
+* Every trivial site is locally connected.
+* `isSheaf_const_obj`: on locally connected sites, every constant presheaf is a sheaf.
+* `Sheaf.π₀ J`: the connected components functor on locally connected sites, sending each sheaf
+  to the colimit of its underlying presheaf.
+* `π₀ConstantSheafAdj`: the adjunction between `π₀ J` and the constant sheaf functor. This shows
+  that sheaf topoi on locally connected sites are locally connected.
+* `uniqueπ₀Obj_of_isRepresentable`: `π₀` sends representable sheaves to singleton types, i.e.
+  all representable sheaves are connected.
+* On locally connected sites with a terminal object, `π₀` preserves the terminal object, i.e.
+  the terminal sheaf is connected. This is enough to show that the sheaf topos is connected.
+* On cosifted locally connected sites, `π₀` preserves all finite products, i.e. the sheaf topos
+  is strongly connected. This is not yet sorry-free because it depends on a characterisation
+  of sifted categories.
 -/
 
-universe u v w
+universe u v w u₂ v₂
 
 open CategoryTheory Limits Sheaf Opposite GrothendieckTopology
 
@@ -70,3 +92,99 @@ noncomputable def π₀ConstantSheafAdj [HasWeakSheafify J (Type max u w)] :
     refine @asIso _ _ _ _ (whiskerLeft _ (toSheafification _ _)) ?_
     rw [NatTrans.isIso_iff_isIso_app]
     exact fun X ↦ isIso_toSheafify J <| isSheaf_const_obj J
+
+/- A few lemmas for which I haven't found a better place yet.
+TODO: clean up. -/
+section TerminalSheaf
+
+attribute [local instance] ConcreteCategory.hasCoeToSort
+attribute [local instance] ConcreteCategory.instFunLike
+
+/-- A terminal sheaf is also terminal as a presheaf. -/
+noncomputable def Limits.IsTerminal.isTerminalSheafVal {C : Type u} [Category.{v} C]
+    {J : GrothendieckTopology C} {A : Type u₂} [Category.{v₂} A] [HasLimits A]
+    {X : Sheaf J A} (hX : IsTerminal X) : IsTerminal X.val :=
+  hX.isTerminalObj (sheafToPresheaf J A)
+
+/-- Sections of a terminal sheaf are terminal objects. -/
+noncomputable def Limits.IsTerminal.isTerminalSheafValObj {C : Type u} [Category.{v} C]
+    {J : GrothendieckTopology C} {A : Type u₂} [Category.{v₂} A] [HasLimits A]
+    {X : Sheaf J A} (hX : IsTerminal X) (Y : Cᵒᵖ) : IsTerminal (X.val.obj Y) :=
+  hX.isTerminalSheafVal.isTerminalObj_functor Y
+
+/-- For sheaves valued in a concrete category whose terminal object is a point,
+  sections of the terminal sheaf are unique. -/
+noncomputable instance Sheaf.instUniqueTerminalValObjForget {C : Type u} [Category.{v} C]
+    {J : GrothendieckTopology C} {A : Type u₂} [Category.{v₂} A] [HasLimits A]
+    [ConcreteCategory.{w} A] [PreservesLimit (Functor.empty _) (forget A)] (Y : Cᵒᵖ) :
+    Unique ((⊤_ Sheaf J A).val.obj Y) :=
+  Concrete.uniqueOfTerminalOfPreserves _ <| terminalIsTerminal.isTerminalSheafValObj Y
+
+/-- Terminal types are singletons. -/
+noncomputable def Limits.IsTerminal.unique {X : Type u} (h : IsTerminal X) : Unique X :=
+  Types.isTerminalEquivUnique _ h
+
+/-- Sections of the terminal sheaf are unique. -/
+noncomputable instance Sheaf.instUniqueTerminalValObj {C : Type u} [Category.{v} C]
+    {J : GrothendieckTopology C}  (Y : Cᵒᵖ) :
+    Unique ((⊤_ Sheaf J (Type w)).val.obj Y) :=
+  (terminalIsTerminal.isTerminalSheafValObj Y).unique
+
+/-- Morphisms to a terminal object are unique. -/
+noncomputable def Limits.IsTerminal.uniqueHom {C : Type u} [Category.{v} C]
+    {T : C} (hT : IsTerminal T) (X : C) : Unique (X ⟶ T) :=
+  ⟨⟨hT.from X⟩, fun _ ↦ hT.hom_ext _ _⟩
+
+/-- Terminal functors are represented by any terminal object. -/
+noncomputable def Limits.IsTerminal.representableBy_isTerminal {C : Type u} [Category.{v} C]
+    {F : Cᵒᵖ ⥤ Type w} (hF : IsTerminal F) {T : C} (hT : IsTerminal T) :
+    F.RepresentableBy T where
+  homEquiv {_} := @Equiv.ofUnique _ _ (hT.uniqueHom _) (hF.isTerminalObj_functor _).unique
+  homEquiv_comp _ _ := ((hF.isTerminalObj_functor _).unique.instSubsingleton).elim _ _
+
+/-- On categories with a terminal object, the terminal presheaf is representable. -/
+instance {C : Type u} [Category.{v} C] [HasTerminal C] : (⊤_ Cᵒᵖ ⥤ Type w).IsRepresentable :=
+  (terminalIsTerminal.representableBy_isTerminal terminalIsTerminal).isRepresentable
+
+/-- On sites with a terminal object, the terminal sheaf is representable. -/
+instance Sheaf.isRepresentable_terminal {C : Type u} [Category.{v} C] [HasTerminal C]
+    {J : GrothendieckTopology C} : (⊤_ Sheaf J (Type w)).val.IsRepresentable :=
+  (terminalIsTerminal.isTerminalSheafVal.representableBy_isTerminal
+    terminalIsTerminal).isRepresentable
+
+/-- The colimit of any representable functor is a singleton type. -/
+noncomputable def unique_colimit_representable {C : Type u} [Category.{v} C]
+    (F : Cᵒᵖ ⥤ Type max u w) [F.IsRepresentable] : Unique (colimit F) :=
+  @Equiv.unique _ _ {
+    default := Quot.mk _ ⟨op F.reprX, F.reprx⟩
+    uniq x := by
+      refine x.out_eq.symm.trans (Quot.eq.2 (.symm _ _ <| .rel _ _ ⟨?_, ?_⟩))
+      · exact (F.representableBy.homEquiv.symm x.out.2).op
+      · exact .trans (by simp) (F.representableBy.homEquiv_comp _ _)
+  } (Types.colimitEquivQuot F)
+
+end TerminalSheaf
+
+/-- `Sheaf.π₀` sends representable sheaves to singleton types. -/
+noncomputable def uniqueπ₀Obj_of_isRepresentable (X : Sheaf J (Type max u w))
+    [X.val.IsRepresentable] : Unique ((π₀ J).obj X) :=
+  unique_colimit_representable X.val
+
+/-- On locally connected sites with a terminal object, `Sheaf.π₀` preserves the terminal object. -/
+instance [HasTerminal C] : PreservesLimit (Functor.empty.{0} _) (π₀.{u,v,w} J) := by
+  refine preservesTerminal_of_iso _ (IsTerminal.uniqueUpToIso ?_ terminalIsTerminal)
+  exact (Types.isTerminalEquivUnique _).2 <| uniqueπ₀Obj_of_isRepresentable _ _
+
+/-- If `C` is sifted, the `colim` functor `(C ⥤ Type) ⥤ Type` preserves finite products.
+Taken from mathlib PR #17781.
+TODO: remove once #17781 or a similar result has landed in mathlib. -/
+instance colimPreservesFiniteProductsOfIsSifted {C : Type u} [Category.{v} C] {J : Type*}
+    [Fintype J] : PreservesLimitsOfShape (Discrete J) (colim : (C ⥤ _) ⥤ Type u) := by
+  sorry
+
+/-- Sheaf topoi on cosifted locally connected sites are strongly connected, in the sense that
+`π₀` preserves all finite products.
+TODO: generalise universe levels. -/
+instance [IsSifted Cᵒᵖ] {ι : Type*} [Fintype ι] :
+    PreservesLimitsOfShape (Discrete ι) (π₀.{u,v,u} J) :=
+  comp_preservesLimitsOfShape _ _
