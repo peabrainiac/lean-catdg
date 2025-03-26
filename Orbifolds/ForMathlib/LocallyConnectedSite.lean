@@ -178,13 +178,13 @@ instance [HasTerminal C] : PreservesLimit (Functor.empty.{0} _) (π₀.{u,v,w} J
 /-- If `C` is sifted, the `colim` functor `(C ⥤ Type) ⥤ Type` preserves finite products.
 Taken from mathlib PR #17781.
 TODO: remove once #17781 or a similar result has landed in mathlib. -/
-instance colimPreservesFiniteProductsOfIsSifted {C : Type u} [Category.{v} C] {J : Type*}
-    [Fintype J] : PreservesLimitsOfShape (Discrete J) (colim : (C ⥤ _) ⥤ Type u) := by
+instance colimPreservesFiniteProductsOfIsSifted {C : Type u} [Category.{v} C] :
+    PreservesFiniteProducts (colim : (C ⥤ _) ⥤ Type max u w) := by
   sorry
 
 /-- Sheaf topoi on cosifted locally connected sites are strongly connected, in the sense that
 `π₀` preserves all finite products.
 TODO: generalise universe levels. -/
-instance [IsSifted Cᵒᵖ] {ι : Type*} [Fintype ι] :
-    PreservesLimitsOfShape (Discrete ι) (π₀.{u,v,u} J) :=
-  comp_preservesLimitsOfShape _ _
+instance [IsSifted Cᵒᵖ] :
+    PreservesFiniteProducts (π₀.{u,v,w} J) :=
+  comp_preservesFiniteProducts _ _

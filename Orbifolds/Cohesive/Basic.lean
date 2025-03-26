@@ -13,7 +13,6 @@ categories `C` and `D`, since mathlib does not much on topoi yet.
 
 See https://ncatlab.org/nlab/show/cohesive+topos for cohesive topoi, and also the paper
 "Axiomatic Cohesion" by Lawvere for more general cohesive categories.
-
 -/
 
 universe u v u' v'
@@ -34,14 +33,14 @@ class CohesiveStructure (C : Type u) [Category.{v} C] (D : Type u') [Category.{v
   π₀DiscAdj : π₀ ⊣ disc
   discΓAdj : disc ⊣ Γ
   ΓCodiscAdj : Γ ⊣ codisc
-  preservesProducts_π₀ {ι : Type u'} [Fintype ι] : PreservesLimitsOfShape (Discrete ι) π₀
+  preservesFiniteProducts_π₀ : PreservesFiniteProducts π₀
   fullyFaithfulDisc : disc.FullyFaithful
   fullyFaithfulCodisc : codisc.FullyFaithful
 
 namespace Cohesive
 
 export CategoryTheory.CohesiveStructure (π₀ disc Γ codisc π₀DiscAdj discΓAdj ΓCodiscAdj
-  ΓCodiscAdj preservesProducts_π₀ fullyFaithfulDisc fullyFaithfulCodisc)
+  ΓCodiscAdj preservesFiniteProducts_π₀ fullyFaithfulDisc fullyFaithfulCodisc)
 
 variable (C : Type u) [Category.{v} C] (D : Type u') [Category.{v'} D] [CohesiveStructure C D]
 
@@ -57,8 +56,8 @@ instance : (Γ : C ⥤ D).IsLeftAdjoint := ΓCodiscAdj.isLeftAdjoint
 
 instance : (codisc : D ⥤ C).IsRightAdjoint := ΓCodiscAdj.isRightAdjoint
 
-instance {ι : Type u'} [Fintype ι] : PreservesLimitsOfShape (Discrete ι) (π₀ : C ⥤ D) :=
-  preservesProducts_π₀
+instance : PreservesFiniteProducts (π₀ : C ⥤ D) :=
+  preservesFiniteProducts_π₀
 
 instance : (disc : D ⥤ C).Full := fullyFaithfulDisc.full
 
