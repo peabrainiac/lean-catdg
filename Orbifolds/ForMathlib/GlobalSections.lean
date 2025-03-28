@@ -91,6 +91,7 @@ of sections on that object. -/
 noncomputable def Sheaf.ΓNatIsoSheafSections [HasLimitsOfShape Cᵒᵖ A] {T : C}
     (hT : IsTerminal T) : Γ J A ≅ (sheafSections J A).obj (op T) := by
   refine (isoWhiskerLeft _ ?_).trans <| (sheafSectionsNatIsoEvaluation J A).symm
+  --TODO: replace with `NatIso.ofComponents limitOfInitial`?
   refine @asIso _ _ _ _ { app := fun F ↦ limit.π _ _ } ?_
   have hT' := initialOpOfTerminal hT
   exact (NatTrans.isIso_iff_isIso_app _).2 <| fun F ↦ isIso_π_of_isInitial hT' F

@@ -72,6 +72,7 @@ noncomputable def Sheaf.codisc [LocalSite J] :
   map_comp _ _ := rfl
 
 /-- On local sites, the global sections functor `Γ` is left-adjoint to the codiscrete functor. -/
+@[simps!]
 noncomputable def Sheaf.ΓCodiscAdj [LocalSite J] : Γ J (Type max u v w) ⊣ codisc J := by
   refine Adjunction.ofNatIsoLeft ?_ (ΓNatIsoSheafSections J _ terminalIsTerminal).symm
   exact Adjunction.mkOfUnitCounit {

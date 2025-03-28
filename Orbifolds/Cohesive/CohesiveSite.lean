@@ -55,4 +55,36 @@ noncomputable instance : CohesiveStructure (Sheaf J (Type max u v w)) (Type max 
   fullyFaithfulDisc := fullyFaithfulConstantSheaf J
   fullyFaithfulCodisc := Sheaf.fullyFaithfulCodisc J
 
+lemma Sheaf.ΓCodiscAdj_unit_app {X : Sheaf J (Type max u v w)} :
+    (Sheaf.ΓCodiscAdj.{u,v,w} J).unit.app X = (by sorry) := by
+  simp [Sheaf.ΓCodiscAdj, Adjunction.ofNatIsoLeft, Adjunction.homEquiv]
+  simp [Adjunction.equivHomsetLeftOfNatIso]
+  simp [ΓNatIsoSheafSections, sheafSectionsNatIsoEvaluation]
+  sorry
+
+lemma Sheaf.discToCodisc_app {X : (Type max u v w)} :
+    (discToCodisc (Sheaf J (Type max u v w)) (Type max u v w)).app X =
+      ⟨inv (toSheafify J ((Functor.const _).obj X)) ≫ { app Y x y := ⟨x⟩ }⟩ := by
+  rw [Cohesive.discToCodisc_app, IsIso.comp_inv_eq]
+  apply Sheaf.hom_ext
+  rw [instCategorySheaf_comp_val, Category.assoc, IsIso.eq_inv_comp]
+  ext Y x
+  dsimp
+  simp [codisc, Sheaf.codisc, Presheaf.codisc, discΓAdj, constantSheafΓAdj, ΓCodiscAdj]
+  ext y
+  simp [disc, Adjunction.equivHomsetLeftOfNatIso]
+  simp? [ΓNatIsoSheafSections]
+  sorry
+
+/-- In sheaf topoi on cohesive sites, pieces have points in the sense that the components of
+the canonical points-to-pieces transformation `Γ ⟶ π₀` are epic. -/
+instance : PiecesHavePoints (Sheaf J (Type max u v w)) (Type max u v w) := by
+  refine (piecesHavePoints_iff_mono_discToCodisc_app _ _).2 fun X ↦ ?_
+  rw [Sheaf.discToCodisc_app]
+  refine @Hom.mono_of_presheaf_mono _ _ J _ _ _ _ _ <| @mono_comp _ _ _ _ _ _ _ _ <|
+    @NatTrans.mono_of_mono_app _ _ _ _ _ _ _ fun Y ↦ (mono_iff_injective fun x y ↦ ULift.up x).2 ?_
+  intro (x : X) (x' : X) h
+  refine ULift.up_inj.1 (congrFun h ⟨?_⟩)
+  exact Classical.choice (IsCohesiveSite.nonempty_fromTerminal (J := J))
+
 end Cohesive

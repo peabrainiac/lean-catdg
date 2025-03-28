@@ -63,7 +63,7 @@ instance {C : Type u} [Category.{v} C] : (trivial C).IsLocallyConnectedSite wher
 variable [J.IsLocallyConnectedSite]
 
 /-- On locally connected sites, every constant presheaf is a sheaf. -/
-lemma isSheaf_const_obj {X : Type max u w} : Presheaf.IsSheaf J ((Functor.const _).obj X) := by
+lemma isSheaf_const_obj {X : Type w} : Presheaf.IsSheaf J ((Functor.const _).obj X) := by
   refine (isSheaf_iff_isSheaf_of_type J _).2 fun Y S hS x hx ↦ ?_
   let ⟨f, hf⟩ := (IsLocallyConnectedSite.isConnected_of_mem S hS).is_nonempty
   refine ⟨@x f.left f.hom hf, ?_, ?_⟩
@@ -75,6 +75,12 @@ lemma isSheaf_const_obj {X : Type max u w} : Presheaf.IsSheaf J ((Functor.const 
     simpa using hx (𝟙 _) h.left f.property g.property
   · intro x hx
     exact hx f.hom hf
+
+/-- For constant presheaves on locally connected sites, `toSheafify` is an isomorphism.
+TODO: remove `HasSheafify` instance. -/
+instance {X : Type w} [HasWeakSheafify J (Type w)] :
+    IsIso (toSheafify J ((Functor.const _).obj X)) :=
+  isIso_toSheafify J (isSheaf_const_obj J)
 
 /-- The connected components functor on sheaves of types on any local site, defined as taking
 colimits of the underlying presheaves. -/

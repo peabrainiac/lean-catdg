@@ -189,6 +189,24 @@ instance [PiecesHavePoints C D] : Epi (discPointsToPieces C D) := by
   have := (piecesHavePoints_iff_epi_discPointsToPieces_app C D).1 ‹_›
   exact NatTrans.epi_of_epi_app _
 
+/-- Cohesion of `C` over `D` satisfies *pieces have points* iff the unit components of
+`sharp C D` on discrete objects are monomorphisms. -/
+lemma piecesHavePoints_iff_mono_sharp_unit_disc :
+    PiecesHavePoints C D ↔ ∀ X : D, Mono ((sharp C D).η.app (disc.obj X)) := by
+  sorry
+
+/-- The canonical natural transformation `disc ⥤ codisc`, expressed in terms of adjunction units. -/
+@[simps!]
+noncomputable def discToCodisc : (disc : D ⥤ C) ⟶ codisc :=
+  disc.rightUnitor.inv ≫ (whiskerLeft disc ΓCodiscAdj.unit) ≫ (Functor.associator _ _ _).inv ≫
+    inv (whiskerRight discΓAdj.unit codisc) ≫ codisc.leftUnitor.hom
+
+/-- Cohesion of `C` over `D` satisfies *pieces have points* iff the unit components of
+`sharp C D` on discrete objects are monomorphisms. -/
+lemma piecesHavePoints_iff_mono_discToCodisc_app :
+    PiecesHavePoints C D ↔ ∀ X : D, Mono ((discToCodisc C D).app X) := by
+  sorry
+
 end Cohesive
 
 end CategoryTheory
