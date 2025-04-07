@@ -36,8 +36,8 @@ class ConcreteSite (J : GrothendieckTopology C)
     S ∈ J.sieves X → S.arrows.IsJointlySurjective
 
 /-- The terminal object of a concrete site has exactly one point. -/
-noncomputable instance ConcreteSite.instUniqueTerminal (J : GrothendieckTopology C) [ConcreteSite J] :
-    Unique (⊤_ C) :=
+noncomputable instance ConcreteSite.instUniqueTerminal (J : GrothendieckTopology C)
+    [ConcreteSite J] : Unique (⊤_ C) :=
   (forget_natIso_coyoneda.app (⊤_ C)).toEquiv.unique (β := ⊤_ C ⟶ ⊤_ C)
 
 /-- Every concrete site is also a local site. -/

@@ -139,7 +139,8 @@ def EuclOp.openCoverCoverage : Coverage EuclOp where
     · refine Set.iUnion_eq_univ_iff.2 fun x ↦ ?_
       let ⟨w,hw⟩ := Set.iUnion_eq_univ_iff.1 hs.2 (g x)
       let ⟨f,hf,hgx⟩ := Set.mem_iUnion₂.1 hw
-      have h := v.2.2.isOpenMap_subtype_val _ ((hs.1 _ _ hf).2.isOpen_range.preimage g.2.continuous')
+      have h := v.2.2.isOpenMap_subtype_val _
+        ((hs.1 _ _ hf).2.isOpen_range.preimage g.2.continuous')
       use ⟨_, _, h⟩
       refine Set.mem_iUnion₂.2 ⟨⟨_, dsmooth_inclusion (Subtype.coe_image_subset _ _)⟩, ?_⟩
       refine ⟨⟨⟨w, f, hf, ?_⟩, ?_, ?_⟩, ?_⟩

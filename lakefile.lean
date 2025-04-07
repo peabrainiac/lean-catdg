@@ -6,7 +6,8 @@ package «orbifolds» where
   leanOptions := #[
     ⟨`pp.unicode.fun, true⟩, -- pretty-prints `fun a ↦ b`
     ⟨`autoImplicit, false⟩, -- switch off auto-implicit
-    ⟨`relaxedAutoImplicit, false⟩ -- switch off relaxed auto-implicit
+    ⟨`relaxedAutoImplicit, false⟩, -- switch off relaxed auto-implicit
+    ⟨`linter.style.longLine, true⟩
   ]
   -- add any additional package configuration options here
 
