@@ -2,6 +2,7 @@ import Mathlib.CategoryTheory.Adjunction.Limits
 import Mathlib.CategoryTheory.Limits.Constructions.EpiMono
 import Mathlib.CategoryTheory.Limits.Preserves.Finite
 import Mathlib.CategoryTheory.Monad.Adjunction
+import Orbifolds.ForMathlib.Triple
 
 /-!
 # Cohesive categories
@@ -106,37 +107,25 @@ instance : (flat C D).IsLeftAdjoint := (flatSharpAdj C D).isLeftAdjoint
 
 instance : (sharp C D).IsRightAdjoint := (flatSharpAdj C D).isRightAdjoint
 
-/-- See https://ncatlab.org/nlab/show/cohesive+topos#CoincidenceOfTransformsForAdjointTriple.
-TODO: generalise & move to Mathlib.CategoryTheory.Adjunction.Triple
--/
-lemma counit_unit_diskΓAdj_eq_counit_unit_π₀DiscAdj : (Functor.associator _ _ _).inv ≫
-    whiskerRight (discΓAdj (C := C) (D := D)).counit π₀ ≫ π₀.leftUnitor.hom ≫
-    π₀.rightUnitor.inv ≫ whiskerLeft π₀ (discΓAdj (C := C) (D := D)).unit =
-    whiskerLeft Γ π₀DiscAdj.counit ≫ Γ.rightUnitor.hom ≫ Γ.leftUnitor.inv ≫
-    whiskerRight π₀DiscAdj.unit Γ ≫ (Functor.associator _ _ _).hom := by
-  ext X
-  dsimp; simp only [Category.id_comp, Category.comp_id]
-  refine .trans ?_ <| π₀DiscAdj.counit_naturality <| (whiskerRight π₀DiscAdj.unit Γ).app X
-  rw [whiskerRight_app, (asIso (discΓAdj.counit.app (disc.obj _))).eq_comp_inv.2
-    (discΓAdj.counit_naturality (π₀DiscAdj.unit.app X))]
-  rw [← (asIso _).comp_hom_eq_id.1 <| discΓAdj.left_triangle_components (π₀.obj X)]
-  simp
+section PointsToPieces
 
 /-- The points-to-pieces transform `Γ ⟶ π₀`. The other natural transformation that is also
 often called the points to pieces transform is the image of this under `disc`. -/
 @[simps!]
 noncomputable def pointsToPieces : (Γ : C ⥤ D) ⟶ π₀ :=
-  Γ.leftUnitor.inv ≫ whiskerRight π₀DiscAdj.unit Γ ≫ (Functor.associator _ _ _).hom ≫
-    inv (whiskerLeft π₀ discΓAdj.unit) ≫ π₀.rightUnitor.hom
+  π₀DiscAdj.HToF discΓAdj
 
-/-- An alternate form of `pointsToPieces` in terms of counits instead of units. -/
+/-- Formula for `pointsToPieces C D` in terms of the whiskered units of the adjunctions. -/
+lemma pointsToPieces_eq_units : pointsToPieces C D = Γ.leftUnitor.inv ≫
+    whiskerRight π₀DiscAdj.unit Γ ≫
+    (Functor.associator _ _ _).hom ≫ inv (whiskerLeft π₀ discΓAdj.unit) ≫ π₀.rightUnitor.hom :=
+  rfl
+
+/-- Formula for `pointsToPieces C D` in terms of the whiskered counits of the adjunctions. -/
 lemma pointsToPieces_eq : pointsToPieces C D = Γ.rightUnitor.inv ≫
     inv (whiskerLeft Γ π₀DiscAdj.counit) ≫ (Functor.associator _ _ _).inv ≫
-    whiskerRight discΓAdj.counit π₀ ≫ π₀.leftUnitor.hom := by
-  ext X; dsimp [pointsToPieces]
-  simp only [NatIso.isIso_inv_app, Functor.comp_obj, Category.comp_id, Category.id_comp]
-  rw [IsIso.comp_inv_eq]
-  simpa using (congr_app (counit_unit_diskΓAdj_eq_counit_unit_π₀DiscAdj C D) X).symm
+    whiskerRight discΓAdj.counit π₀ ≫ π₀.leftUnitor.hom :=
+  π₀DiscAdj.HToF_eq discΓAdj
 
 /-- The points-to-pieces transform `flat C D ⟶ shape C D` in `C` - since `flat C D` and
 `shape C D` are the compositions of `Γ` and `π₀` with `disc`, we add the prefix "disc" to
@@ -148,23 +137,81 @@ def discPointsToPieces : (flat C D).toFunctor ⟶ (shape C D).toFunctor :=
 /-- The components of `discPointsToPieces C D` are `discΓAdj`-adjunct to the image of the unit
 components of `shape C D` under `Γ`. -/
 lemma discΓΑdj_homEquiv_discPointsToPieces {X : C} :
-    (discΓAdj.homEquiv _ _) ((discPointsToPieces C D).app X) = Γ.map (π₀DiscAdj.unit.app X) := by
-  rw [discPointsToPieces_app, Adjunction.homEquiv_apply]; simp
+    (discΓAdj.homEquiv _ _) ((discPointsToPieces C D).app X) = Γ.map (π₀DiscAdj.unit.app X) :=
+  π₀DiscAdj.homEquiv_counit_unit_app_eq_H_map_unit discΓAdj
+
+/-- The components of `discPointsToPieces C D` are `π₀DiscAdj`-adjunct to the image of the
+counit components of `flat C D` under `π₀`. -/
+lemma π₀DiscAdj_homEquiv_symm_discPointsToPieces {X : C} :
+    (π₀DiscAdj.homEquiv _ _).symm ((discPointsToPieces C D).app X) =
+    π₀.map (discΓAdj.counit.app X) :=
+  π₀DiscAdj.homEquiv_symm_counit_unit_app_eq_F_map_counit discΓAdj
 
 /-- The points-to-pieces transform `flat C D ⟶ shape C D` in `C` is the image of the
 points-to-pieces transform `Γ ⟶ π₀` in `D` under `disc : D ⥤ C`. -/
 lemma discPointsToPieces_app_eq_disc_pointsToPieces {X : C} :
-    (discPointsToPieces C D).app X = disc.map ((pointsToPieces C D).app X) := by
-  refine ((discΓAdj.homEquiv _ _).symm_apply_apply _).symm.trans ?_
-  rw [discΓΑdj_homEquiv_discPointsToPieces]; dsimp
-  rw [Adjunction.homEquiv_symm_apply, ← Adjunction.inv_map_unit, ← disc.map_inv,
-    ← disc.map_comp, pointsToPieces_app]
+    (discPointsToPieces C D).app X = disc.map ((pointsToPieces C D).app X) :=
+  π₀DiscAdj.counit_unit_app_eq_map_HToF discΓAdj
 
 /-- The points-to-pieces transform `flat C D ⟶ shape C D` in `C` is the image of the
 points-to-pieces transform `Γ ⟶ π₀` in `D` under `disc : D ⥤ C`. -/
 lemma discPointsToPieces_eq_pointsToPieces_disc :
     discPointsToPieces C D = whiskerRight (pointsToPieces C D) disc := by
   ext X; exact discPointsToPieces_app_eq_disc_pointsToPieces C D
+
+end PointsToPieces
+
+section DiscToCodisc
+
+/-- The canonical natural transformation `disc ⟶ codisc`. -/
+@[simps!]
+noncomputable def discToCodisc : (disc : D ⥤ C) ⟶ codisc :=
+  discΓAdj.FToH ΓCodiscAdj
+
+/-- Formula for `discToCodisc C D` in terms of the whiskered units of the adjunctions. -/
+noncomputable def discToCodisc_eq_units : discToCodisc C D = disc.rightUnitor.inv ≫
+    whiskerLeft disc ΓCodiscAdj.unit ≫ (Functor.associator _ _ _).inv ≫
+    inv (whiskerRight discΓAdj.unit codisc) ≫ codisc.leftUnitor.hom :=
+  rfl
+
+/-- Formula for `discToCodisc C D` in terms of the whiskered counits of the adjunctions. -/
+noncomputable def discToCodisc_eq_counits : discToCodisc C D = disc.leftUnitor.inv ≫
+    inv (whiskerRight ΓCodiscAdj.counit disc) ≫ (Functor.associator _ _ _).hom ≫
+    whiskerLeft codisc discΓAdj.counit ≫ codisc.rightUnitor.hom :=
+  discΓAdj.FToH_eq ΓCodiscAdj
+
+/-- The canonical natural transformation `flat C D ⟶ sharp C D`. -/
+@[simps!]
+def flatToSharp : (flat C D).toFunctor ⟶ (sharp C D).toFunctor :=
+  (flat C D).ε ≫ (sharp C D).η
+
+/-- The components of `flatToSharp C D` are `discΓAdj`-adjunct to the image of the unit
+components of `sharp C D` under `Γ`. -/
+lemma discΓΑdj_homEquiv_flatToSharp {X : C} :
+    (discΓAdj.homEquiv _ _) ((flatToSharp C D).app X) = Γ.map (ΓCodiscAdj.unit.app X) :=
+  discΓAdj.homEquiv_counit_unit_app_eq_G_map_unit ΓCodiscAdj
+
+/-- The components of `flatToSharp C D` are `ΓCodiscAdj`-adjunct to the image of the
+counit components of `flat C D` under `Γ`. -/
+lemma ΓCodiscAdj_homEquiv_symm_flatToSharp {X : C} :
+    (ΓCodiscAdj.homEquiv _ _).symm ((flatToSharp C D).app X) = Γ.map (discΓAdj.counit.app X) :=
+  discΓAdj.homEquiv_symm_counit_unit_app_eq_G_map_counit ΓCodiscAdj
+
+/-- The components of the natural transformation `flat C D ⟶ shape C D` are simply the
+components of the discrete-to-codiscrete transform `disc ⟶ codisc` at `Γ`. -/
+lemma flatToSharp_app_eq_discToCodisc_Γ {X : C} :
+    (flatToSharp C D).app X = (discToCodisc C D).app (Γ.obj X) :=
+  discΓAdj.counit_unit_app_eq_FToH_app ΓCodiscAdj
+
+/-- The points-to-pieces transform `flat C D ⟶ shape C D` in `C` is the image of the
+points-to-pieces transform `Γ ⟶ π₀` in `D` under `disc : D ⥤ C`. -/
+lemma flatToSharp_eq_Γ_discToCodisc :
+    flatToSharp C D = whiskerLeft Γ (discToCodisc C D) :=
+  discΓAdj.counit_unit_eq_whiskerLeft ΓCodiscAdj
+
+end DiscToCodisc
+
+section PiecesHavePoints
 
 /-- Cohesion of `C` over `D` is said to satisfy *pieces have points* if the components of the
 points-to-pieces transformation in `D` are epimorphisms. -/
@@ -195,17 +242,13 @@ lemma piecesHavePoints_iff_mono_sharp_unit_disc :
     PiecesHavePoints C D ↔ ∀ X : D, Mono ((sharp C D).η.app (disc.obj X)) := by
   sorry
 
-/-- The canonical natural transformation `disc ⥤ codisc`, expressed in terms of adjunction units. -/
-@[simps!]
-noncomputable def discToCodisc : (disc : D ⥤ C) ⟶ codisc :=
-  disc.rightUnitor.inv ≫ (whiskerLeft disc ΓCodiscAdj.unit) ≫ (Functor.associator _ _ _).inv ≫
-    inv (whiskerRight discΓAdj.unit codisc) ≫ codisc.leftUnitor.hom
-
 /-- Cohesion of `C` over `D` satisfies *pieces have points* iff the unit components of
 `sharp C D` on discrete objects are monomorphisms. -/
 lemma piecesHavePoints_iff_mono_discToCodisc_app :
     PiecesHavePoints C D ↔ ∀ X : D, Mono ((discToCodisc C D).app X) := by
   sorry
+
+end PiecesHavePoints
 
 end Cohesive
 
