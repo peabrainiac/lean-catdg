@@ -56,14 +56,14 @@ def ModelWithCorners.toHomeomorphTarget {𝕜 : Type*} [NontriviallyNormedField 
   toFun x := ⟨I x,I.map_source (I.source_eq ▸ mem_univ x)⟩
   invFun y := I.invFun y
   left_inv := I.left_inv
-  right_inv := fun _ => Subtype.ext <| I.right_inv _
+  right_inv := fun _ ↦ Subtype.ext <| I.right_inv _
 
 /-- The D-topology on a manifold is always at least as fine as the usual topology. -/
 lemma SmoothManifoldWithCorners.dTop_le {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     {H : Type*} [TopologicalSpace H] (I : ModelWithCorners ℝ E H)
     (M : Type*) [tM : TopologicalSpace M] [ChartedSpace H M] [m : SmoothManifoldWithCorners I M] :
     DTop[m.toDiffeology] ≤ tM :=
-  TopologicalSpace.le_def.2 fun _ hu _ _ hp => IsOpen.preimage (hp.continuous) hu
+  TopologicalSpace.le_def.2 fun _ hu _ _ hp ↦ IsOpen.preimage (hp.continuous) hu
 
 /-- If the subspace topology and D-topology agree on the set `H` that the manifold is modelled on,
   the topology of the manifold agrees with the D-topology as well.-/
@@ -77,8 +77,8 @@ instance {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimension
     dsimp [dH]; rw [show ↑I = (↑) ∘ I.toHomeomorphTarget by rfl,←dE.induced_compose,
       dTop_induced_comm (by convert isOpen_univ; exact Equiv.range_eq_univ _),dTop_eq _,
       Homeomorph.induced_eq]⟩
-  ext u; refine ⟨fun h => ?_,fun hu n p hp => IsOpen.preimage (hp.continuous) hu⟩
-  refine isOpen_iff_mem_nhds.2 fun x hxu => mem_nhds_iff.2
+  ext u; refine ⟨fun h ↦ ?_,fun hu n p hp ↦ IsOpen.preimage (hp.continuous) hu⟩
+  refine isOpen_iff_mem_nhds.2 fun x hxu ↦ mem_nhds_iff.2
     ⟨_,inter_subset_right,?_,mem_chart_source H x,hxu⟩
   have _ := (chartAt H x).open_target.dTopCompatible
   refine Subtype.image_preimage_val _ _ ▸ (chartAt H x).open_source.isOpenMap_subtype_val _ ?_
@@ -87,9 +87,9 @@ instance {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimension
   simp_rw [←preimage_comp,Function.comp_assoc]
   rw [isOpen_iff_preimages_plots] at h; refine h n _ ?_; rw [isPlot_iff_smooth]
   replace hp := (isPlot_induced_iff.1 <| isPlot_induced_iff.1 hp).contMDiff
-  replace hp := (contMDiffOn_model_symm).comp_contMDiff hp fun x => mem_range_self _
+  replace hp := (contMDiffOn_model_symm).comp_contMDiff hp fun x ↦ mem_range_self _
   rw [←Function.comp_assoc,I.symm_comp_self,Function.id_comp] at hp
-  exact (contMDiffOn_chart_symm (x := x)).comp_contMDiff hp fun x => (p x).2⟩
+  exact (contMDiffOn_chart_symm (x := x)).comp_contMDiff hp fun x ↦ (p x).2⟩
 
 /-- In particular, the D-topology agrees with the standard topology on all manifolds
   modelled on a "boundaryless" model.
@@ -117,7 +117,7 @@ theorem ContMDiff.dsmooth {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     {H' : Type*} [TopologicalSpace H'] {I' : ModelWithCorners ℝ E' H'} {N : Type*}
     [TopologicalSpace N] [ChartedSpace H' N] [m' : SmoothManifoldWithCorners I' N]
     {f : M → N} (hf : ContMDiff I I' ⊤ f) : DSmooth[m.toDiffeology,m'.toDiffeology] f :=
-  fun _ _ => hf.comp
+  fun _ _ ↦ hf.comp
 
 /-- Every map between manifolds that is smooth on a subset is also smooth diffeologically
   with respect to the subspace diffeology. -/
@@ -130,9 +130,9 @@ theorem ContMDiffOn.dsmooth_restrict {E : Type*} [NormedAddCommGroup E] [NormedS
     {f : M → N} {s : Set M} (hf : ContMDiffOn I I' ⊤ f s) :
     let _ := m.toDiffeology; let _ := m'.toDiffeology; DSmooth (s.restrict f) := by
   let _ := m.toDiffeology; let _ := m'.toDiffeology
-  refine fun n p hp => ?_
+  refine fun n p hp ↦ ?_
   rw [restrict_eq,Function.comp_assoc]
-  exact hf.comp_contMDiff hp fun x => (p x).2
+  exact hf.comp_contMDiff hp fun x ↦ (p x).2
 
 open PartialHomeomorph in
 /-- Every D-smooth map from a boundaryless manifold to another manifold is also smooth.
@@ -147,7 +147,7 @@ theorem IsOpen.dsmooth_iff_smoothOn {E : Type*} [NormedAddCommGroup E] [NormedSp
     {f : M → N} {s : Set M} (hs : IsOpen s) : let _ := m.toDiffeology;
     let _ := m'.toDiffeology; DSmooth (s.restrict f) ↔ ContMDiffOn I I' ⊤ f s := by
   let _ := m.toDiffeology; let _ := m'.toDiffeology
-  refine ⟨fun hf x hxs => ?_,ContMDiffOn.dsmooth_restrict⟩
+  refine ⟨fun hf x hxs ↦ ?_,ContMDiffOn.dsmooth_restrict⟩
   -- TODO
   sorry
 
@@ -171,15 +171,15 @@ theorem DSmooth.smooth {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     (univUnitBall.trans' (unitBallBall x' ε hε) rfl)
   have he : ContMDiff (𝓡 n) I ⊤ e := (contMDiffOn_extChartAt_symm x).comp_contMDiff
     (toEuclidean.symm.contDiff.comp <| (contDiff_unitBallBall hε).comp
-    contDiff_univUnitBall).contMDiff fun x'' => (mem_image_equiv (f := toEuclidean.toEquiv)).1 <|
+    contDiff_univUnitBall).contMDiff fun x'' ↦ (mem_image_equiv (f := toEuclidean.toEquiv)).1 <|
     hε' <| (univUnitBall.trans' (unitBallBall x' ε hε) rfl).map_source <| mem_univ _
   let e' := (univUnitBall.trans' (unitBallBall x' ε hε) rfl).symm ∘ toEuclidean ∘ extChartAt I x
   have he' : ContMDiffOn I (𝓡 n) ⊤ e' _ :=
-    (contDiffOn_univUnitBall_symm.comp (contDiff_unitBallBall_symm hε).contDiffOn fun _ hx'' =>
+    (contDiffOn_univUnitBall_symm.comp (contDiff_unitBallBall_symm hε).contDiffOn fun _ hx'' ↦
         mem_preimage.2 ((unitBallBall x' ε hε).symm.map_source hx'')).contMDiffOn.comp
       (toEuclidean.contDiff.contMDiff.comp_contMDiffOn <| contMDiffOn_extChartAt.mono <|
         inter_subset_right) inter_subset_left
-  refine (((hf n _ he).comp_contMDiffOn he').congr (fun x'' hx'' => ?_) x ?_).contMDiffAt ?_
+  refine (((hf n _ he).comp_contMDiffOn he').congr (fun x'' hx'' ↦ ?_) x ?_).contMDiffAt ?_
   · simp_rw [e,e',Function.comp_apply]
     rw [(univUnitBall.trans' (unitBallBall x' ε hε) rfl).right_inv (by exact hx''.1),
       toEuclidean.symm_apply_apply,(extChartAt I x).left_inv (extChartAt_source I x ▸ hx''.2)]
@@ -196,7 +196,7 @@ theorem SmoothManifoldWithCorners.isManifold {E : Type*} [NormedAddCommGroup E] 
     (M : Type*) [TopologicalSpace M] [ChartedSpace H M] [m : SmoothManifoldWithCorners I M]
     [hI : I.Boundaryless] : @IsManifold (Module.finrank ℝ E) M m.toDiffeology :=
   let _ := m.toDiffeology; let _ := euclideanDiffeology (X := E)
-  ⟨fun x => (dTop_eq M).symm ▸ ⟨_,isOpen_extChartAt_source x,mem_extChartAt_source x,
+  ⟨fun x ↦ (dTop_eq M).symm ▸ ⟨_,isOpen_extChartAt_source x,mem_extChartAt_source x,
     (),_,toEuclidean.isOpenMap _ (isOpen_extChartAt_target x),⟨{
       toEquiv := ((extChartAt I x).trans' (toEuclidean.toEquiv.toPartialEquivOfImageEq
         (extChartAt I x).target _ rfl) rfl).toEquiv
@@ -221,14 +221,14 @@ open Classical in
 @[simps]
 noncomputable def PartialEquiv.fromEquivSourceTarget {α β : Type*} {s : Set α} {t : Set β}
     (e : s ≃ t) (a : s) : PartialEquiv α β where
-  toFun := fun x => if hx : x ∈ s then e ⟨x,hx⟩ else e a
-  invFun := fun y => if hy : y ∈ t then e.symm ⟨y,hy⟩ else a
+  toFun := fun x ↦ if hx : x ∈ s then e ⟨x,hx⟩ else e a
+  invFun := fun y ↦ if hy : y ∈ t then e.symm ⟨y,hy⟩ else a
   source := s
   target := t
-  map_source' := fun _ hx => by simp [hx]
-  map_target' := fun _ hy => by simp [hy]
-  left_inv' := fun _ hx => by simp [hx]
-  right_inv' := fun _ hy => by simp [hy]
+  map_source' := fun _ hx ↦ by simp [hx]
+  map_target' := fun _ hy ↦ by simp [hy]
+  left_inv' := fun _ hx ↦ by simp [hx]
+  right_inv' := fun _ hy ↦ by simp [hy]
 
 @[simp]
 lemma PartialEquiv.fromEquivSourceTarget_restrict {α β : Type*} {s : Set α} {t : Set β}
@@ -268,15 +268,15 @@ noncomputable def IsManifold.toChartedSpace {M : Type*} [DiffeologicalSpace M] {
     [hM : IsManifold n M] : @ChartedSpace (Eucl n) _ M DTop := by
   let _ := @DTop M _; let _ : DTopCompatible M := ⟨rfl⟩; exact {
     atlas := {e | DSmooth e.toEquiv ∧ DSmooth e.toEquiv.symm}
-    chartAt := fun x => by
+    chartAt := fun x ↦ by
       have h := hM.locally_modelled x
       have hu := h.choose_spec.1; have hxu := h.choose_spec.2.1
       have hv := h.choose_spec.2.2.choose_spec.choose_spec.1
       have _ := hu.dTopCompatible; have _ := hv.dTopCompatible
       exact PartialHomeomorph.fromHomeomorphSourceTarget
         (h.choose_spec.2.2.choose_spec.choose_spec.2.some.toHomeomorph') hu hv ⟨x,hxu⟩
-    mem_chart_source := fun x => by exact (hM.locally_modelled x).choose_spec.2.1
-    chart_mem_atlas := fun x => by
+    mem_chart_source := fun x ↦ by exact (hM.locally_modelled x).choose_spec.2.1
+    chart_mem_atlas := fun x ↦ by
       let e := (hM.locally_modelled x).choose_spec.2.2.choose_spec.choose_spec.2.some
       dsimp; rw [PartialEquiv.fromEquivSourceTarget_toEquiv]
       exact ⟨e.dsmooth,e.symm.dsmooth⟩
