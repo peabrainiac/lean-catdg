@@ -49,7 +49,6 @@ noncomputable def Presheaf.codisc {C : Type u} [Category.{v} C] [HasTerminal C] 
     Type w ⥤ (Cᵒᵖ ⥤ Type max v w) :=
   uliftFunctor ⋙ yoneda ⋙ (whiskeringLeft _ _ _).obj
     (coyoneda.obj (op (⊤_ C)) ⋙ uliftFunctor).op
-  --curry.obj <| uliftFunctor.prod (coyoneda.obj (op (⊤_ C)) ⋙ uliftFunctor).op ⋙ (uncurry.obj <| yoneda)
 
 /-- On local sites, `Presheaf.codisc` actually takes values in sheaves. -/
 lemma Presheaf.codisc_isSheaf [LocalSite J] (X : Type w) : IsSheaf J (codisc.obj X) := by

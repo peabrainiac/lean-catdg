@@ -86,7 +86,7 @@ def internalTangentMap (f : X → Y) (x : X) :
       intro v ⟨p, q, g, w, hv⟩
       apply Submodule.subset_span
       use pointedPlots_map hf x p, pointedPlots_map hf x q, g, w
-      simp only [preInternalTangentMap, hf, ↓reduceDite, hv, map_sub]
+      simp only [preInternalTangentMap, hf, ↓reduceDIte, hv, map_sub]
       -- why does simp not use `toModule_lof`? possible defeq abuse in `preInternalTangentMap`?
       convert rfl using 2 <;> symm <;> convert toModule_lof ℝ _ _ using 2
     · simp_rw [preInternalTangentMap, eq_false hf, dite_false, Submodule.comap_zero]

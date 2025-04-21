@@ -1,5 +1,28 @@
--- This module serves as the root of the `Orbifolds` library.
--- Import modules here that should be built as part of the library.
-import «Orbifolds».Basic
-import «Orbifolds».Diffeology.SmoothSp
-import «Orbifolds».Diffeology.Algebra.Group
+import Orbifolds.Basic
+import Orbifolds.Cohesive.Basic
+import Orbifolds.Cohesive.CohesiveSite
+import Orbifolds.Diffeology.Algebra.Constructions
+import Orbifolds.Diffeology.Algebra.Group
+import Orbifolds.Diffeology.Algebra.Module
+import Orbifolds.Diffeology.Algebra.Monoid
+import Orbifolds.Diffeology.Algebra.MulAction
+import Orbifolds.Diffeology.Basic
+import Orbifolds.Diffeology.Constructions
+import Orbifolds.Diffeology.Continuous
+import Orbifolds.Diffeology.DDiffeomorph
+import Orbifolds.Diffeology.DSmoothMap
+import Orbifolds.Diffeology.DiffSp
+import Orbifolds.Diffeology.Induced
+import Orbifolds.Diffeology.LocallyModelled
+import Orbifolds.Diffeology.Manifolds
+import Orbifolds.Diffeology.Reflexive
+import Orbifolds.Diffeology.Sites
+import Orbifolds.Diffeology.SmoothSp
+import Orbifolds.Diffeology.TangentSpace
+import Orbifolds.ForMathlib.ConcreteSite
+import Orbifolds.ForMathlib.DeltaGenerated
+import Orbifolds.ForMathlib.GlobalSections
+import Orbifolds.ForMathlib.LocalSite
+import Orbifolds.ForMathlib.LocallyConnectedSite
+import Orbifolds.ForMathlib.Quadruple
+import Orbifolds.ForMathlib.Triple
