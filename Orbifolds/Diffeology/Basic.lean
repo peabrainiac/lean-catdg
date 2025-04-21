@@ -155,7 +155,7 @@ def DiffeologicalSpace.mkOfPlotsOn {X : Type*} (d : CorePlotsOn X) : Diffeologic
     d.isPlotOn_reparam _ (Set.mapsTo_univ _ _) (d.isPlotOn_univ.mpr hp) hf.contDiffOn
   locality {n p} h := by
     dsimp at h
-    refine' d.isPlotOn_univ.mp <| d.locality _ fun x _ ↦ _
+    refine d.isPlotOn_univ.mp <| d.locality _ fun x _ ↦ ?_
     let ⟨u,hu,hxu,hu'⟩ := h x
     let ⟨ε,hε,hε'⟩ := Metric.isOpen_iff.mp hu x hxu
     have h := hu' (f := PartialHomeomorph.univBall x ε) (fun x' ↦ by
@@ -164,7 +164,7 @@ def DiffeologicalSpace.mkOfPlotsOn {X : Type*} (d : CorePlotsOn X) : Diffeologic
       exact hε' (h (Set.mem_univ _))) PartialHomeomorph.contDiff_univBall
     have h' := d.isPlotOn_reparam (Metric.isOpen_ball) (Set.mapsTo_univ _ _)
       (d.isPlotOn_univ.mpr h) (PartialHomeomorph.contDiffOn_univBall_symm (c := x) (r := ε))
-    refine' ⟨_,Metric.isOpen_ball,Metric.mem_ball_self hε,(d.isPlotOn_congr _ _).mp h'⟩
+    refine ⟨_,Metric.isOpen_ball,Metric.mem_ball_self hε,(d.isPlotOn_congr _ ?_).mp h'⟩
     rw [Function.comp_assoc,←PartialHomeomorph.coe_trans]; apply Set.EqOn.comp_left
     convert (PartialHomeomorph.symm_trans_self (PartialHomeomorph.univBall x ε)).2
     simp [(PartialHomeomorph.univBall_target x hε)]
@@ -190,7 +190,7 @@ def euclideanDiffeology {X : Type*} [NormedAddCommGroup X] [NormedSpace ℝ X]
       exact ((hv' x hxv).contDiffAt (hv.mem_nhds hxv)).contDiffWithinAt
     dTopology := inferInstance
     isOpen_iff_preimages_plots := fun {u} ↦ by
-      refine' ⟨fun hu _ _ hp ↦ IsOpen.preimage (hp.continuous) hu, fun h ↦ _⟩
+      refine ⟨fun hu _ _ hp ↦ IsOpen.preimage (hp.continuous) hu, fun h ↦ ?_⟩
       rw [←toEuclidean.preimage_symm_preimage u]
       exact toEuclidean.continuous.isOpen_preimage _ (h _ toEuclidean.symm.contDiff) }
 

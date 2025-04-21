@@ -311,8 +311,8 @@ def binaryProductFunctor : DiffSp.{u} ⥤ DiffSp.{u} ⥤ DiffSp.{u} where
   instance only stores proof that all limits exist, not the explicit constructions,
   so the products derived from it are picked with the axiom of choice. -/
 noncomputable def binaryProductIsoProd : binaryProductFunctor.{u} ≅ (prod.functor) := by
-  refine' NatIso.ofComponents (fun X ↦ _) (fun _ ↦ _)
-  · refine' NatIso.ofComponents (fun Y ↦ _) (fun _ ↦ _)
+  refine NatIso.ofComponents (fun X ↦ ?_) (fun _ ↦ ?_)
+  · refine NatIso.ofComponents (fun Y ↦ ?_) (fun _ ↦ ?_)
     · exact ((limit.isLimit _).conePointUniqueUpToIso (binaryProductLimit X Y)).symm
     · apply Limits.prod.hom_ext <;> simp <;> rfl
   · ext : 2; apply Limits.prod.hom_ext <;> simp <;> rfl

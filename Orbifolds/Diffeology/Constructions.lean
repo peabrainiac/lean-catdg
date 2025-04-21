@@ -170,7 +170,7 @@ theorem Induction.codRestrict {f : X → Y} (hf : Induction f) {s : Set Y} (hs :
 theorem ContDiffOn.dsmooth_restrict [NormedAddCommGroup X] [NormedSpace ℝ X] [ContDiffCompatible X]
     [NormedAddCommGroup Y] [NormedSpace ℝ Y] [ContDiffCompatible Y]
     {f : X → Y} (hf : ContDiffOn ℝ ∞ f s) : DSmooth (s.restrict f) := by
-  refine' fun n p hp ↦ isPlot_iff_contDiff.2 _
+  refine fun n p hp ↦ isPlot_iff_contDiff.2 ?_
   rw [restrict_eq,Function.comp_assoc]
   exact hf.comp_contDiff (isPlot_iff_contDiff.1 hp) fun x ↦ (p x).2
 
@@ -181,18 +181,18 @@ theorem IsOpen.dsmooth_iff_contDiffOn [NormedAddCommGroup X] [InnerProductSpace 
     [ContDiffCompatible X] [FiniteDimensional ℝ X]
     [NormedAddCommGroup Y] [NormedSpace ℝ Y] [ContDiffCompatible Y]
     {f : X → Y} (hs : IsOpen s) : DSmooth (s.restrict f) ↔ ContDiffOn ℝ ∞ f s := by
-  refine' ⟨fun hf x hxs ↦ _,ContDiffOn.dsmooth_restrict⟩
+  refine ⟨fun hf x hxs ↦ ?_,ContDiffOn.dsmooth_restrict⟩
   let ⟨ε,hε,hε'⟩ := Metric.isOpen_iff.1 hs x hxs
-  refine' ContDiffWithinAt.mono_of_mem_nhdsWithin (s := Metric.ball x ε) _ <| mem_nhdsWithin.2
+  refine ContDiffWithinAt.mono_of_mem_nhdsWithin (s := Metric.ball x ε) ?_ <| mem_nhdsWithin.2
     ⟨_,Metric.isOpen_ball,Metric.mem_ball_self hε, inter_subset_left⟩
   suffices h : ContDiffOn ℝ ∞ f (Metric.ball x ε) by exact h x (Metric.mem_ball_self hε)
   let e := univUnitBall.trans' (unitBallBall x ε hε) rfl
   have he : DSmooth e :=
     (contDiff_unitBallBall hε).dsmooth.comp contDiff_univUnitBall.dsmooth
   let hes x : e x ∈ s := hε' (e.map_source (mem_univ x))
-  refine' ContDiffOn.congr (f := (f ∘ e) ∘ e.symm) _ fun x hx ↦ by
+  refine ContDiffOn.congr (f := (f ∘ e) ∘ e.symm) ?_ fun x hx ↦ by
     rw [Function.comp_apply]; exact congrArg _ (e.right_inv' hx).symm
-  refine' ContDiff.comp_contDiffOn (DSmooth.contDiff _) _
+  refine ContDiff.comp_contDiffOn (DSmooth.contDiff ?_) ?_
   · rw [←restrict_comp_codRestrict (b := s) hes]
     exact hf.comp (DSmooth.codRestrict he hes)
   · exact contDiffOn_univUnitBall_symm.comp (contDiff_unitBallBall_symm hε).contDiffOn
@@ -226,7 +226,7 @@ theorem IsOpenMap.codRestrict {X Y : Type*} [TopologicalSpace X] [TopologicalSpa
 lemma isOpen_iff_preimages_plots' {s : Set X} : IsOpen[DTop] s ↔
     ∀ (n : ℕ) (u : Set (Eucl n)) (p : u → X), IsOpen u → DSmooth p → IsOpen (p ⁻¹' s) := by
   rw [isOpen_iff_preimages_plots]
-  refine' ⟨fun hs n u p hu hp ↦ _,fun hs n p hp ↦ _⟩
+  refine ⟨fun hs n u p hu hp ↦ ?_,fun hs n p hp ↦ ?_⟩
   · rw [←isOpen_iff_preimages_plots] at hs
     have := dTop_induced_comm ((Subtype.range_val (s := u)).symm ▸ hu)
     convert @IsOpen.preimage _ _ DTop DTop p hp.continuous _ hs
@@ -249,7 +249,7 @@ instance [TopologicalSpace X] [DTopCompatible X] {u : Opens X} : DTopCompatible 
 /-- Smoothness can also be characterised as preserving smooth maps `u → X` for open `u`.-/
 theorem dsmooth_iff' {f : X → Y} : DSmooth f ↔
     ∀ (n : ℕ) (u : Set (Eucl n)) (p : u → X), IsOpen u → DSmooth p → DSmooth (f ∘ p) := by
-  refine' ⟨fun hf n u p _ hp ↦ hf.comp hp,fun hf n p hp ↦ _⟩
+  refine ⟨fun hf n u p _ hp ↦ hf.comp hp,fun hf n p hp ↦ ?_⟩
   rw [←Function.comp_id (f ∘ p),←(Homeomorph.Set.univ _).self_comp_symm,←Function.comp_assoc]
   exact ((hf n _ _ isOpen_univ (hp.dsmooth.comp dsmooth_subtype_val)).comp
     (dsmooth_id.subtype_mk _)).isPlot
@@ -257,24 +257,24 @@ theorem dsmooth_iff' {f : X → Y} : DSmooth f ↔
 /-- The locality axiom of diffeologies. Restated here in terms of subspace diffeologies. -/
 theorem isPlot_iff_locally_dsmooth {n : ℕ} {p : Eucl n → X} : IsPlot p ↔
     ∀ x : Eucl n, ∃ u, IsOpen u ∧ x ∈ u ∧  DSmooth (u.restrict p) := by
-  refine' ⟨fun hp x ↦ ⟨_,isOpen_univ,mem_univ x,hp.dsmooth.comp dsmooth_subtype_val⟩,_⟩
-  refine' fun h ↦ DiffeologicalSpace.locality fun x ↦ _
+  refine ⟨fun hp x ↦ ⟨_,isOpen_univ,mem_univ x,hp.dsmooth.comp dsmooth_subtype_val⟩,?_⟩
+  refine fun h ↦ DiffeologicalSpace.locality fun x ↦ ?_
   let ⟨u,hu,hxu,hu'⟩ := h x
-  refine' ⟨u,hu,hxu,fun {m f} hfu hf ↦ u.restrict_comp_codRestrict hfu ▸ _⟩
+  refine ⟨u,hu,hxu,fun {m f} hfu hf ↦ u.restrict_comp_codRestrict hfu ▸ ?_⟩
   exact  (hu' _ _ (hf.dsmooth.codRestrict hfu).isPlot)
 
 theorem dsmooth_iff_locally_dsmooth {f : X → Y} : DSmooth f ↔
     ∀ x : X, ∃ u : Set X, IsOpen[DTop] u ∧ x ∈ u ∧ DSmooth (u.restrict f) := by
-  refine' ⟨fun hf x ↦ ⟨_,by simp,mem_univ x,hf.comp dsmooth_subtype_val⟩,fun h n p hp ↦ _⟩
-  refine' isPlot_iff_locally_dsmooth.2  fun x ↦ _
+  refine ⟨fun hf x ↦ ⟨_,by simp,mem_univ x,hf.comp dsmooth_subtype_val⟩,fun h n p hp ↦ ?_⟩
+  refine isPlot_iff_locally_dsmooth.2  fun x ↦ ?_
   let ⟨u,hu,hxu,hu'⟩ := h (p x)
-  refine' ⟨p ⁻¹' u,@IsOpen.preimage _ _ _ DTop p (dTop_eq (Eucl n) ▸ hp.continuous) u hu,hxu,_⟩
+  refine ⟨p ⁻¹' u,@IsOpen.preimage _ _ _ DTop p (dTop_eq (Eucl n) ▸ hp.continuous) u hu,hxu,?_⟩
   exact hu'.comp hp.dsmooth.restrictPreimage
 
 /-- Any D-locally constant map is smooth. -/
 theorem IsLocallyConstant.dsmooth {f : X → Y} (hf : @IsLocallyConstant _ _ DTop f) :
     DSmooth f := by
-  refine' dsmooth_iff_locally_dsmooth.2 fun x ↦ Exists.imp (fun u ⟨hu,hxu,hu'⟩ ↦ ⟨hu,hxu,_⟩)
+  refine dsmooth_iff_locally_dsmooth.2 fun x ↦ Exists.imp (fun u ⟨hu,hxu,hu'⟩ ↦ ⟨hu,hxu,?_⟩)
     (@IsLocallyConstant.exists_open _ _ DTop f hf x)
   rw [show u.restrict f = fun _ ↦ f x by ext x'; exact hu' x'.1 x'.2]
   exact dsmooth_const
@@ -292,16 +292,16 @@ open PartialHomeomorph in
 /-- The discrete diffeology is the one with only the constant maps as plots. -/
 theorem DiffeologicalSpace.eq_bot_iff {X : Type*} {dX : DiffeologicalSpace X} :
     dX = ⊥ ↔ ∀ n (p : Eucl n → X), IsPlot p → ∃ x, p = fun _ ↦ x := by
-  refine' ⟨fun h n p ↦ fun hp ↦ _,fun h ↦ IsBot.eq_bot fun d ↦ _⟩
+  refine ⟨fun h n p ↦ fun hp ↦ ?_,fun h ↦ IsBot.eq_bot fun d ↦ ?_⟩
   · let d : DiffeologicalSpace X := {
       plots := fun n ↦ {p | ∃ x, p = fun _ ↦ x}
       constant_plots := fun x ↦ ⟨x,rfl⟩
       plot_reparam := fun ⟨x,hx⟩ _ ↦ ⟨x,by rw [hx]; rfl⟩
       locality := fun {n p} h ↦ by
         have := Nonempty.map p inferInstance
-        refine' IsLocallyConstant.exists_eq_const <| (IsLocallyConstant.iff_exists_open p).2 _
+        refine IsLocallyConstant.exists_eq_const <| (IsLocallyConstant.iff_exists_open p).2 ?_
         intro x; let ⟨u,hu,hxu,hu'⟩ := h x; let ⟨ε,hε,hε'⟩ := Metric.isOpen_iff.1 hu x hxu
-        refine' ⟨Metric.ball x ε,Metric.isOpen_ball,Metric.mem_ball_self hε,_⟩
+        refine ⟨Metric.ball x ε,Metric.isOpen_ball,Metric.mem_ball_self hε,?_⟩
         let e : Eucl n ≃ₜ Metric.ball x ε := (Homeomorph.Set.univ _).symm.trans <|
           univUnitBall.toHomeomorphSourceTarget.trans
             (unitBallBall x ε hε).toHomeomorphSourceTarget
@@ -325,7 +325,7 @@ theorem dTop_top {X : Type*} : DTop[⊤] = (⊤ : TopologicalSpace X) := by
 
 /-- The D-topology of the discrete diffeology is discrete. -/
 theorem dTop_bot {X : Type*} : DTop[⊥] = (⊥ : TopologicalSpace X) := by
-  ext u; refine' ⟨fun _ ↦ trivial,fun _ ↦ _⟩
+  ext u; refine ⟨fun _ ↦ trivial,fun _ ↦ ?_⟩
   rw [@isOpen_iff_preimages_plots _ ⊥ u]; intro n p hp
   let ⟨x,hx⟩ := DiffeologicalSpace.eq_bot_iff.1 rfl n p hp
   by_cases h : x ∈ u; all_goals simp [hx,h]
@@ -333,8 +333,8 @@ theorem dTop_bot {X : Type*} : DTop[⊥] = (⊥ : TopologicalSpace X) := by
 /-- The discrete diffeologoy is the only diffeology whose D-topology is discrete.
   Note that the corresponding statement for indiscrete spaces is false. -/
 theorem dTop_eq_bot_iff {X : Type*} {dX : DiffeologicalSpace X} : DTop[dX] = ⊥ ↔ dX = ⊥ := by
-  refine' ⟨fun h ↦ _,fun h ↦ by rw [h,dTop_bot]⟩
-  refine' (dX.eq_bot_iff).2 fun n p hp ↦ ⟨p 0,funext fun x ↦ _⟩
+  refine ⟨fun h ↦ ?_,fun h ↦ by rw [h,dTop_bot]⟩
+  refine (dX.eq_bot_iff).2 fun n p hp ↦ ⟨p 0,funext fun x ↦ ?_⟩
   exact @PreconnectedSpace.constant _ _ X ⊥ (discreteTopology_bot X) inferInstance
     p (h ▸ hp.continuous) _ _
 
@@ -344,8 +344,8 @@ theorem dTop_eq_bot_iff {X : Type*} {dX : DiffeologicalSpace X} : DTop[dX] = ⊥
 theorem dsmooth_top_iff_indiscrete_range {X Y : Type*} {dY : DiffeologicalSpace Y} {f : X → Y} :
     DSmooth[⊤,dY] f ↔ @instDiffeologicalSpaceSubtype Y dY (Set.range f) = ⊤ := by
   let _ : DiffeologicalSpace X := ⊤
-  refine' ⟨fun hf ↦ _,fun h ↦ _⟩
-  · refine' DiffeologicalSpace.eq_top_iff.2 fun n p ↦ _
+  refine ⟨fun hf ↦ ?_,fun h ↦ ?_⟩
+  · refine DiffeologicalSpace.eq_top_iff.2 fun n p ↦ ?_
     have hf' : DSmooth (Set.rangeFactorization f) := hf.codRestrict mem_range_self
     let ⟨g,hg⟩ := (Set.surjective_onto_range (f := f)).hasRightInverse
     have h := hf' n (g ∘ p) trivial
@@ -355,7 +355,7 @@ theorem dsmooth_top_iff_indiscrete_range {X Y : Type*} {dY : DiffeologicalSpace 
 /-- A map to an discrete space is smooth iff it is D-locally constant. -/
 theorem dsmooth_bot_iff_isLocallyConstant {X Y : Type*} {dX : DiffeologicalSpace X} {f : X → Y} :
     DSmooth[dX,⊥] f ↔ @IsLocallyConstant _ _ DTop[dX] f:= by
-  refine' ⟨fun hf _ ↦ _,@IsLocallyConstant.dsmooth _ dX Y ⊥ _⟩
+  refine ⟨fun hf _ ↦ ?_,@IsLocallyConstant.dsmooth _ dX Y ⊥ _⟩
   exact @IsOpen.preimage _ Y DTop[dX] ⊥ _ (dTop_bot ▸ @DSmooth.continuous _ Y dX ⊥ _ hf) _ trivial
 
 open PartialHomeomorph in
@@ -365,7 +365,7 @@ theorem isPlot_coinduced_iff {X Y : Type*} {dX : DiffeologicalSpace X} {f : X �
     {n : ℕ} {p : Eucl n → Y} : IsPlot[dX.coinduced f] p ↔ (∃ y, p = fun _ ↦ y) ∨
     ∀ x : Eucl n, ∃ u, IsOpen u ∧ x ∈ u ∧ ∃ p' : u → X, DSmooth p' ∧ p ∘ (↑) = f ∘ p' := by
   let dY := dX.coinduced f
-  refine' ⟨fun hp ↦ _,Or.rec (fun ⟨y,hy⟩ ↦ hy ▸ isPlot_const) fun h ↦ _⟩
+  refine ⟨fun hp ↦ ?_,Or.rec (fun ⟨y,hy⟩ ↦ hy ▸ isPlot_const) fun h ↦ ?_⟩
   · let d : DiffeologicalSpace Y := {
       plots := fun n ↦ {p | (∃ y, p = fun _ ↦ y) ∨
         ∀ x : Eucl n, ∃ u , IsOpen u ∧ x ∈ u ∧ ∃ p' : u → X, DSmooth p' ∧ p ∘ (↑) = f ∘ p'}
@@ -373,8 +373,8 @@ theorem isPlot_coinduced_iff {X Y : Type*} {dX : DiffeologicalSpace X} {f : X �
       plot_reparam := fun {n m p g} hp hg ↦ Or.rec (fun ⟨y,hy⟩ ↦ Or.inl ⟨y,hy ▸ rfl⟩)
         (fun h ↦ Or.inr fun x ↦ (by
           let ⟨u,hu,hxu,p',hp',hp''⟩ := h (g x)
-          refine' ⟨g ⁻¹' u,hu.preimage hg.continuous,hxu,p' ∘ u.restrictPreimage g,
-          hp'.comp hg.dsmooth.restrictPreimage,_⟩
+          refine ⟨g ⁻¹' u,hu.preimage hg.continuous,hxu,p' ∘ u.restrictPreimage g,
+          hp'.comp hg.dsmooth.restrictPreimage,?_⟩
           simp_rw [←Function.comp_assoc,←hp'',Function.comp_assoc]; rfl)) hp
       locality := fun {n p} h ↦ by
         replace h : ∀ x : Eucl n, ∃ u, IsOpen u ∧ x ∈ u ∧
@@ -398,22 +398,23 @@ theorem isPlot_coinduced_iff {X Y : Type*} {dX : DiffeologicalSpace X} {f : X �
           specialize hu' (by exact fun x'' ↦ hε' (e x'').2) he.contDiff; dsimp at hu'
           obtain ⟨x',hx'⟩ | hpx := @or_not (p x ∈ range f)
           · obtain ⟨y,hy⟩ | hu' := hu'
-            · refine' ⟨_,Metric.isOpen_ball,hx,fun h ↦ (h ⟨x',hx'⟩).elim,fun _ ↦ _⟩
+            · refine ⟨_,Metric.isOpen_ball,hx,fun h ↦ (h ⟨x',hx'⟩).elim,fun _ ↦ ?_⟩
               have h := congrFun hy (e.symm ⟨x,hx⟩)
               simp_rw [Function.comp_apply, Homeomorph.apply_symm_apply] at h
-              refine' ⟨fun _ ↦ x',dsmooth_const,_⟩
+              refine ⟨fun _ ↦ x',dsmooth_const,?_⟩
               rw [←Function.comp_id (f := Subtype.val),←Homeomorph.self_comp_symm e,
                 ←Function.comp_assoc _ e,←Function.comp_assoc,hy,←h,←hx']; rfl
             · let ⟨v,hv,hxv,p',hp'⟩ := hu' (e.symm ⟨x,hx⟩)
-              refine' ⟨Subtype.val '' (e.symm ⁻¹' v),Metric.isOpen_ball.isOpenMap_subtype_val _
-                (hv.preimage e.symm.continuous),⟨_,hxv,by simp⟩,fun h ↦ (h ⟨x',hx'⟩).elim,fun _ ↦ _⟩
+              refine ⟨Subtype.val '' (e.symm ⁻¹' v),Metric.isOpen_ball.isOpenMap_subtype_val _
+                (hv.preimage e.symm.continuous),⟨_,hxv,by simp⟩,fun h ↦ (h ⟨x',hx'⟩).elim,
+                  fun _ ↦ ?_⟩
               use p' ∘ (v.restrictPreimage e.symm) ∘ (fun x ↦ ⟨⟨x.1,
                 (Subtype.range_val ▸ image_subset_range _ _ x.2 :)⟩,
                   Subtype.val_injective.mem_set_image.1 x.2⟩)
-              refine' ⟨hp'.1.comp <| he'.restrictPreimage.comp <| DSmooth.subtype_mk
-                (DSmooth.subtype_mk dsmooth_subtype_val _) _,_⟩
+              refine ⟨hp'.1.comp <| he'.restrictPreimage.comp <| DSmooth.subtype_mk
+                (DSmooth.subtype_mk dsmooth_subtype_val _) _,?_⟩
               rw [←Function.comp_assoc,←hp'.2]; ext x; simp
-          · refine' ⟨_,Metric.isOpen_ball,hx,fun _ ↦ _,fun h ↦ (hpx h).elim⟩
+          · refine ⟨_,Metric.isOpen_ball,hx,fun _ ↦ ?_,fun h ↦ (hpx h).elim⟩
             let ⟨y,hy⟩ := (or_iff_left (fun h ↦ hpx <| by
               let ⟨v,_,hxv,p',_,hp'⟩ := h (e.symm ⟨x,hx⟩)
               have h := congrFun hp' ⟨_,hxv⟩
@@ -425,15 +426,15 @@ theorem isPlot_coinduced_iff {X Y : Type*} {dX : DiffeologicalSpace X} {f : X �
             simp_rw [Function.comp_apply, Homeomorph.apply_symm_apply] at h
             rw [h]; rfl
         have h' : IsClopen (p ⁻¹' (range f)) := by
-          refine' ⟨⟨isOpen_iff_mem_nhds.2 fun x hx ↦ _⟩,isOpen_iff_mem_nhds.2 fun x hx ↦ _⟩
-          all_goals let ⟨u,hu,hxu,hu'⟩ := h x; rw [mem_nhds_iff]; refine' ⟨u,_,hu,hxu⟩
-          · refine' fun x' hx' ↦ (_ : p x' ∉ range f)
+          refine ⟨⟨isOpen_iff_mem_nhds.2 fun x hx ↦ ?_⟩,isOpen_iff_mem_nhds.2 fun x hx ↦ ?_⟩
+          all_goals let ⟨u,hu,hxu,hu'⟩ := h x; rw [mem_nhds_iff]; refine ⟨u,?_,hu,hxu⟩
+          · refine fun x' hx' ↦ (?_ : p x' ∉ range f)
             rw [(by exact congrFun (hu'.1 hx) ⟨x',hx'⟩ : p x' = p x)]; exact hx
           · let ⟨p',_,(hp' : u.restrict p = _)⟩ := hu'.2 hx
             rw [←image_subset_iff,←range_restrict,hp']; exact range_comp_subset_range p' f
         cases' isClopen_iff.1 h' with h' h'
         · left; have := Nonempty.map p inferInstance
-          refine' IsLocallyConstant.exists_eq_const <| (IsLocallyConstant.iff_exists_open p).2 _
+          refine IsLocallyConstant.exists_eq_const <| (IsLocallyConstant.iff_exists_open p).2 ?_
           intro x; let ⟨u,hu,hxu,hu',_⟩ := h x
           exact ⟨u,hu,hxu,fun x' hx' ↦ congrFun (hu' (h'.symm ▸ not_mem_empty x:)) ⟨x',hx'⟩⟩
         · right; intro x; let ⟨u,hu,hxu,_,hu'⟩ := h x
@@ -442,7 +443,7 @@ theorem isPlot_coinduced_iff {X Y : Type*} {dX : DiffeologicalSpace X} {f : X �
     have hd : dY ≤ d := (dX.coinduced_eq_sInf).trans_le <| sInf_le fun n p hp ↦ Or.inr fun x ↦
       ⟨_, isOpen_univ, mem_univ x, p ∘ (Equiv.Set.univ _), hp.dsmooth.comp dsmooth_subtype_val, rfl⟩
     exact DiffeologicalSpace.le_iff'.1 hd n p hp
-  · refine' isPlot_iff_locally_dsmooth.2 fun x ↦ Exists.imp (fun u ⟨hu,hxu,p',hp'⟩ ↦ _) (h x)
+  · refine isPlot_iff_locally_dsmooth.2 fun x ↦ Exists.imp (fun u ⟨hu,hxu,p',hp'⟩ ↦ ?_) (h x)
     rw [Set.restrict_eq,hp'.2]
     exact ⟨hu,hxu,dsmooth_coinduced_rng.comp hp'.1⟩
 
@@ -451,7 +452,7 @@ theorem isPlot_coinduced_iff {X Y : Type*} {dX : DiffeologicalSpace X} {f : X �
 theorem Function.Surjective.isPlot_coinduced_iff {X Y : Type*} {dX : DiffeologicalSpace X}
     {f : X → Y} (hf : Function.Surjective f) {n : ℕ} {p : Eucl n → Y} : IsPlot[dX.coinduced f] p ↔
     ∀ x : Eucl n, ∃ u, IsOpen u ∧ x ∈ u ∧ ∃ p' : u → X, DSmooth p' ∧ p ∘ (↑) = f ∘ p' := by
-  refine' _root_.isPlot_coinduced_iff.trans ⟨fun h ↦ Or.elim h (fun ⟨y,hy⟩ x ↦ _) id,Or.inr⟩
+  refine _root_.isPlot_coinduced_iff.trans ⟨fun h ↦ Or.elim h (fun ⟨y,hy⟩ x ↦ ?_) id,Or.inr⟩
   let ⟨x',hx'⟩ := hf y
   exact ⟨_,isOpen_univ,mem_univ x,fun _ ↦ x',dsmooth_const,funext fun x ↦ hy ▸ hx' ▸ rfl⟩
 
@@ -478,12 +479,12 @@ lemma dTop_eq_coinduced {X : Type*} [dX : DiffeologicalSpace X] : DTop =
 /-- The D-topology is always delta-generated. -/
 instance instDeltaGeneratedSpaceDTop {X : Type*} [DiffeologicalSpace X] :
     @DeltaGeneratedSpace X DTop := by
-  let _ : TopologicalSpace X := DTop; refine' ⟨_⟩
+  let _ : TopologicalSpace X := DTop; refine ⟨?_⟩
   nth_rewrite 1 [dTop_eq_iSup_coinduced,deltaGenerated]
-  refine' iSup_le fun ⟨n,p⟩ ↦ _
+  refine iSup_le fun ⟨n,p⟩ ↦ ?_
   let e : (Fin n → ℝ) ≃L[ℝ] Eucl _ := toEuclidean
   rw [Module.finrank_pi,Fintype.card_fin] at e
-  refine' le_trans _ <| le_iSup _ (⟨n,@ContinuousMap.mk (Fin n → ℝ) X _ (_:) (p.1 ∘ e) <|
+  refine le_trans ?_ <| le_iSup _ (⟨n,@ContinuousMap.mk (Fin n → ℝ) X _ (_:) (p.1 ∘ e) <|
     (IsPlot.dsmooth p.2).continuous.comp e.continuous⟩)
   simp only [←coinduced_compose,ContinuousMap.coe_mk]
   rw [show coinduced e _ = _ by exact e.toHomeomorph.coinduced_eq]
@@ -708,13 +709,13 @@ theorem DiffeologicalSpace.prod_coinduced_coinduced {X Y Z W : Type*}
     @instDiffeologicalSpaceProd Y W (coinduced f dX) (coinduced g dZ) =
       coinduced (fun p ↦ (f p.1, g p.2)) instDiffeologicalSpaceProd := by
   let _ := dX.coinduced f; let _ := dZ.coinduced g
-  refine' le_antisymm (DiffeologicalSpace.le_iff'.2 fun n p hp ↦ _) (coinduced_prod_le _ _)
+  refine le_antisymm (DiffeologicalSpace.le_iff'.2 fun n p hp ↦ ?_) (coinduced_prod_le _ _)
   simp_rw [isPlot_prod_iff,hf.isPlot_coinduced_iff,hg.isPlot_coinduced_iff] at hp
-  refine' (hf.prodMap hg).isPlot_coinduced_iff.2 fun x ↦ _
+  refine (hf.prodMap hg).isPlot_coinduced_iff.2 fun x ↦ ?_
   let ⟨u₁,hu₁,hxu₁,p₁,hp₁⟩ := hp.1 x; let ⟨u₂,hu₂,hxu₂,p₂,hp₂⟩ := hp.2 x
-  refine' ⟨_,hu₁.inter hu₂,⟨hxu₁,hxu₂⟩,_,DSmooth.prod_mk
+  refine ⟨_,hu₁.inter hu₂,⟨hxu₁,hxu₂⟩,_,DSmooth.prod_mk
     (hp₁.1.comp (dsmooth_inclusion (inter_subset_left)))
-    (hp₂.1.comp (dsmooth_inclusion (inter_subset_right))),funext fun x ↦ _⟩
+    (hp₂.1.comp (dsmooth_inclusion (inter_subset_right))),funext fun x ↦ ?_⟩
   simp_rw [Function.comp_def,Prod.map,←f.comp_apply,←hp₁.2,←g.comp_apply,←hp₂.2]; rfl
 
 
@@ -729,7 +730,7 @@ theorem Subduction.prod_map {f : X → Y} {g : Z → W} (hf : Subduction f) (hg 
 @[simp]
 theorem induction_const_prod {x : X} {f : Y → Z} :
     (Induction fun y ↦ (x, f y)) ↔ Induction f := by
-  refine' and_congr ((Prod.mk.inj_left x).of_comp_iff f) _
+  refine and_congr ((Prod.mk.inj_left x).of_comp_iff f) ?_
   simp_rw [instDiffeologicalSpaceProd, DiffeologicalSpace.induced_inf,
     DiffeologicalSpace.induced_compose, Function.comp_def,
     DiffeologicalSpace.induced_const, top_inf_eq]
@@ -737,7 +738,7 @@ theorem induction_const_prod {x : X} {f : Y → Z} :
 @[simp]
 theorem induction_prod_const {y : Y} {f : X → Z} :
     (Induction fun x ↦ (f x, y)) ↔ Induction f := by
-  refine' and_congr ((Prod.mk.inj_right y).of_comp_iff f) _
+  refine and_congr ((Prod.mk.inj_right y).of_comp_iff f) ?_
   simp_rw [instDiffeologicalSpaceProd, DiffeologicalSpace.induced_inf,
     DiffeologicalSpace.induced_compose, Function.comp_def,
     DiffeologicalSpace.induced_const, inf_top_eq]
@@ -874,7 +875,7 @@ variable {ι : Type*} {Y : ι → Type*} [(i : ι) → DiffeologicalSpace (Y i)]
 
 theorem dsmooth_pi_iff : DSmooth f ↔ ∀ i, DSmooth fun x ↦ f x i := by
   simp_rw [dsmooth_iff_coinduced_le,Pi.diffeologicalSpace,le_iInf_iff]
-  refine' forall_congr' fun i ↦ _
+  refine forall_congr' fun i ↦ ?_
   rw [←DiffeologicalSpace.coinduced_le_iff_le_induced,DiffeologicalSpace.coinduced_compose]; rfl
 
 @[fun_prop]
@@ -936,7 +937,7 @@ instance diffeologicalSpace {X Y : Type*} [dX : DiffeologicalSpace X]
   locality {n p} h := by
     apply dsmooth_iff_locally_dsmooth.mpr; intro x
     let ⟨u,hu,hxu,h⟩ := h x.1; let _ : TopologicalSpace X := DTop
-    refine' ⟨u ×ˢ univ,(hu.prod isOpen_univ).mono dTop_prod_le_prod_dTop,⟨hxu,mem_univ _⟩,_⟩
+    refine ⟨u ×ˢ univ,(hu.prod isOpen_univ).mono dTop_prod_le_prod_dTop,⟨hxu,mem_univ _⟩,?_⟩
     intro m f hf; specialize @h m (fun x ↦ (f x).1.1) (fun x ↦ (f x).2.1)
       ((hf.dsmooth.subtype_val.fst).contDiff)
     exact (h.comp (dsmooth_id.prod_mk hf.dsmooth.subtype_val.snd)).isPlot
@@ -948,7 +949,7 @@ lemma isPlot_iff {n : ℕ} {p : Eucl n → DSmoothMap X Y} :
 /-- A map `f : X → DSmoothMap Y Z` is smooth iff the corresponding map `X × Y → Z` is. -/
 lemma dsmooth_iff {f : X → DSmoothMap Y Z} :
     DSmooth f ↔ DSmooth (Function.uncurry fun x y ↦ f x y) := by
-  refine' ⟨fun hf n p hp ↦ _,fun hf n p hp ↦ hf.comp <| hp.dsmooth.prod_map dsmooth_id⟩
+  refine ⟨fun hf n p hp ↦ ?_,fun hf n p hp ↦ hf.comp <| hp.dsmooth.prod_map dsmooth_id⟩
   exact ((hf n _ hp.dsmooth.fst.isPlot).comp <| dsmooth_id.prod_mk hp.dsmooth.snd).isPlot
 
 /-- The evaluation map `DSmoothMap X Y × X → Y` is smooth. -/
@@ -958,7 +959,7 @@ lemma dsmooth_eval : DSmooth fun (p : DSmoothMap X Y × X) ↦ p.1 p.2 :=
 /-- The composition map `DSmoothMap Y Z × DSmoothMap X Y → DSmoothMap X Z` is smooth. -/
 lemma dsmooth_comp : DSmooth fun (x : DSmoothMap Y Z × DSmoothMap X Y) ↦ x.1.comp x.2 := by
   rw [dsmooth_iff]
-  refine' dsmooth_eval.comp <| dsmooth_fst.fst.prod_mk _
+  refine dsmooth_eval.comp <| dsmooth_fst.fst.prod_mk ?_
   exact dsmooth_eval.comp <| dsmooth_snd.prod_map dsmooth_id
 
 /-- The coevaluation map `Y → DSmoothMap X (Y × X)`. -/

@@ -26,7 +26,7 @@ instance {X : Type*} [NormedAddCommGroup X] [NormedSpace ℝ X] [FiniteDimension
     [DiffeologicalSpace X] [ContDiffCompatible X] : ReflexiveDiffeologicalSpace X where
   isPlot_if := fun {n} p hp ↦ by
     let Φ := (toEuclidean (E := X)).trans (EuclideanSpace.equiv _ ℝ)
-    refine' isPlot_iff_contDiff.2 <| Φ.comp_contDiff_iff.1 (contDiff_pi.2 fun i ↦ _)
+    refine isPlot_iff_contDiff.2 <| Φ.comp_contDiff_iff.1 (contDiff_pi.2 fun i ↦ ?_)
     exact (hp _ (((ContinuousLinearMap.proj i).contDiff).comp Φ.contDiff).dsmooth).contDiff
 
 /-- The diffeology induced by the differential space structure induced by the diffeology `d`. -/

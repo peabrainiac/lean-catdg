@@ -196,7 +196,7 @@ theorem dsmoothMul_iInf {M ι : Type*} [Mul M] {D : ι → DiffeologicalSpace M}
 theorem dsmoothMul_inf {M : Type*} [Mul M] {d₁ d₂ : DiffeologicalSpace M}
     (h₁ : @DSmoothMul M d₁ _) (h₂ : @DSmoothMul M d₂ _) : @DSmoothMul M (d₁ ⊓ d₂) _ := by
   rw [inf_eq_iInf]
-  refine' dsmoothMul_iInf fun b ↦ _
+  refine dsmoothMul_iInf fun b ↦ ?_
   cases b <;> assumption
 
 section Topology

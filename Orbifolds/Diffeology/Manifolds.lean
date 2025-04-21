@@ -77,15 +77,15 @@ instance {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimension
     dsimp [dH]; rw [show ↑I = (↑) ∘ I.toHomeomorphTarget by rfl,←dE.induced_compose,
       dTop_induced_comm (by convert isOpen_univ; exact Equiv.range_eq_univ _),dTop_eq _,
       Homeomorph.induced_eq]⟩
-  ext u; refine' ⟨fun h => _,fun hu n p hp => IsOpen.preimage (hp.continuous) hu⟩
-  refine' isOpen_iff_mem_nhds.2 fun x hxu => mem_nhds_iff.2
-    ⟨_,inter_subset_right,_,mem_chart_source H x,hxu⟩
+  ext u; refine ⟨fun h => ?_,fun hu n p hp => IsOpen.preimage (hp.continuous) hu⟩
+  refine isOpen_iff_mem_nhds.2 fun x hxu => mem_nhds_iff.2
+    ⟨_,inter_subset_right,?_,mem_chart_source H x,hxu⟩
   have _ := (chartAt H x).open_target.dTopCompatible
-  refine' Subtype.image_preimage_val _ _ ▸ (chartAt H x).open_source.isOpenMap_subtype_val _ _
+  refine Subtype.image_preimage_val _ _ ▸ (chartAt H x).open_source.isOpenMap_subtype_val _ ?_
   rw [←(chartAt H x).toHomeomorphSourceTarget.symm.isOpen_preimage]
   simp_rw [←dTop_eq (chartAt H x).target]; rw [isOpen_iff_preimages_plots]; intro n p hp
   simp_rw [←preimage_comp,Function.comp_assoc]
-  rw [isOpen_iff_preimages_plots] at h; refine' h n _ _; rw [isPlot_iff_smooth]
+  rw [isOpen_iff_preimages_plots] at h; refine h n _ ?_; rw [isPlot_iff_smooth]
   replace hp := (isPlot_induced_iff.1 <| isPlot_induced_iff.1 hp).contMDiff
   replace hp := (contMDiffOn_model_symm).comp_contMDiff hp fun x => mem_range_self _
   rw [←Function.comp_assoc,I.symm_comp_self,Function.id_comp] at hp
@@ -130,7 +130,7 @@ theorem ContMDiffOn.dsmooth_restrict {E : Type*} [NormedAddCommGroup E] [NormedS
     {f : M → N} {s : Set M} (hf : ContMDiffOn I I' ⊤ f s) :
     let _ := m.toDiffeology; let _ := m'.toDiffeology; DSmooth (s.restrict f) := by
   let _ := m.toDiffeology; let _ := m'.toDiffeology
-  refine' fun n p hp => _
+  refine fun n p hp => ?_
   rw [restrict_eq,Function.comp_assoc]
   exact hf.comp_contMDiff hp fun x => (p x).2
 
@@ -147,7 +147,7 @@ theorem IsOpen.dsmooth_iff_smoothOn {E : Type*} [NormedAddCommGroup E] [NormedSp
     {f : M → N} {s : Set M} (hs : IsOpen s) : let _ := m.toDiffeology;
     let _ := m'.toDiffeology; DSmooth (s.restrict f) ↔ ContMDiffOn I I' ⊤ f s := by
   let _ := m.toDiffeology; let _ := m'.toDiffeology
-  refine' ⟨fun hf x hxs => _,ContMDiffOn.dsmooth_restrict⟩
+  refine ⟨fun hf x hxs => ?_,ContMDiffOn.dsmooth_restrict⟩
   -- TODO
   sorry
 
@@ -179,12 +179,12 @@ theorem DSmooth.smooth {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
         mem_preimage.2 ((unitBallBall x' ε hε).symm.map_source hx'')).contMDiffOn.comp
       (toEuclidean.contDiff.contMDiff.comp_contMDiffOn <| contMDiffOn_extChartAt.mono <|
         inter_subset_right) inter_subset_left
-  refine' (((hf n _ he).comp_contMDiffOn he').congr (fun x'' hx'' => _) x _).contMDiffAt _
+  refine (((hf n _ he).comp_contMDiffOn he').congr (fun x'' hx'' => ?_) x ?_).contMDiffAt ?_
   · simp_rw [e,e',Function.comp_apply]
     rw [(univUnitBall.trans' (unitBallBall x' ε hε) rfl).right_inv (by exact hx''.1),
       toEuclidean.symm_apply_apply,(extChartAt I x).left_inv (extChartAt_source I x ▸ hx''.2)]
   · exact ⟨Metric.mem_ball_self hε,mem_chart_source H x⟩
-  · refine' IsOpen.mem_nhds _ ⟨Metric.mem_ball_self hε,mem_chart_source H x⟩
+  · refine IsOpen.mem_nhds ?_ ⟨Metric.mem_ball_self hε,mem_chart_source H x⟩
     exact inter_comm _ _ ▸ extChartAt_source I x ▸ ContinuousOn.isOpen_inter_preimage
       (toEuclidean.continuous.comp_continuousOn (continuousOn_extChartAt x))
       (isOpen_extChartAt_source x) Metric.isOpen_ball
@@ -202,15 +202,15 @@ theorem SmoothManifoldWithCorners.isManifold {E : Type*} [NormedAddCommGroup E] 
         (extChartAt I x).target _ rfl) rfl).toEquiv
       dsmooth_toFun := by
         dsimp [PartialEquiv.trans',PartialEquiv.toEquiv,-extChartAt]
-        refine' (toEuclidean.contDiff.dsmooth.comp _).subtype_mk _
+        refine (toEuclidean.contDiff.dsmooth.comp ?_).subtype_mk _
         exact (toDiffeology_eq_euclideanDiffeology (E := E) ▸ (extChartAt_source I x).symm ▸
           (contMDiffOn_extChartAt (I := I) (x := x)).dsmooth_restrict:)
       dsmooth_invFun := by
         dsimp [PartialEquiv.trans',PartialEquiv.toEquiv,-extChartAt]
-        refine' DSmooth.subtype_mk _ _
+        refine DSmooth.subtype_mk ?_ _
         rw [←Function.comp_def (extChartAt I x).symm,←Function.comp_def _ Subtype.val,
           ←(mapsTo_image _ _).restrict_commutes _ _ _,←Function.comp_assoc]
-        refine' DSmooth.comp _ (toEuclidean.symm.contDiff.dsmooth.restrict _)
+        refine DSmooth.comp ?_ (toEuclidean.symm.contDiff.dsmooth.restrict _)
         exact (toEuclidean.symm_image_image (extChartAt I x).target).symm ▸
           (toDiffeology_eq_euclideanDiffeology (E := E) ▸
             (contMDiffOn_extChartAt_symm (I := I) x).dsmooth_restrict:)

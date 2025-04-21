@@ -46,7 +46,7 @@ protected theorem IsOpen.locallyModelled {X ι : Type*} [DiffeologicalSpace X] {
     have _ : (i : ι) → DTopCompatible (M i) := fun _ ↦ ⟨rfl⟩
     let ⟨v,hv,hxv,i,v',hv',⟨d⟩⟩ := h.locally_modelled x
     have := hv.dTopCompatible; have := hv'.dTopCompatible
-    refine' ⟨(↑) ⁻¹' v,_,hxv,i,_⟩
+    refine ⟨(↑) ⁻¹' v,?_,(by exact hxv),i,?_⟩
     · rw [dTop_eq u]; exact hv.preimage continuous_subtype_val
     have e : ((↑) ⁻¹' v : Set u) ᵈ≃ ((↑) ⁻¹' u : Set v) := by
       have e := DDiffeomorph.Set.nested ((↑) ⁻¹' v : Set u)
@@ -54,7 +54,7 @@ protected theorem IsOpen.locallyModelled {X ι : Type*} [DiffeologicalSpace X] {
       rw [Subtype.image_preimage_val] at e e'; rw [Set.inter_comm] at e
       exact e.trans e'.symm
     have e' := (e.trans (d.restrict _)).trans (DDiffeomorph.Set.nested _)
-    refine' ⟨_,hv'.isOpenMap_subtype_val _ _,⟨e'⟩⟩
+    refine ⟨_,hv'.isOpenMap_subtype_val _ ?_,⟨e'⟩⟩
     exact ((dTop_eq X ▸ hu).preimage continuous_subtype_val).preimage d.symm.dsmooth.continuous'⟩
 
 /-- Any D-open subset of a diffeological manifold is a diffeological manifold. -/
@@ -88,15 +88,15 @@ instance {n : ℕ} {X : Type*} [Zero (Fin n)] [DiffeologicalSpace X] [hm : IsMan
 instance {n : ℕ} {X : Type*} [DiffeologicalSpace X] [hm : IsManifold n X] :
     IsOrbifold n X := ⟨fun x ↦ by
   let ⟨u,hu,hxu,_,v,hv,⟨d⟩⟩ := hm.locally_modelled x
-  refine' ⟨u,hu,hxu,⟨⊥,Set.mem_setOf_eq ▸ inferInstance⟩,_⟩
+  refine ⟨u,hu,hxu,⟨⊥,Set.mem_setOf_eq ▸ inferInstance⟩,?_⟩
   -- TODO: generalise, move somewhere else
   have h : MulAction.orbitRel (⊥ : Subgroup ((Eucl n) ≃ₗ[ℝ] (Eucl n))) (Eucl n) = ⊥ := by
     ext a b; dsimp; rw [MulAction.orbitRel_apply,MulAction.mem_orbit_iff]
-    refine' ⟨fun ⟨g,hg⟩ ↦ hg ▸ _,fun h ↦ ⟨1,by rw [h,one_smul]⟩⟩
+    refine ⟨fun ⟨g,hg⟩ ↦ hg ▸ ?_,fun h ↦ ⟨1,by rw [h,one_smul]⟩⟩
     rw [Unique.eq_default g,unique_one,one_smul]
   dsimp [MulAction.orbitRel.Quotient]; rw [h]
   have e := d.trans ((DDiffeomorph.quotient_bot (Eucl n)).restrictPreimage v).symm
-  refine' ⟨(Quotient.lift id fun a b ↦ id) ⁻¹' v,_,⟨e⟩⟩
+  refine ⟨(Quotient.lift id fun a b ↦ id) ⁻¹' v,?_,⟨e⟩⟩
   exact @IsOpen.preimage _ _ DTop DTop _ (dsmooth_id.quotient_lift _).continuous _ hv⟩
 
 /-- Spaces that are modelled on locally compact spaces are locally compact. -/
