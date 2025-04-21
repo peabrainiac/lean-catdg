@@ -2,7 +2,7 @@ import Mathlib.CategoryTheory.Adjunction.Limits
 import Mathlib.CategoryTheory.Limits.Constructions.EpiMono
 import Mathlib.CategoryTheory.Limits.Preserves.Finite
 import Mathlib.CategoryTheory.Monad.Adjunction
-import Orbifolds.ForMathlib.Triple
+import Orbifolds.ForMathlib.Quadruple
 
 /-!
 # Cohesive categories
@@ -222,31 +222,65 @@ instance [PiecesHavePoints C D] : Epi (pointsToPieces C D) := NatTrans.epi_of_ep
 /-- Cohesion of `C` over `D` satisfies *pieces have points* iff the components of the
 points-to-pieces transformation in `C` are epimorphisms. -/
 lemma piecesHavePoints_iff_epi_discPointsToPieces_app :
-    PiecesHavePoints C D ↔ ∀ X, Epi ((discPointsToPieces C D).app X) := by
-  refine ⟨forall_imp fun X h ↦ ?_, forall_imp fun X h ↦ ?_⟩
-  · rw [discPointsToPieces_app_eq_disc_pointsToPieces]; exact disc.map_epi _
-  · --suffices Epi (discΓAdj.unit.app (π₀.obj X)) by sorry
-    rw [pointsToPieces_app]
-    -- TODO replace with `refine epi_comp' ?_ inferInstance` next time mathlib is bumped
-    refine @epi_comp _ _ _ _ _ _ ?_ _ _
-    rw [← discΓΑdj_homEquiv_discPointsToPieces C D, Adjunction.homEquiv_apply]
-    infer_instance
+    PiecesHavePoints C D ↔ ∀ X, Epi ((discPointsToPieces C D).app X) :=
+  forall_congr' fun _ ↦ π₀DiscAdj.HToF_app_epi_iff_counit_unit_app_epi discΓAdj
 
-instance [PiecesHavePoints C D] : Epi (discPointsToPieces C D) := by
-  have := (piecesHavePoints_iff_epi_discPointsToPieces_app C D).1 ‹_›
-  exact NatTrans.epi_of_epi_app _
+instance [PiecesHavePoints C D] {X : C} : Epi ((discPointsToPieces C D).app X) := by
+  exact (piecesHavePoints_iff_epi_discPointsToPieces_app C D).1 ‹_› X
+
+instance [PiecesHavePoints C D] : Epi (discPointsToPieces C D) :=
+  NatTrans.epi_of_epi_app _
+
+/-- Cohesion of `C` over `D` satisfies *pieces have points* iff the unit components of
+`shape C D` are mapped to epimorphisms by `Γ`. -/
+lemma piecesHavePoints_iff_epi_Γ_shape_unit :
+    PiecesHavePoints C D ↔ ∀ X : C, Epi ((Γ : C ⥤ D).map ((shape C D).η.app X)) := by
+  refine forall_congr' fun X ↦ ?_
+  exact π₀DiscAdj.HToF_app_epi_iff_map_unit_app_epi discΓAdj
+
+instance [PiecesHavePoints C D] {X : C} : Epi ((Γ : C ⥤ D).map ((shape C D).η.app X)) := by
+  exact (piecesHavePoints_iff_epi_Γ_shape_unit C D).1 ‹_› X
+
+instance [PiecesHavePoints C D] : Epi (whiskerRight (shape C D).η (Γ : C ⥤ D)) :=
+  @NatTrans.epi_of_epi_app _ _ _ _ _ _ _ <| (piecesHavePoints_iff_epi_Γ_shape_unit C D).1 ‹_›
+
+/-- Cohesion of `C` over `D` satisfies *pieces have points* iff the components of the
+discrete-to-codiscrete transformation are monomorphisms. -/
+lemma piecesHavePoints_iff_mono_discToCodisc_app :
+    PiecesHavePoints C D ↔ ∀ X : D, Mono ((discToCodisc C D).app X) := by
+  exact π₀DiscAdj.GToL_app_epi_iff_LToR_app_mono discΓAdj ΓCodiscAdj
+
+instance [PiecesHavePoints C D] {X : D} : Mono ((discToCodisc C D).app X) := by
+  exact (piecesHavePoints_iff_mono_discToCodisc_app C D).1 ‹_› X
+
+instance [PiecesHavePoints C D] : Mono (discToCodisc C D) :=
+  NatTrans.mono_of_mono_app _
+
+/-- Cohesion of `C` over `D` satisfies *pieces have points* iff the components of the
+flat-to-sharp transformation are monomorphisms. -/
+lemma piecesHavePoints_iff_mono_flatToSharp_app :
+    PiecesHavePoints C D ↔ ∀ X : C, Mono ((flatToSharp C D).app X) := by
+  exact (piecesHavePoints_iff_mono_discToCodisc_app C D).trans <|
+    (discΓAdj (C := C) (D := D)).FToH_app_mono_iff_counit_unit_app_mono ΓCodiscAdj
+
+instance [PiecesHavePoints C D] {X : C} : Mono ((flatToSharp C D).app X) := by
+  exact (piecesHavePoints_iff_mono_flatToSharp_app C D).1 ‹_› X
+
+instance [PiecesHavePoints C D] : Mono (flatToSharp C D) :=
+  NatTrans.mono_of_mono_app _
 
 /-- Cohesion of `C` over `D` satisfies *pieces have points* iff the unit components of
 `sharp C D` on discrete objects are monomorphisms. -/
 lemma piecesHavePoints_iff_mono_sharp_unit_disc :
     PiecesHavePoints C D ↔ ∀ X : D, Mono ((sharp C D).η.app (disc.obj X)) := by
-  sorry
+  rw [piecesHavePoints_iff_mono_discToCodisc_app]
+  exact forall_congr' fun _ ↦ discΓAdj.FToH_app_mono_iff_unit_app_mono ΓCodiscAdj
 
-/-- Cohesion of `C` over `D` satisfies *pieces have points* iff the unit components of
-`sharp C D` on discrete objects are monomorphisms. -/
-lemma piecesHavePoints_iff_mono_discToCodisc_app :
-    PiecesHavePoints C D ↔ ∀ X : D, Mono ((discToCodisc C D).app X) := by
-  sorry
+instance [PiecesHavePoints C D] {X : D} : Mono ((sharp C D).η.app (disc.obj X)) := by
+  exact (piecesHavePoints_iff_mono_sharp_unit_disc C D).1 ‹_› X
+
+instance [PiecesHavePoints C D] : Mono (whiskerLeft (disc : D ⥤ C) (sharp C D).η) :=
+  @NatTrans.mono_of_mono_app _ _ _ _ _ _ _ <| (piecesHavePoints_iff_mono_sharp_unit_disc C D).1 ‹_›
 
 end PiecesHavePoints
 
