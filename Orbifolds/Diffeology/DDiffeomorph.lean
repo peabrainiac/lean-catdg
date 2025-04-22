@@ -260,7 +260,7 @@ noncomputable def univBall {E : Type*} [NormedAddCommGroup E] [InnerProductSpace
 
 
 /-- `Set.univ X` is diffeomorphic to `X`. -/
-@[simps! (config := .asFn)]
+@[simps! -fullyApplied]
 def Set.univ (X : Type*) [DiffeologicalSpace X] : (univ : Set X) ᵈ≃ X where
   toEquiv := Equiv.Set.univ X
   dsmooth_toFun := dsmooth_subtype_val
@@ -274,7 +274,7 @@ def Set.nested {u : Set X} (v : Set u) : v ᵈ≃ ((↑) '' v : Set X) where
     left_inv := fun _ ↦ rfl
     right_inv := fun _ ↦ rfl
   }
-  dsmooth_toFun := by dsimp; exact dsmooth_subtype_val.restrict _
+  dsmooth_toFun := dsmooth_subtype_val.restrict _
   dsmooth_invFun := by exact (dsmooth_subtype_val.subtype_mk _).subtype_mk _
 
 protected def restrict (d : X ᵈ≃ Y) (u : Set X) : u ᵈ≃ (d.symm ⁻¹' u) where
@@ -284,8 +284,8 @@ protected def restrict (d : X ᵈ≃ Y) (u : Set X) : u ᵈ≃ (d.symm ⁻¹' u)
     left_inv := fun x ↦ by ext; exact d.left_inv x.1
     right_inv := fun y ↦ by ext; exact d.right_inv y.1
   }
-  dsmooth_toFun := by dsimp; exact d.dsmooth_toFun.restrict _
-  dsmooth_invFun := by dsimp; exact d.dsmooth_invFun.restrict _
+  dsmooth_toFun := d.dsmooth_toFun.restrict _
+  dsmooth_invFun := d.dsmooth_invFun.restrict _
 
 protected def restrictPreimage (d : X ᵈ≃ Y) (u : Set Y) : (d ⁻¹' u) ᵈ≃ u where
   toEquiv := {
@@ -294,11 +294,11 @@ protected def restrictPreimage (d : X ᵈ≃ Y) (u : Set Y) : (d ⁻¹' u) ᵈ�
     left_inv := fun x ↦ by ext; exact d.left_inv x.1
     right_inv := fun y ↦ by ext; exact d.right_inv y.1
   }
-  dsmooth_toFun := by dsimp; exact d.dsmooth_toFun.restrict _
-  dsmooth_invFun := by dsimp; exact d.dsmooth_invFun.restrict _
+  dsmooth_toFun := d.dsmooth_toFun.restrict _
+  dsmooth_invFun := d.dsmooth_invFun.restrict _
 
 /-- The quotient of `X` by the identity relation is diffeomorphic to `X`. -/
-@[simps! (config := .asFn)]
+@[simps! -fullyApplied]
 def quotient_bot (X : Type*) [DiffeologicalSpace X] : @Quotient X ⊥ ᵈ≃ X where
   toEquiv := {
     toFun := Quotient.lift id fun a b ↦ id

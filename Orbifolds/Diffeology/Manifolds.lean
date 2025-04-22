@@ -1,9 +1,6 @@
 import Orbifolds.Diffeology.LocallyModelled
-import Mathlib.Geometry.Manifold.Instances.Real
-import Mathlib.Geometry.Manifold.InteriorBoundary
 import Mathlib.Geometry.Manifold.ContMDiff.NormedSpace
 import Mathlib.Geometry.Manifold.ContMDiff.Atlas
-import Mathlib.Geometry.Manifold.SmoothManifoldWithCorners
 
 /-!
 # Diffeological manifolds
@@ -15,22 +12,22 @@ equivalent.
 
 open Set
 
-open scoped Manifold
+open scoped Manifold ContDiff
 
 open PartialHomeomorph in
 /-- The diffeology defined by a manifold structure on M, with the plots given by the maps
   that are smooth in the sense of mathlib's `ContMDiff`-API.
-  This can not be an instance because `SmoothManifoldWithCorners I M` depends on `I` while
+  This can not be an instance because `IsManifold I M` depends on `I` while
   `DiffeologicalSpace M` does not, and because it would probably lead to instance diamonds on
   things like products even if some workaround was found. -/
-def SmoothManifoldWithCorners.toDiffeology {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+def IsManifold.toDiffeology {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     {H : Type*} [TopologicalSpace H] (I : ModelWithCorners ℝ E H) (M : Type*)
-    [TopologicalSpace M] [ChartedSpace H M] [SmoothManifoldWithCorners I M] :
+    [TopologicalSpace M] [ChartedSpace H M] [IsManifold I ∞ M] :
     DiffeologicalSpace M :=
   DiffeologicalSpace.mkOfPlotsOn {
-    isPlotOn := fun {n u} _ p ↦ ContMDiffOn (𝓡 n) I ⊤ p u
+    isPlotOn := fun {n u} _ p ↦ ContMDiffOn (𝓡 n) I ∞ p u
     isPlotOn_congr := fun _ _ _ h ↦ contMDiffOn_congr h
-    isPlot := fun {n} p ↦ ContMDiff (𝓡 n) I ⊤ p
+    isPlot := fun {n} p ↦ ContMDiff (𝓡 n) I ∞ p
     isPlotOn_univ := contMDiffOn_univ
     isPlot_const := fun _ ↦ contMDiff_const
     isPlotOn_reparam := fun _ _ _ h hp hf ↦ hp.comp hf.contMDiffOn h.subset_preimage
@@ -40,14 +37,14 @@ def SmoothManifoldWithCorners.toDiffeology {E : Type*} [NormedAddCommGroup E] [N
   }
 
 /-- The plots of a manifold are by definition precisely the smooth maps. -/
-lemma isPlot_iff_smooth {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+lemma isPlot_iff_contMDiff {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     {H : Type*} [TopologicalSpace H] (I : ModelWithCorners ℝ E H) (M : Type*)
-    [TopologicalSpace M] [ChartedSpace H M] [m : SmoothManifoldWithCorners I M]
-    {n : ℕ} {p : Eucl n → M} : IsPlot[m.toDiffeology] p ↔ ContMDiff (𝓡 n) I ⊤ p := Iff.rfl
+    [TopologicalSpace M] [ChartedSpace H M] [m : IsManifold I ∞ M]
+    {n : ℕ} {p : Eucl n → M} : IsPlot[m.toDiffeology] p ↔ ContMDiff (𝓡 n) I ∞ p := Iff.rfl
 
-lemma SmoothManifoldWithCorners.toDiffeology_eq_euclideanDiffeology {E : Type*}
+lemma IsManifold.toDiffeology_eq_euclideanDiffeology {E : Type*}
     [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimensional ℝ E] :
-    (model_space_smooth (I := 𝓘(ℝ,E))).toDiffeology = euclideanDiffeology := by
+    (intIsManifoldModelSpace (I := 𝓘(ℝ,E))).toDiffeology = euclideanDiffeology := by
   ext n p; exact contMDiff_iff_contDiff
 
 def ModelWithCorners.toHomeomorphTarget {𝕜 : Type*} [NontriviallyNormedField 𝕜] {E : Type*}
@@ -56,12 +53,12 @@ def ModelWithCorners.toHomeomorphTarget {𝕜 : Type*} [NontriviallyNormedField 
   toFun x := ⟨I x,I.map_source (I.source_eq ▸ mem_univ x)⟩
   invFun y := I.invFun y
   left_inv := I.left_inv
-  right_inv := fun _ ↦ Subtype.ext <| I.right_inv _
+  right_inv := fun x ↦ Subtype.ext <| I.right_inv (I.target_eq ▸ x.2)
 
 /-- The D-topology on a manifold is always at least as fine as the usual topology. -/
-lemma SmoothManifoldWithCorners.dTop_le {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+lemma IsManifold.dTop_le {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     {H : Type*} [TopologicalSpace H] (I : ModelWithCorners ℝ E H)
-    (M : Type*) [tM : TopologicalSpace M] [ChartedSpace H M] [m : SmoothManifoldWithCorners I M] :
+    (M : Type*) [tM : TopologicalSpace M] [ChartedSpace H M] [m : IsManifold I ∞ M] :
     DTop[m.toDiffeology] ≤ tM :=
   TopologicalSpace.le_def.2 fun _ hu _ _ hp ↦ IsOpen.preimage (hp.continuous) hu
 
@@ -70,7 +67,7 @@ lemma SmoothManifoldWithCorners.dTop_le {E : Type*} [NormedAddCommGroup E] [Norm
 instance {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimensional ℝ E]
     {H : Type*} [tH : TopologicalSpace H] (I : ModelWithCorners ℝ E H)
     [@DTopCompatible I.target _ <| @instDiffeologicalSpaceSubtype _ euclideanDiffeology _]
-    (M : Type*) [TopologicalSpace M] [ChartedSpace H M] [m : SmoothManifoldWithCorners I M] :
+    (M : Type*) [TopologicalSpace M] [ChartedSpace H M] [m : IsManifold I ∞ M] :
     let _ := m.toDiffeology; DTopCompatible M := let _ := m.toDiffeology; ⟨by
   let dE := euclideanDiffeology (X := E); let dH := dE.induced I
   have : DTopCompatible H := ⟨by
@@ -85,8 +82,8 @@ instance {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimension
   rw [←(chartAt H x).toHomeomorphSourceTarget.symm.isOpen_preimage]
   simp_rw [←dTop_eq (chartAt H x).target]; rw [isOpen_iff_preimages_plots]; intro n p hp
   simp_rw [←preimage_comp,Function.comp_assoc]
-  rw [isOpen_iff_preimages_plots] at h; refine h n _ ?_; rw [isPlot_iff_smooth]
-  replace hp := (isPlot_induced_iff.1 <| isPlot_induced_iff.1 hp).contMDiff
+  rw [isOpen_iff_preimages_plots] at h; refine h n _ ?_; rw [isPlot_iff_contMDiff]
+  replace hp := (isPlot_induced_iff.1 <| isPlot_induced_iff.1 hp).contMDiff (n := ∞)
   replace hp := (contMDiffOn_model_symm).comp_contMDiff hp fun x ↦ mem_range_self _
   rw [←Function.comp_assoc,I.symm_comp_self,Function.id_comp] at hp
   exact (contMDiffOn_chart_symm (x := x)).comp_contMDiff hp fun x ↦ (p x).2⟩
@@ -101,7 +98,7 @@ instance {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimension
   is not a high priority. -/
 instance {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimensional ℝ E]
     {H : Type*} [TopologicalSpace H] (I : ModelWithCorners ℝ E H) [hI : I.Boundaryless]
-    (M : Type*) [TopologicalSpace M] [ChartedSpace H M] [m : SmoothManifoldWithCorners I M] :
+    (M : Type*) [TopologicalSpace M] [ChartedSpace H M] [m : IsManifold I ∞ M] :
     let _ := m.toDiffeology; DTopCompatible M := by
   let _ := m.toDiffeology; let _ := euclideanDiffeology (X := E)
   have : DTopCompatible I.target :=
@@ -112,22 +109,22 @@ instance {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimension
   functor of concrete categories. -/
 theorem ContMDiff.dsmooth {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     {H : Type*} [TopologicalSpace H] {I : ModelWithCorners ℝ E H} {M : Type*}
-    [TopologicalSpace M] [ChartedSpace H M] [m : SmoothManifoldWithCorners I M]
+    [TopologicalSpace M] [ChartedSpace H M] [m : IsManifold I ∞ M]
     {E' : Type*} [NormedAddCommGroup E'] [NormedSpace ℝ E']
     {H' : Type*} [TopologicalSpace H'] {I' : ModelWithCorners ℝ E' H'} {N : Type*}
-    [TopologicalSpace N] [ChartedSpace H' N] [m' : SmoothManifoldWithCorners I' N]
-    {f : M → N} (hf : ContMDiff I I' ⊤ f) : DSmooth[m.toDiffeology,m'.toDiffeology] f :=
+    [TopologicalSpace N] [ChartedSpace H' N] [m' : IsManifold I' ∞ N]
+    {f : M → N} (hf : ContMDiff I I' ∞ f) : DSmooth[m.toDiffeology,m'.toDiffeology] f :=
   fun _ _ ↦ hf.comp
 
 /-- Every map between manifolds that is smooth on a subset is also smooth diffeologically
   with respect to the subspace diffeology. -/
 theorem ContMDiffOn.dsmooth_restrict {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     {H : Type*} [TopologicalSpace H] {I : ModelWithCorners ℝ E H} {M : Type*}
-    [TopologicalSpace M] [ChartedSpace H M] [m : SmoothManifoldWithCorners I M]
+    [TopologicalSpace M] [ChartedSpace H M] [m : IsManifold I ∞ M]
     {E' : Type*} [NormedAddCommGroup E'] [NormedSpace ℝ E']
     {H' : Type*} [TopologicalSpace H'] {I' : ModelWithCorners ℝ E' H'} {N : Type*}
-    [TopologicalSpace N] [ChartedSpace H' N] [m' : SmoothManifoldWithCorners I' N]
-    {f : M → N} {s : Set M} (hf : ContMDiffOn I I' ⊤ f s) :
+    [TopologicalSpace N] [ChartedSpace H' N] [m' : IsManifold I' ∞ N]
+    {f : M → N} {s : Set M} (hf : ContMDiffOn I I' ∞ f s) :
     let _ := m.toDiffeology; let _ := m'.toDiffeology; DSmooth (s.restrict f) := by
   let _ := m.toDiffeology; let _ := m'.toDiffeology
   refine fun n p hp ↦ ?_
@@ -139,13 +136,13 @@ open PartialHomeomorph in
   This could probably be proven in quite a lot greater generality. -/
 theorem IsOpen.dsmooth_iff_smoothOn {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     [FiniteDimensional ℝ E] {H : Type*} [TopologicalSpace H] {I : ModelWithCorners ℝ E H}
-    (M : Type*) [TopologicalSpace M] [ChartedSpace H M] [m : SmoothManifoldWithCorners I M]
+    (M : Type*) [TopologicalSpace M] [ChartedSpace H M] [m : IsManifold I ∞ M]
     [hI : I.Boundaryless]
     {E' : Type*} [NormedAddCommGroup E'] [NormedSpace ℝ E'] [FiniteDimensional ℝ E']
     {H' : Type*} [TopologicalSpace H'] {I' : ModelWithCorners ℝ E' H'} (N : Type*)
-    [TopologicalSpace N] [ChartedSpace H' N] [m' : SmoothManifoldWithCorners I' N]
+    [TopologicalSpace N] [ChartedSpace H' N] [m' : IsManifold I' ∞ N]
     {f : M → N} {s : Set M} (hs : IsOpen s) : let _ := m.toDiffeology;
-    let _ := m'.toDiffeology; DSmooth (s.restrict f) ↔ ContMDiffOn I I' ⊤ f s := by
+    let _ := m'.toDiffeology; DSmooth (s.restrict f) ↔ ContMDiffOn I I' ∞ f s := by
   let _ := m.toDiffeology; let _ := m'.toDiffeology
   refine ⟨fun hf x hxs ↦ ?_,ContMDiffOn.dsmooth_restrict⟩
   -- TODO
@@ -157,24 +154,24 @@ open PartialHomeomorph in
 theorem DSmooth.smooth {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     [FiniteDimensional ℝ E]
     {H : Type*} [TopologicalSpace H] {I : ModelWithCorners ℝ E H} {M : Type*}
-    [TopologicalSpace M] [ChartedSpace H M] [m : SmoothManifoldWithCorners I M]
+    [TopologicalSpace M] [ChartedSpace H M] [m : IsManifold I ∞ M]
     [hI : I.Boundaryless]
     {E' : Type*} [NormedAddCommGroup E'] [NormedSpace ℝ E'] [FiniteDimensional ℝ E']
     {H' : Type*} [TopologicalSpace H'] {I' : ModelWithCorners ℝ E' H'} {N : Type*}
-    [TopologicalSpace N] [ChartedSpace H' N] [m' : SmoothManifoldWithCorners I' N]
-    {f : M → N} (hf : DSmooth[m.toDiffeology,m'.toDiffeology] f) : ContMDiff I I' ⊤ f := by
+    [TopologicalSpace N] [ChartedSpace H' N] [m' : IsManifold I' ∞ N]
+    {f : M → N} (hf : DSmooth[m.toDiffeology,m'.toDiffeology] f) : ContMDiff I I' ∞ f := by
   let _ := m.toDiffeology; let _ := m'.toDiffeology
   intro x; let x' := toEuclidean (extChartAt I x x); let n := Module.finrank ℝ E
   let ⟨ε,hε,hε'⟩ := Metric.isOpen_iff.1 (toEuclidean.isOpenMap _ (isOpen_extChartAt_target x))
     x' <| mem_image_of_mem _ <| (extChartAt I x).map_source (mem_extChartAt_source x)
   let e := (extChartAt I x).symm ∘ toEuclidean.symm ∘
     (univUnitBall.trans' (unitBallBall x' ε hε) rfl)
-  have he : ContMDiff (𝓡 n) I ⊤ e := (contMDiffOn_extChartAt_symm x).comp_contMDiff
+  have he : ContMDiff (𝓡 n) I ∞ e := (contMDiffOn_extChartAt_symm x).comp_contMDiff
     (toEuclidean.symm.contDiff.comp <| (contDiff_unitBallBall hε).comp
     contDiff_univUnitBall).contMDiff fun x'' ↦ (mem_image_equiv (f := toEuclidean.toEquiv)).1 <|
     hε' <| (univUnitBall.trans' (unitBallBall x' ε hε) rfl).map_source <| mem_univ _
   let e' := (univUnitBall.trans' (unitBallBall x' ε hε) rfl).symm ∘ toEuclidean ∘ extChartAt I x
-  have he' : ContMDiffOn I (𝓡 n) ⊤ e' _ :=
+  have he' : ContMDiffOn I (𝓡 n) ∞ e' _ :=
     (contDiffOn_univUnitBall_symm.comp (contDiff_unitBallBall_symm hε).contDiffOn fun _ hx'' ↦
         mem_preimage.2 ((unitBallBall x' ε hε).symm.map_source hx'')).contMDiffOn.comp
       (toEuclidean.contDiff.contMDiff.comp_contMDiffOn <| contMDiffOn_extChartAt.mono <|
@@ -189,12 +186,12 @@ theorem DSmooth.smooth {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
       (toEuclidean.continuous.comp_continuousOn (continuousOn_extChartAt x))
       (isOpen_extChartAt_source x) Metric.isOpen_ball
 
-/-- A finite-dimensional, boundaryless `SmoothManifoldWithCorners` is also a manifold in the
-  diffeological sense of `IsManifold`. -/
-theorem SmoothManifoldWithCorners.isManifold {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+/-- A finite-dimensional, boundaryless smooth manifold with corners in the sense of `IsManifold`
+  is also a manifold in the sense of `IsDiffeologicalManifold`. -/
+theorem IsManifold.isDiffeologicalManifold {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     [FiniteDimensional ℝ E] {H : Type*} [TopologicalSpace H] (I : ModelWithCorners ℝ E H)
-    (M : Type*) [TopologicalSpace M] [ChartedSpace H M] [m : SmoothManifoldWithCorners I M]
-    [hI : I.Boundaryless] : @IsManifold (Module.finrank ℝ E) M m.toDiffeology :=
+    (M : Type*) [TopologicalSpace M] [ChartedSpace H M] [m : IsManifold I ∞ M]
+    [hI : I.Boundaryless] : @IsDiffeologicalManifold (Module.finrank ℝ E) M m.toDiffeology :=
   let _ := m.toDiffeology; let _ := euclideanDiffeology (X := E)
   ⟨fun x ↦ (dTop_eq M).symm ▸ ⟨_,isOpen_extChartAt_source x,mem_extChartAt_source x,
     (),_,toEuclidean.isOpenMap _ (isOpen_extChartAt_target x),⟨{
@@ -264,8 +261,8 @@ lemma PartialHomeomorph.fromHomeomorphSourceTarget_toPartialEquiv {α β : Type*
 
 /-- Charted space structure of a diffeological manifold, consisting of all local diffeomorphisms
   between `M` and `Eucl n`. -/
-noncomputable def IsManifold.toChartedSpace {M : Type*} [DiffeologicalSpace M] {n : ℕ}
-    [hM : IsManifold n M] : @ChartedSpace (Eucl n) _ M DTop := by
+noncomputable def IsDiffeologicalManifold.toChartedSpace {M : Type*} [DiffeologicalSpace M] {n : ℕ}
+    [hM : IsDiffeologicalManifold n M] : @ChartedSpace (Eucl n) _ M DTop := by
   let _ := @DTop M _; let _ : DTopCompatible M := ⟨rfl⟩; exact {
     atlas := {e | DSmooth e.toEquiv ∧ DSmooth e.toEquiv.symm}
     chartAt := fun x ↦ by

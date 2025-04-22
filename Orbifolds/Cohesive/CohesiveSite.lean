@@ -10,6 +10,8 @@ a cohesive topos. See https://ncatlab.org/nlab/show/cohesive+site.
 Every cohesive site is in particular local and locally connected, and every cosifted category
 with a terminal object that admits morphisms to every object is cohesive when equipped with
 the trivial topology.
+
+TODO: generalise universe levels from `max u v` to `max u v w` again once that is possible.
 -/
 
 universe u v w u₂ v₂
@@ -44,26 +46,30 @@ lemma isCohesiveSite_trivial {C : Type u} [Category.{v} C] [HasTerminal C] [IsSi
 namespace Cohesive
 
 -- TODO: figure out how to get rid of the `HasWeakSheafify` assumption.
-variable [J.IsCohesiveSite] [HasWeakSheafify J (Type max u v w)]
+variable [J.IsCohesiveSite] [HasWeakSheafify J (Type max u v)]
 
 /-- The cohesive structure of the sheaf topos on a cohesive site. -/
-noncomputable instance : CohesiveStructure (Sheaf J (Type max u v w)) (Type max u v w) where
-  π₀DiscAdj := π₀ConstantSheafAdj.{u,v,max v w} J
+noncomputable instance : CohesiveStructure (Sheaf J (Type max u v)) (Type max u v) where
+  π₀ := _
+  disc := _
+  Γ := _
+  codisc := _
+  π₀DiscAdj := π₀ConstantSheafAdj.{u,v,max v} J
   discΓAdj := constantSheafΓAdj J _
   ΓCodiscAdj := Sheaf.ΓCodiscAdj J
   preservesFiniteProducts_π₀ := inferInstance
   fullyFaithfulDisc := fullyFaithfulConstantSheaf J
   fullyFaithfulCodisc := Sheaf.fullyFaithfulCodisc J
 
-lemma Sheaf.ΓCodiscAdj_unit_app {X : Sheaf J (Type max u v w)} :
-    (Sheaf.ΓCodiscAdj.{u,v,w} J).unit.app X = (by sorry) := by
+lemma Sheaf.ΓCodiscAdj_unit_app {X : Sheaf J (Type max u v)} :
+    (Sheaf.ΓCodiscAdj.{u,v} J).unit.app X = (by sorry) := by
   simp [Sheaf.ΓCodiscAdj, Adjunction.ofNatIsoLeft, Adjunction.homEquiv]
   simp [Adjunction.equivHomsetLeftOfNatIso]
   simp [ΓNatIsoSheafSections, sheafSectionsNatIsoEvaluation]
   sorry
 
-lemma Sheaf.discToCodisc_app {X : (Type max u v w)} :
-    (discToCodisc (Sheaf J (Type max u v w)) (Type max u v w)).app X =
+lemma Sheaf.discToCodisc_app {X : (Type max u v)} :
+    (discToCodisc (Sheaf J (Type max u v)) (Type max u v)).app X =
       ⟨inv (toSheafify J ((Functor.const _).obj X)) ≫ { app Y x y := ⟨x⟩ }⟩ := by
   rw [Cohesive.discToCodisc_app, IsIso.comp_inv_eq]
   apply Sheaf.hom_ext
@@ -78,7 +84,7 @@ lemma Sheaf.discToCodisc_app {X : (Type max u v w)} :
 
 /-- In sheaf topoi on cohesive sites, pieces have points in the sense that the components of
 the canonical points-to-pieces transformation `Γ ⟶ π₀` are epic. -/
-instance : PiecesHavePoints (Sheaf J (Type max u v w)) (Type max u v w) := by
+instance : PiecesHavePoints (Sheaf J (Type max u v)) (Type max u v) := by
   refine (piecesHavePoints_iff_mono_discToCodisc_app _ _).2 fun X ↦ ?_
   rw [Sheaf.discToCodisc_app]
   refine @Hom.mono_of_presheaf_mono _ _ J _ _ _ _ _ <| @mono_comp _ _ _ _ _ _ _ _ <|

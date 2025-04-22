@@ -1,6 +1,6 @@
 import Mathlib.CategoryTheory.Limits.FullSubcategory
 import Mathlib.CategoryTheory.Limits.Sifted
-import Orbifolds.ForMathlib.GlobalSections
+import Mathlib.CategoryTheory.Sites.GlobalSections
 
 /-!
 # Locally connected sites
@@ -103,8 +103,15 @@ noncomputable def π₀ConstantSheafAdj [HasWeakSheafify J (Type max u w)] :
 TODO: clean up. -/
 section TerminalSheaf
 
-attribute [local instance] ConcreteCategory.hasCoeToSort
-attribute [local instance] ConcreteCategory.instFunLike
+attribute [local instance] HasForget.hasCoeToSort
+attribute [local instance] HasForget.instFunLike
+
+/-- Evaluating a terminal functor yields terminal objects.
+TODO: move somewhere else -/
+noncomputable def Limits.IsTerminal.isTerminalObj_functor {C : Type u} [Category.{v} C]
+    {D : Type u₂} [Category.{v₂} D] [HasLimits D] {F : C ⥤ D} (hF : IsTerminal F) (X : C) :
+    IsTerminal (F.obj X) :=
+  hF.isTerminalObj ((evaluation C D).obj X)
 
 /-- A terminal sheaf is also terminal as a presheaf. -/
 noncomputable def Limits.IsTerminal.isTerminalSheafVal {C : Type u} [Category.{v} C]
@@ -122,9 +129,10 @@ noncomputable def Limits.IsTerminal.isTerminalSheafValObj {C : Type u} [Category
   sections of the terminal sheaf are unique. -/
 noncomputable instance Sheaf.instUniqueTerminalValObjForget {C : Type u} [Category.{v} C]
     {J : GrothendieckTopology C} {A : Type u₂} [Category.{v₂} A] [HasLimits A]
-    [ConcreteCategory.{w} A] [PreservesLimit (Functor.empty _) (forget A)] (Y : Cᵒᵖ) :
+    [HasForget.{w} A] [PreservesLimit (Functor.empty _) (forget A)] (Y : Cᵒᵖ) :
     Unique ((⊤_ Sheaf J A).val.obj Y) :=
-  Concrete.uniqueOfTerminalOfPreserves _ <| terminalIsTerminal.isTerminalSheafValObj Y
+  (Types.isTerminalEquivUnique _).1 <|
+    (terminalIsTerminal.isTerminalSheafValObj Y).isTerminalObj (forget _) _
 
 /-- Terminal types are singletons. -/
 noncomputable def Limits.IsTerminal.unique {X : Type u} (h : IsTerminal X) : Unique X :=

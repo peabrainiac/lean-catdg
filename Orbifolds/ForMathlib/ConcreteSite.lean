@@ -1,22 +1,28 @@
 import Orbifolds.ForMathlib.LocalSite
 
+/-!
+# Concrete sites
+
+TODO: switch from `HasForget` to the new `ConcreteCategory` API
+-/
+
 universe u v w u₂ v₂ w₂
 
 open CategoryTheory Limits Sheaf Opposite
 
 namespace CategoryTheory
 
-attribute [local instance] ConcreteCategory.hasCoeToSort
-attribute [local instance] ConcreteCategory.instFunLike
+attribute [local instance] HasForget.hasCoeToSort
+attribute [local instance] HasForget.instFunLike
 
 variable {C : Type u} [Category.{v} C]
 
 /-- A presieve `S` on `X` in a concrete category is jointly surjective if every `x : X` is in
   the image of some `f` in `S`. -/
-def Presieve.IsJointlySurjective [ConcreteCategory.{w} C] {X : C} (S : Presieve X) : Prop :=
+def Presieve.IsJointlySurjective [HasForget.{w} C] {X : C} (S : Presieve X) : Prop :=
   ∀ x : X, ∃ Y, ∃ f ∈ @S Y, ∃ y, f y = x
 
-lemma Presieve.isJointlySurjective_iff_iUnion_range_eq_univ [ConcreteCategory.{w} C]
+lemma Presieve.isJointlySurjective_iff_iUnion_range_eq_univ [HasForget.{w} C]
     {X : C} {S : Presieve X} : IsJointlySurjective S ↔
     ⋃ (Y : C) (f ∈ @S Y), Set.range f = Set.univ := by
   simp [IsJointlySurjective, Set.iUnion_eq_univ_iff]
@@ -24,7 +30,7 @@ lemma Presieve.isJointlySurjective_iff_iUnion_range_eq_univ [ConcreteCategory.{w
 /-- A site is concrete if it is a concrete category in such a way that points correspond to
   morphisms from a terminal object, and all sieves are jointly surjective. -/
 class ConcreteSite (J : GrothendieckTopology C)
-    extends HasTerminal C, ConcreteCategory.{v} C where
+    extends HasTerminal C, HasForget.{v} C where
   /-- The forgetful functor is given by morphisms from the terminal object. Since a forgetful
     functor might already exists, this is encoded here as a natural isomorphism. -/
   forget_natIso_coyoneda : (CategoryTheory.forget C) ≅ coyoneda.obj (.op (⊤_ C))

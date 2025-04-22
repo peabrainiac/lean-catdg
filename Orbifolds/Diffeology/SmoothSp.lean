@@ -68,7 +68,7 @@ def DiffSp.toSmoothSp : DiffSp.{u} ⥤ SmoothSp.{u} where
       exact (DFunLike.congr_fun (hf''' (f' x) (hf' x).1) _).trans
         (congr_fun (hf'' _ (f' x) (hf' x).1) _).symm⟩
   map f := ⟨{
-    app := fun _ g ↦ f.comp g
+    app := fun _ g ↦ f.hom.comp g
     naturality := fun _ _ _ ↦ rfl
   }⟩
   map_id := fun _ ↦ rfl
@@ -76,7 +76,7 @@ def DiffSp.toSmoothSp : DiffSp.{u} ⥤ SmoothSp.{u} where
 
 /-- `DiffSp.toSmoothSp` is fully faithful. -/
 def DiffSp.toSmoothSp.fullyFaithful : DiffSp.toSmoothSp.{u}.FullyFaithful where
-  preimage f := ⟨fun x ↦
+  preimage f := ofHom ⟨fun x ↦
       (by exact f.val.app (.op 0) ⟨fun _ ↦ x, dsmooth_const⟩ : DSmoothMap (Eucl 0) _) 0, by
     intro n p hp; convert (f.val.app (.op n) ⟨p, hp.dsmooth⟩).dsmooth.isPlot using 1; ext x
     exact DFunLike.congr_fun (F := DSmoothMap _ _)
@@ -105,8 +105,8 @@ instance SmoothSp.instDiffeologicalSpaceΓ (X : SmoothSp) : DiffeologicalSpace (
 
 /-- The reflector of `DiffSp` inside of `SmoothSp`, sending a smooth space to its concretisation. -/
 def SmoothSp.concr : SmoothSp.{u} ⥤ DiffSp.{u} where
-  obj X := ⟨Γ.obj X, X.instDiffeologicalSpaceΓ⟩
-  map f := ⟨Γ.map f, by
+  obj X := DiffSp.of (Γ.obj X)
+  map f := DiffSp.ofHom ⟨Γ.map f, by
     rw [dsmooth_generateFrom_iff]; intro n p ⟨p', hp⟩
     refine DiffeologicalSpace.isPlot_generatedFrom_of_mem ⟨f.val.app _ p', ?_⟩
     rw [hp]; ext x; exact congrFun (f.val.naturality ⟨fun _ : Eucl 0 ↦ x, dsmooth_const⟩) p'⟩
@@ -135,7 +135,7 @@ def DiffSp.reflectorAdjunction : SmoothSp.concr.{u} ⊣ DiffSp.toSmoothSp.{u} :=
         exact congrFun (f.val.naturality _).symm p
     }
     counit := {
-      app := fun X ↦ ⟨fun p : DSmoothMap _ _ ↦ p 0,
+      app := fun X ↦ DiffSp.ofHom ⟨fun p : DSmoothMap _ _ ↦ p 0,
         dsmooth_generateFrom_iff.2 fun _ p ⟨p', hp⟩ ↦ by rw [hp]; exact p'.dsmooth.isPlot⟩
       naturality := fun _ _ _ ↦ rfl
     }
@@ -162,7 +162,7 @@ noncomputable instance DiffSp.toSmoothSp.createsLimits : CreatesLimits toSmoothS
 
 section DifferentialForms
 
-#check Module.Finite.multilinearMap
+--#check Module.Finite.multilinearMap
 
 local instance (M N : Type*) [AddCommGroup M] [Module ℝ M] [DiffeologicalSpace M]
     [DiffeologicalModule ℝ M] [AddCommGroup N] [Module ℝ N] [DiffeologicalSpace N]

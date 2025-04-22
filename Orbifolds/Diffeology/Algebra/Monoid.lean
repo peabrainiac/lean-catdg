@@ -112,7 +112,7 @@ theorem dsmooth_list_prod {X : Type*} [DiffeologicalSpace X] {ι : Type*} {f : �
   | nil => simp [dsmooth_const]
   | cons i is h =>
     simp_rw [List.map_cons, List.prod_cons]
-    exact (hf i (List.mem_cons_self _ _)).mul (h (fun i hi ↦ hf i (is.mem_cons_of_mem _ hi)))
+    exact (hf i List.mem_cons_self).mul (h (fun i hi ↦ hf i (is.mem_cons_of_mem _ hi)))
 
 @[to_additive]
 theorem dsmooth_pow : ∀ n : ℕ, DSmooth fun a : M ↦ a ^ n

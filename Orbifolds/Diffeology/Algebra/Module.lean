@@ -30,7 +30,7 @@ Main definitions / results:
 
 /-- A diffeological ring is a ring in which addition, negation and multiplication are smooth. -/
 class DiffeologicalRing (R : Type*) [DiffeologicalSpace R] [Ring R] extends
-    DiffeologicalAddGroup R, DSmoothMul R : Prop
+    DiffeologicalAddGroup R, DSmoothMul R
 
 /-- The main example we care about: `ℝ` is a diffeological ring. -/
 instance : DiffeologicalRing ℝ where
@@ -42,7 +42,7 @@ instance : DiffeologicalRing ℝ where
   and scalar multiplication are smooth. -/
 class DiffeologicalModule (R : Type*) [DiffeologicalSpace R] [Ring R] [DiffeologicalRing R]
     (X : Type*) [DiffeologicalSpace X] [AddCommGroup X] [Module R X] extends
-    DiffeologicalAddGroup X, DSmoothSMul R X : Prop
+    DiffeologicalAddGroup X, DSmoothSMul R X
 
 /-- Normed spaces with their natural diffeologies are diffeological vector spaces. -/
 instance (X : Type*) [NormedAddCommGroup X] [NormedSpace ℝ X] [DiffeologicalSpace X]
@@ -70,7 +70,7 @@ lemma LinearMap.isPlot (X : Type*) [AddCommGroup X] [Module ℝ X] [Diffeologica
 example {R : Type*} [Ring R] [DiffeologicalSpace R] [TopologicalSpace R] [DTopCompatible R]
     [DiffeologicalRing R] {X : Type*} [AddCommGroup X] [Module R X] [DiffeologicalSpace X]
     [TopologicalSpace X] [DTopCompatible X] [DiffeologicalModule R X] [LocallyCompactSpace X] :
-    ContinuousSMul R X ∧ TopologicalAddGroup X :=
+    ContinuousSMul R X ∧ IsTopologicalAddGroup X :=
   ⟨inferInstance, inferInstance⟩
 
 section

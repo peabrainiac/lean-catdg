@@ -1,4 +1,4 @@
-import Orbifolds.ForMathlib.GlobalSections
+import Mathlib.CategoryTheory.Sites.GlobalSections
 import Mathlib.CategoryTheory.Adjunction.Triple
 
 /-!
@@ -18,6 +18,8 @@ See https://ncatlab.org/nlab/show/local+site.
 * `fullyFaithfulConstantSheaf`: on local sites, the constant sheaf functor is fully faithful.
 All together this shows that for local sites `Sheaf J (Type max u v w)` forms a local topos, but
 since we don't yet have local topoi this can't be stated yet.
+
+TODO: generalise universe levels from `max u v` to `max u v w` again once that is possible.
 -/
 
 universe u v w
@@ -36,7 +38,7 @@ class LocalSite extends HasTerminal C where
 /-- On a local site, every covering sieve contains every morphism from the terminal object. -/
 lemma LocalSite.from_terminal_mem_of_mem [LocalSite J] {X : C} (f : ⊤_ C ⟶ X) {S : Sieve X}
     (hS : S ∈ J X) : S.arrows f :=
-  (S.pullback_eq_top_iff_mem f).2 <| LocalSite.eq_top_of_mem _ <| J.pullback_stable f hS
+  (S.mem_iff_pullback_eq_top f).2 <| LocalSite.eq_top_of_mem _ <| J.pullback_stable f hS
 
 /-- Every category with a terminal object becomes a local site with the trivial topology. -/
 instance {C : Type u} [Category.{v} C] [HasTerminal C] : LocalSite (trivial C) where
@@ -70,9 +72,13 @@ noncomputable def Sheaf.codisc [LocalSite J] :
   map_id _ := rfl
   map_comp _ _ := rfl
 
+-- this is currently needed to obtain the instance `HasSheafify J (Type max u v)`.
+attribute [local instance] CategoryTheory.Types.instConcreteCategory
+attribute [local instance] CategoryTheory.Types.instFunLike
+
 /-- On local sites, the global sections functor `Γ` is left-adjoint to the codiscrete functor. -/
 @[simps!]
-noncomputable def Sheaf.ΓCodiscAdj [LocalSite J] : Γ J (Type max u v w) ⊣ codisc J := by
+noncomputable def Sheaf.ΓCodiscAdj [LocalSite J] : Γ J (Type max u v) ⊣ codisc J := by
   refine Adjunction.ofNatIsoLeft ?_ (ΓNatIsoSheafSections J _ terminalIsTerminal).symm
   exact Adjunction.mkOfUnitCounit {
     unit := {
@@ -95,15 +101,15 @@ noncomputable def Sheaf.ΓCodiscAdj [LocalSite J] : Γ J (Type max u v w) ⊣ co
       dsimp; congr; convert Category.id_comp _; exact Subsingleton.elim _ _
   }
 
-instance [LocalSite J] : (Γ J (Type max u v w)).IsLeftAdjoint :=
+instance [LocalSite J] : (Γ J (Type max u v)).IsLeftAdjoint :=
   ⟨codisc J, ⟨ΓCodiscAdj J⟩⟩
 
-instance [LocalSite J] : (codisc.{u,v,max u v w} J).IsRightAdjoint :=
+instance [LocalSite J] : (codisc.{u,v,max u v} J).IsRightAdjoint :=
   ⟨Γ J _, ⟨ΓCodiscAdj J⟩⟩
 
 /-- The global sections of the codiscrete sheaf on a type are naturally isomorphic to that type.-/
 noncomputable def Sheaf.codiscΓNatIsoId [LocalSite J] :
-    codisc J ⋙ Γ J _ ≅ 𝟭 (Type max u v w) := by
+    codisc J ⋙ Γ J _ ≅ 𝟭 (Type max u v) := by
   refine (isoWhiskerLeft _ (ΓNatIsoSheafSections J _ terminalIsTerminal)).trans ?_
   exact (NatIso.ofComponents (fun X ↦ {
     hom x := fun _ ↦ ⟨x⟩
@@ -115,27 +121,27 @@ noncomputable def Sheaf.codiscΓNatIsoId [LocalSite J] :
 
 /-- `Sheaf.codisc` is fully faithful. -/
 noncomputable def Sheaf.fullyFaithfulCodisc [LocalSite J] :
-    (codisc.{u,v,max u v w} J).FullyFaithful :=
+    (codisc.{u,v,max u v} J).FullyFaithful :=
   (ΓCodiscAdj J).fullyFaithfulROfCompIsoId (codiscΓNatIsoId J)
 
-instance [LocalSite J] : (codisc.{u,v,max u v w} J).Full :=
+instance [LocalSite J] : (codisc.{u,v,max u v} J).Full :=
   (fullyFaithfulCodisc J).full
 
-instance [LocalSite J] : (codisc.{u,v,max u v w} J).Faithful :=
+instance [LocalSite J] : (codisc.{u,v,max u v} J).Faithful :=
   (fullyFaithfulCodisc J).faithful
 
 /-- On local sites, the constant sheaf functor is fully faithful. -/
-noncomputable def fullyFaithfulConstantSheaf [HasWeakSheafify J (Type max u v w)] [LocalSite J] :
-    (constantSheaf J (Type max u v w)).FullyFaithful :=
+noncomputable def fullyFaithfulConstantSheaf [HasWeakSheafify J (Type max u v)] [LocalSite J] :
+    (constantSheaf J (Type max u v)).FullyFaithful :=
   ((constantSheafΓAdj J _).fullyFaithfulEquiv (Sheaf.ΓCodiscAdj J)).symm <|
     Sheaf.fullyFaithfulCodisc J
 
-instance [HasWeakSheafify J (Type max u v w)] [LocalSite J] :
-    (constantSheaf J (Type max u v w)).Full :=
+instance [HasWeakSheafify J (Type max u v)] [LocalSite J] :
+    (constantSheaf J (Type max u v)).Full :=
   (fullyFaithfulConstantSheaf J).full
 
-instance [HasWeakSheafify J (Type max u v w)] [LocalSite J] :
-    (constantSheaf J (Type max u v w)).Faithful :=
+instance [HasWeakSheafify J (Type max u v)] [LocalSite J] :
+    (constantSheaf J (Type max u v)).Faithful :=
   (fullyFaithfulConstantSheaf J).faithful
 
 end CategoryTheory

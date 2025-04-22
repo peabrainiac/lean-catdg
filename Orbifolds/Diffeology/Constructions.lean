@@ -1,7 +1,6 @@
 import Orbifolds.Diffeology.DSmoothMap
 import Orbifolds.Diffeology.Reflexive
-import Mathlib.Topology.Compactness.DeltaGeneratedSpace
-import Mathlib.Analysis.InnerProductSpace.Calculus
+import Mathlib.Analysis.Normed.Module.Convex
 
 /-!
 # Constructions of diffeological spaces
@@ -526,6 +525,7 @@ theorem DSmooth.quotient_liftOn' {f : X → Y} (h : DSmooth f)
     DSmooth (fun x ↦ Quotient.liftOn' x f hs : Quotient s → Y) :=
   h.quotient_lift hs
 
+open scoped Relator in
 theorem DSmooth.quotient_map' {t : Setoid Y} {f : X → Y} (hf : DSmooth f)
     (H : (s.r ⇒ t.r) f f) : DSmooth (Quotient.map' f H) :=
   (dsmooth_quotient_mk'.comp hf).quotient_lift _
@@ -730,7 +730,7 @@ theorem Subduction.prod_map {f : X → Y} {g : Z → W} (hf : Subduction f) (hg 
 @[simp]
 theorem induction_const_prod {x : X} {f : Y → Z} :
     (Induction fun y ↦ (x, f y)) ↔ Induction f := by
-  refine and_congr ((Prod.mk.inj_left x).of_comp_iff f) ?_
+  refine and_congr ((Prod.mk_right_injective x).of_comp_iff f) ?_
   simp_rw [instDiffeologicalSpaceProd, DiffeologicalSpace.induced_inf,
     DiffeologicalSpace.induced_compose, Function.comp_def,
     DiffeologicalSpace.induced_const, top_inf_eq]
@@ -738,7 +738,7 @@ theorem induction_const_prod {x : X} {f : Y → Z} :
 @[simp]
 theorem induction_prod_const {y : Y} {f : X → Z} :
     (Induction fun x ↦ (f x, y)) ↔ Induction f := by
-  refine and_congr ((Prod.mk.inj_right y).of_comp_iff f) ?_
+  refine and_congr ((Prod.mk_left_injective y).of_comp_iff f) ?_
   simp_rw [instDiffeologicalSpaceProd, DiffeologicalSpace.induced_inf,
     DiffeologicalSpace.induced_compose, Function.comp_def,
     DiffeologicalSpace.induced_const, inf_top_eq]
@@ -764,13 +764,13 @@ instance {X Y : Type*} [NormedAddCommGroup X] [NormedSpace ℝ X] [Diffeological
     [ContDiffCompatible X] [NormedAddCommGroup Y] [NormedSpace ℝ Y] [DiffeologicalSpace Y]
     [ContDiffCompatible Y] : ContDiffCompatible (X × Y) := ⟨fun {n p} ↦ by
   simp_rw [isPlot_prod_iff, isPlot_iff_contDiff]
-  exact ⟨fun h ↦ h.1.prod h.2, fun h ↦ ⟨h.fst, h.snd⟩⟩⟩
+  exact ⟨fun h ↦ h.1.prodMk h.2, fun h ↦ ⟨h.fst, h.snd⟩⟩⟩
 
 /-- The D-topology of the product diffeology is at least as fine as the product of
   the D-topologies. -/
 theorem dTop_prod_le_prod_dTop :
     (DTop : TopologicalSpace (X × Y)) ≤ @instTopologicalSpaceProd _ _ DTop DTop :=
-  continuous_id_iff_le.1 ((@continuous_prod_mk _ X Y DTop DTop DTop _ _).2
+  continuous_id_iff_le.1 ((@continuous_prodMk _ X Y DTop DTop DTop _ _).2
     ⟨dsmooth_fst.continuous,dsmooth_snd.continuous⟩)
 
 /-- For locally compact spaces `X`, the product functor `X × -` takes quotient maps to quotient
@@ -790,7 +790,7 @@ theorem Topology.IsQuotientMap.id_prod {X Y Z : Type*} [TopologicalSpace X] [Top
   refine isOpen_prod_iff.mpr fun x z hxz ↦ ?_
   let ⟨y, hy⟩ := hf.1 z
   let ⟨k, hk, hks, hk'⟩ := local_compact_nhds <|
-    (hs.preimage <| continuous_id.prod_mk continuous_const).mem_nhds (hy.symm ▸ hxz)
+    (hs.preimage <| continuous_id.prodMk continuous_const).mem_nhds (hy.symm ▸ hxz)
   let ⟨u, huk, hu, hxu⟩ := mem_nhds_iff.mp hk
   refine ⟨u, {z | k ×ˢ (f ⁻¹' {z}) ⊆ Prod.map id f ⁻¹' s}, hu, ?_, hxu, ?_, ?_⟩
   · rw [hf.2, isOpen_coinduced]; dsimp
@@ -803,7 +803,7 @@ theorem Topology.IsQuotientMap.id_prod {X Y Z : Type*} [TopologicalSpace X] [Top
       IsOpen.isClosed_compl
       (by exact hs.preimage (continuous_subtype_val.prodMap continuous_id))).isOpen_compl
     convert h using 1; ext y'
-    simp [prod_subset_iff, - prod_singleton]
+    simp [prod_subset_iff]
   · intro ⟨x', y'⟩ hxy'
     rw [mem_preimage, Prod.map_apply, (hxy'.2 : f _ = _), ← hy]
     exact hks hxy'.1

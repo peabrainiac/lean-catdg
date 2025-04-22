@@ -158,13 +158,13 @@ section DiffeologicalGroup
 /-- A diffeological (additive) group is a group in which the addition and negation operations
   are dsmooth. -/
 class DiffeologicalAddGroup (G : Type*) [DiffeologicalSpace G] [AddGroup G] extends
-  DSmoothAdd G, DSmoothNeg G : Prop
+  DSmoothAdd G, DSmoothNeg G
 
 /-- A diffeological group is a group in which the multiplication and inversion operations are
   smooth. -/
 @[to_additive]
 class DiffeologicalGroup (G : Type*) [DiffeologicalSpace G] [Group G] extends DSmoothMul G,
-  DSmoothInv G : Prop
+  DSmoothInv G
 
 section Conj
 
@@ -453,14 +453,14 @@ An additive version `AddGroupDiffeology G` is defined as well.
 
 /-- An additive group diffeology on a group `G` is a diffeology that makes `G` into an
   additive diffeological group. -/
-structure AddGroupDiffeology (G : Type u) [AddGroup G] extends DiffeologicalSpace G,
-  DiffeologicalAddGroup G : Type u
+structure AddGroupDiffeology (G : Type u) [AddGroup G] : Type u extends DiffeologicalSpace G,
+  DiffeologicalAddGroup G
 
 /-- A group diffeology on a group `G` is a diffeology that makes `G` into a
   diffeological group. -/
 @[to_additive]
-structure GroupDiffeology (G : Type u) [Group G] extends DiffeologicalSpace G,
-  DiffeologicalGroup G : Type u
+structure GroupDiffeology (G : Type u) [Group G] : Type u extends DiffeologicalSpace G,
+  DiffeologicalGroup G
 
 namespace GroupDiffeology
 
@@ -604,7 +604,7 @@ instance {G : Type*} [DiffeologicalSpace G] [TopologicalSpace G] [DTopCompatible
   locally compact the topologies agree, but otherwise the product topology could be
   fine enough for addition to not be continuous."]
 lemma DiffeologicalGroup.topologicalGroup {G : Type*} [DiffeologicalSpace G] [Group G]
-    [DiffeologicalGroup G] [@LocallyCompactSpace G DTop] : @TopologicalGroup G DTop _ := by
+    [DiffeologicalGroup G] [@LocallyCompactSpace G DTop] : @IsTopologicalGroup G DTop _ := by
   letI := @DTop G _
   exact { toContinuousMul := DSmoothMul.continuousMul
           toContinuousInv := DSmoothInv.continuousInv }
@@ -614,6 +614,6 @@ lemma DiffeologicalGroup.topologicalGroup {G : Type*} [DiffeologicalSpace G] [Gr
 @[to_additive "Variant of `DiffeologicalAddGroup.topologicalAddGroup` phrased in terms of
   spaces equipped with `DTopCompatible` topologies."]
 instance {G : Type*} [Group G] [DiffeologicalSpace G] [TopologicalSpace G] [DTopCompatible G]
-    [DiffeologicalGroup G] [LocallyCompactSpace G] : TopologicalGroup G where
+    [DiffeologicalGroup G] [LocallyCompactSpace G] : IsTopologicalGroup G where
 
 end Topology

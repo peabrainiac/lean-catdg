@@ -20,8 +20,6 @@ import Orbifolds.Diffeology.Sites
 import Orbifolds.Diffeology.SmoothSp
 import Orbifolds.Diffeology.TangentSpace
 import Orbifolds.ForMathlib.ConcreteSite
-import Orbifolds.ForMathlib.DeltaGenerated
-import Orbifolds.ForMathlib.GlobalSections
 import Orbifolds.ForMathlib.LocalSite
 import Orbifolds.ForMathlib.LocallyConnectedSite
 import Orbifolds.ForMathlib.Quadruple

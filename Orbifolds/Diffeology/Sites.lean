@@ -25,6 +25,7 @@ Main definitions / results:
 * `CartSp.toEuclOp`: the fully faithful embedding of `CartSp` into `EuclOp`
 
 ## TODO
+* Switch from `HasForget` to the new `ConcreteCategory` design
 * `CartSp.toEuclOp` makes `CartSp` a dense sub-site of `EuclOp`
 * Generalise `CartSp` to take a smoothness parameter in `ℕ∞`
 * Generalise `EuclOp` to take a smoothness parameter in `WithTop ℕ∞`
@@ -48,7 +49,7 @@ instance : SmallCategory CartSp where
   id := fun n ↦ DSmoothMap.id
   comp := fun f g ↦ g.comp f
 
-instance : ConcreteCategory CartSp where
+instance : HasForget CartSp where
   forget := { obj := fun n ↦ n, map := fun f ↦ f.1 }
   forget_faithful := { map_injective := fun {_ _} ↦ DSmoothMap.coe_injective }
 
@@ -83,7 +84,7 @@ def CartSp.openCoverCoverage : Coverage CartSp where
       use ⟨_, dsmooth_subtype_val.comp e.dsmooth⟩
       refine ⟨⟨?_, ?_⟩, ?_⟩
       · refine ⟨k, f, hf, _root_.subset_trans ?_ (Set.image_subset_iff.2 hxε)⟩
-        simp_rw [Set.range_comp]; apply Set.image_mono; simp
+        simp_rw [Set.range_comp]; apply Set.image_mono; simpa using subset_rfl
       · refine ⟨induction_subtype_val.comp e.induction, ?_⟩
         have := (Metric.isOpen_ball  (x := x) (ε := ε)).dTopCompatible
         exact (Metric.isOpen_ball).isOpenMap_subtype_val.comp e.toHomeomorph'.isOpenMap
@@ -95,7 +96,7 @@ def CartSp.openCoverCoverage : Coverage CartSp where
         (f ≫ g).2.subtype_mk (fun x ↦ hf'.2 (Set.mem_range_self x)))⟩
       refine ⟨f', hf'.1, ?_⟩; ext x; change f'.1 (f''.invFun _) = _
       simp_rw [show f'.1 = Subtype.val ∘ f'' by rfl]
-      dsimp; rw [DDiffeomorph.apply_symm_apply,comp_apply]; rfl
+      dsimp; rw [DDiffeomorph.apply_symm_apply,CategoryTheory.comp_apply]; rfl
 
 /-- The open cover grothendieck topology on `CartSp`. -/
 def CartSp.openCoverTopology : GrothendieckTopology CartSp :=
@@ -111,7 +112,7 @@ instance : SmallCategory EuclOp where
   id := fun n ↦ DSmoothMap.id
   comp := fun f g ↦ g.comp f
 
-instance : ConcreteCategory EuclOp where
+instance : HasForget EuclOp where
   forget := { obj := fun u ↦ u, map := fun f ↦ f.1 }
   forget_faithful := { map_injective := fun {_ _} ↦ DSmoothMap.coe_injective }
 
@@ -157,7 +158,7 @@ def EuclOp.openCoverCoverage : Coverage EuclOp where
         (f ≫ g).2.subtype_mk (fun x ↦ hf'.2 (Set.mem_range_self x)))⟩
       refine ⟨f', hf'.1, ?_⟩; ext x; change f'.1 (f''.invFun _) = _
       simp_rw [show f'.1 = Subtype.val ∘ f'' by rfl]
-      dsimp; rw [DDiffeomorph.apply_symm_apply,comp_apply]; rfl
+      dsimp; rw [DDiffeomorph.apply_symm_apply,CategoryTheory.comp_apply]; rfl
 
 /-- The open cover grothendieck topology on `EuclOp`. -/
 def EuclOp.openCoverTopology : GrothendieckTopology EuclOp :=

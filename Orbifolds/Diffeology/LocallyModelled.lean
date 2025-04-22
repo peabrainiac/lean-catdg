@@ -20,7 +20,7 @@ class LocallyModelled {ι : Type*} (M : ι → Type*) [(i : ι) → Diffeologica
 
 /-- A diffeological space is a manifold if it is locally modelled by R^n.
   We do not require Hausdorffness or second-countability here. -/
-abbrev IsManifold (n : ℕ) (X : Type*) [DiffeologicalSpace X] :=
+abbrev IsDiffeologicalManifold (n : ℕ) (X : Type*) [DiffeologicalSpace X] :=
   LocallyModelled (fun _ : Unit ↦ Eucl n) X
 
 /-- A diffeological space is a manifold with boundary if it is locally modelled by the
@@ -58,8 +58,9 @@ protected theorem IsOpen.locallyModelled {X ι : Type*} [DiffeologicalSpace X] {
     exact ((dTop_eq X ▸ hu).preimage continuous_subtype_val).preimage d.symm.dsmooth.continuous'⟩
 
 /-- Any D-open subset of a diffeological manifold is a diffeological manifold. -/
-protected theorem IsOpen.isManifold {X : Type*} [DiffeologicalSpace X] {n : ℕ}
-    (h : IsManifold n X) {u : Set X} (hu : IsOpen[DTop] u) : IsManifold n u :=
+protected theorem IsOpen.isDiffeologicalManifold {X : Type*} [DiffeologicalSpace X] {n : ℕ}
+    (h : IsDiffeologicalManifold n X) {u : Set X} (hu : IsOpen[DTop] u) :
+    IsDiffeologicalManifold n u :=
   hu.locallyModelled h
 
 /-- Any D-open subset of a diffeological manifold with boundary is a diffeological
@@ -74,18 +75,18 @@ protected theorem IsOpen.isOrbifold {X : Type*} [DiffeologicalSpace X] {n : ℕ}
     IsOrbifold n u := hu.locallyModelled h
 
 /-- `Eucl n` is a diffeological manifold. -/
-instance {n : ℕ} : IsManifold n (Eucl n) :=
+instance {n : ℕ} : IsDiffeologicalManifold n (Eucl n) :=
   ⟨fun x ↦ ⟨_,isOpen_univ,Set.mem_univ x,(),Set.univ,isOpen_univ,⟨DDiffeomorph.refl _⟩⟩⟩
 
 /-- Any diffeological manifold is also a diffeological manifold with boundary. -/
-instance {n : ℕ} {X : Type*} [Zero (Fin n)] [DiffeologicalSpace X] [hm : IsManifold n X] :
-    IsManifoldWithBoundary n X := ⟨fun x ↦ by
+instance {n : ℕ} {X : Type*} [Zero (Fin n)] [DiffeologicalSpace X]
+    [hm : IsDiffeologicalManifold n X] : IsManifoldWithBoundary n X := ⟨fun x ↦ by
   let ⟨u,hu,hxu,i,v,hv,⟨d⟩⟩ := hm.locally_modelled x
   -- TODO: requires diffeomorphism of R^n to a ball in H^n
   sorry⟩
 
 /-- Any diffeological manifold is also a diffeological orbifold. -/
-instance {n : ℕ} {X : Type*} [DiffeologicalSpace X] [hm : IsManifold n X] :
+instance {n : ℕ} {X : Type*} [DiffeologicalSpace X] [hm : IsDiffeologicalManifold n X] :
     IsOrbifold n X := ⟨fun x ↦ by
   let ⟨u,hu,hxu,_,v,hv,⟨d⟩⟩ := hm.locally_modelled x
   refine ⟨u,hu,hxu,⟨⊥,Set.mem_setOf_eq ▸ inferInstance⟩,?_⟩
