@@ -29,7 +29,7 @@ Main definitions / results:
 -/
 
 /-- A diffeological ring is a ring in which addition, negation and multiplication are smooth. -/
-class DiffeologicalRing (R : Type*) [DiffeologicalSpace R] [Ring R] extends
+class DiffeologicalRing (R : Type*) [DiffeologicalSpace R] [NonUnitalNonAssocRing R] extends
     DiffeologicalAddGroup R, DSmoothMul R
 
 /-- The main example we care about: `ℝ` is a diffeological ring. -/
@@ -259,9 +259,12 @@ instance (R : Type*) [DiffeologicalSpace R] [Ring R] [DiffeologicalRing R]
     @IsFineDiffeology R _ _ _ X _ _ (fineDiffeology R X) :=
   letI := fineDiffeology R X; ⟨rfl⟩
 
-instance (R : Type*) [DiffeologicalSpace R] [Ring R] [DiffeologicalRing R]
-    (X : Type*) [AddCommGroup X] [Module R X] [DiffeologicalSpace X] [IsFineDiffeology R X] :
-    DiffeologicalModule R X :=
+/-- Every module equipped with the fine diffeology is a diffeological module. This is currently
+not an instance because it causes inference of `DSmoothAdd` from `DiffeologicalRing` to break.
+TODO: investigate typeclass inference problems, reenable instance -/
+lemma IsFineDiffeology.diffeologicalModule (R : Type*) [DiffeologicalSpace R] [Ring R]
+    [DiffeologicalRing R] (X : Type*) [AddCommGroup X] [Module R X] [DiffeologicalSpace X]
+    [IsFineDiffeology R X] : DiffeologicalModule R X :=
   eq_fineDiffeology R X ▸ (⊥ : ModuleDiffeology R X).toDiffeologicalModule
 
 /-- The fine diffeology is finer than any other diffeology making `X` a diffeological module. -/
@@ -291,6 +294,7 @@ lemma fineDiffeology_eq_euclideanDiffeology (X : Type*) [NormedAddCommGroup X] [
   rw [show p = e.symm ∘ e ∘ p by
     rw [← Function.comp_assoc]; convert p.id_comp.symm; exact e.toEquiv.symm_comp_self]
   let _ := fineDiffeology ℝ X
+  have _ := IsFineDiffeology.diffeologicalModule ℝ X
   refine isPlot_reparam e.symm.toLinearMap.isPlot ?_
   exact (LinearMap.toContinuousLinearMap e.toLinearMap).contDiff.comp hp
 

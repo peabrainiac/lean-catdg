@@ -339,7 +339,7 @@ export DSmoothDiv (dsmooth_div')
 
 section DSmoothDiv
 
-variable {G : Type*} [DiffeologicalSpace G] [Group G] [DiffeologicalGroup G]
+variable {G : Type*} [DiffeologicalSpace G] [Div G] [DSmoothDiv G]
 
 @[to_additive (attr := fun_prop) sub]
 theorem DSmooth.div' {X : Type*} [DiffeologicalSpace X] {f g : X → G}
