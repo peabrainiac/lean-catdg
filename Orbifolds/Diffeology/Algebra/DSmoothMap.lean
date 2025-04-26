@@ -372,3 +372,6 @@ instance algebra [CommSemiring R] [Ring A] [Algebra R A] [DiffeologicalRing A] [
 /-- In particular, for any diffeological space `X` the smooth real-valued functions on `X` form
 an `ℝ`-algebra. -/
 example : Algebra ℝ (DSmoothMap X ℝ) := inferInstance
+
+/-- Similarly, smooth complex-valued functions form a complex algebra. -/
+noncomputable example : Algebra ℂ (DSmoothMap X ℂ) := inferInstance

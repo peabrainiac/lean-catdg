@@ -38,6 +38,11 @@ instance : DiffeologicalRing ℝ where
   dsmooth_neg := contDiff_neg.dsmooth
   dsmooth_mul := contDiff_mul.dsmooth
 
+instance : DiffeologicalRing ℂ where
+  dsmooth_add := contDiff_add.dsmooth
+  dsmooth_neg := contDiff_neg.dsmooth
+  dsmooth_mul := contDiff_mul.dsmooth
+
 /-- A diffeological module over a diffeological ring is a module for which addition, negation
   and scalar multiplication are smooth. -/
 class DiffeologicalModule (R : Type*) [DiffeologicalSpace R] [Ring R] [DiffeologicalRing R]

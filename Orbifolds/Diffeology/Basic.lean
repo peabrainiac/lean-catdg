@@ -237,6 +237,12 @@ example : ContDiffCompatible ℝ := inferInstance
 
 example : DTopCompatible ℝ := inferInstance
 
+noncomputable instance : DiffeologicalSpace ℂ := euclideanDiffeology
+
+example : ContDiffCompatible ℂ := inferInstance
+
+example : DTopCompatible ℂ := inferInstance
+
 noncomputable instance {ι : Type*} [Fintype ι] : DiffeologicalSpace (EuclideanSpace ℝ ι) :=
   euclideanDiffeology
 
