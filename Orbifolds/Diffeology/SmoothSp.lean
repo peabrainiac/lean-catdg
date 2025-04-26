@@ -165,8 +165,8 @@ section DifferentialForms
 --#check Module.Finite.multilinearMap
 
 local instance (M N : Type*) [AddCommGroup M] [Module ℝ M] [DiffeologicalSpace M]
-    [DiffeologicalModule ℝ M] [AddCommGroup N] [Module ℝ N] [DiffeologicalSpace N]
-    [DiffeologicalModule ℝ N] (ι : Type*) : DiffeologicalSpace (M [⋀^ι]→ₗ[ℝ] N) :=
+    [AddCommGroup N] [Module ℝ N] [DiffeologicalSpace N]
+    (ι : Type*) : DiffeologicalSpace (M [⋀^ι]→ₗ[ℝ] N) :=
   fineDiffeology ℝ _
 
 /-- One possible future target for formalisation: the smooth spaces `Ω k` of smooth
