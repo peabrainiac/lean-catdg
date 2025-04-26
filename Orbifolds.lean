@@ -2,6 +2,7 @@ import Orbifolds.Basic
 import Orbifolds.Cohesive.Basic
 import Orbifolds.Cohesive.CohesiveSite
 import Orbifolds.Diffeology.Algebra.Constructions
+import Orbifolds.Diffeology.Algebra.DSmoothMap
 import Orbifolds.Diffeology.Algebra.Group
 import Orbifolds.Diffeology.Algebra.Module
 import Orbifolds.Diffeology.Algebra.Monoid
