@@ -1,6 +1,7 @@
+import Mathlib.Algebra.Category.AlgebraCat.Basic
 import Mathlib.CategoryTheory.Sites.Coverage
 import Mathlib.CategoryTheory.Sites.DenseSubSite.Basic
-import Orbifolds.Diffeology.DDiffeomorph
+import Orbifolds.Diffeology.Algebra.DSmoothMap
 
 /-!
 # CartSp and EuclOp
@@ -209,3 +210,46 @@ instance : CartSp.toEuclOp.IsDenseSubsite
       EuclOp.openCoverCoverage CartSp.openCoverCoverage
     --rw [Coverage.toGrothendieck_eq_sInf]
     sorry
+
+/-!
+### Embeddings into other categories
+TODO: split this off into some other file, to reduce the imports of this file
+-/
+
+section Embeddings
+
+example {n : ℕ} : DSmoothSMul ℝ (Eucl n) := inferInstance
+
+/-- The embedding of `CartSp` into the opposite category of `ℝ`-algebras, sending each space `X`
+to the algebra of smooth maps `X → ℝ`.
+TODO: change this to the category of commutative algebras once #23601 is merged into mathlib -/
+@[simps!]
+noncomputable def CartSp.toAlgebraCatOp : CartSp ⥤ (AlgebraCat ℝ)ᵒᵖ where
+  obj X := .op (.of ℝ (DSmoothMap X ℝ))
+  map {n m} f := .op <| AlgebraCat.ofHom f.compRightAlgHom
+
+noncomputable def CartSp.toAlgebraCatOpFullyFaithful : CartSp.toAlgebraCatOp.FullyFaithful where
+  preimage {n m} f := by
+    let f' (k : Fin m) : DSmoothMap _ _ := f.unop ⟨_, (EuclideanSpace.proj (𝕜 := ℝ) k).dsmooth⟩
+    exact (∑ k, f' k • DSmoothMap.const (X := Eucl n) (EuclideanSpace.single k (1 : ℝ)):)
+    /-exact ⟨_, dsmooth_finset_sum Finset.univ fun k _ ↦
+      (f.unop ⟨_, (EuclideanSpace.proj k).dsmooth⟩).dsmooth.smul <|
+        dsmooth_const (y := EuclideanSpace.single k (1 : ℝ))⟩-/
+  map_preimage {n m} f := by
+    refine Quiver.Hom.unop_inj ?_
+    ext1; ext1 (g : DSmoothMap _ _)
+    dsimp [DSmoothMap.compRightAlgHom, DSmoothMap.compRightRingHom]
+    ext x
+    --have := (ConcreteCategory.hom f.unop:)
+    --have := DSmoothMap.compRightLinearMap' g (R := ℝ)
+    -- TODO: finish this. might require something like Hadamard's lemma?
+    sorry
+  preimage_map f := by
+    refine DSmoothMap.ext fun x ↦ ?_
+    simpa using (EuclideanSpace.basisFun _ ℝ).sum_repr (f x)
+
+instance : CartSp.toAlgebraCatOp.Full := CartSp.toAlgebraCatOpFullyFaithful.full
+
+instance : CartSp.toAlgebraCatOp.Faithful := CartSp.toAlgebraCatOpFullyFaithful.faithful
+
+end Embeddings

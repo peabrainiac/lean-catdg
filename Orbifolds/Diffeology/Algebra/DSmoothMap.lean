@@ -253,6 +253,26 @@ def coeFnRingHom [Ring A] [DiffeologicalRing A] : DSmoothMap X A →+* X → A :
   { (coeFnMonoidHom : DSmoothMap X A →* _),
     (coeFnAddMonoidHom : DSmoothMap X A →+ _) with }
 
+/-- Precomposition `DSmoothMap Y A → DSmoothMap X A` with `f : DSmoothMap X Y` as a ring
+homomorphism.
+TODO: add versions of this for monoids, groups etc. as needed. -/
+def compRightRingHom [NonAssocRing A] [DiffeologicalRing A] (f : DSmoothMap X Y) :
+    DSmoothMap Y A →+* DSmoothMap X A where
+  toFun g := g.comp f
+  map_one' := rfl
+  map_mul' := fun _ _ ↦ mul_comp _ _ f
+  map_zero' := rfl
+  map_add' := fun _ _ ↦ add_comp _ _ f
+
+@[to_additive (attr := simp)]
+theorem coe_prod [CommMonoid A] [DSmoothMul A] {ι : Type*} (s : Finset ι) (f : ι → DSmoothMap X A) :
+    ⇑(∏ i ∈ s, f i) = ∏ i ∈ s, (f i : X → A) :=
+  map_prod coeFnMonoidHom f s
+
+@[to_additive]
+theorem prod_apply [CommMonoid A] [DSmoothMul A] {ι : Type*} (s : Finset ι) (f : ι → DSmoothMap X A)
+    (x : X) : (∏ i ∈ s, f i) x = ∏ i ∈ s, f i x := by simp
+
 /-! ### Diffeological structure instances -/
 
 @[to_additive]
@@ -289,8 +309,8 @@ theorem coe_smul [SMul R M] [DSmoothSMul R M] (c : R) (f : DSmoothMap X M) : ⇑
   rfl
 
 @[to_additive]
-theorem smul_apply [SMul R M] [DSmoothSMul R M] (c : R) (f : DSmoothMap X M) (a : X) :
-    (c • f) a = c • f a :=
+theorem smul_apply [SMul R M] [DSmoothSMul R M] (c : R) (f : DSmoothMap X M) (x : X) :
+    (c • f) x = c • f x :=
   rfl
 
 @[to_additive (attr := simp)]
@@ -349,7 +369,7 @@ def coeFnLinearMap [Ring R] [AddCommMonoid M] [Module R M] [DSmoothAdd M] [DSmoo
     map_smul' := coe_smul }
 
 omit [DiffeologicalSpace R] in
-/-- Continuous constant functions as a `RingHom`. -/
+/-- Smooth constant functions as a `RingHom`. -/
 def C [CommSemiring R] [Ring A] [Algebra R A] [DiffeologicalRing A] : R →+* (DSmoothMap X A) where
   toFun := fun c : R => ⟨fun _ : X => (algebraMap R A) c, dsmooth_const⟩
   map_one' := by ext _; exact (algebraMap R A).map_one
@@ -375,3 +395,44 @@ example : Algebra ℝ (DSmoothMap X ℝ) := inferInstance
 
 /-- Similarly, smooth complex-valued functions form a complex algebra. -/
 noncomputable example : Algebra ℂ (DSmoothMap X ℂ) := inferInstance
+
+/-- Precomposition `DSmoothMap Y A → DSmoothMap X A` with `f : DSmoothMap X Y` as an algebra
+homomorphism. -/
+@[simps!]
+def compRightAlgHom [CommRing R] [Ring A] [Algebra R A] [DiffeologicalRing A] [DSmoothSMul R A]
+    (f : DSmoothMap X Y) : DSmoothMap Y A →ₐ[R] DSmoothMap X A where
+  toRingHom := compRightRingHom f
+  commutes' _ := rfl
+
+instance instSMul' [Ring R] [AddCommMonoid M] [Module R M] [DSmoothSMul R M] :
+    SMul (DSmoothMap X R) (DSmoothMap X M) :=
+  ⟨fun f g => ⟨fun x => f x • g x, DSmooth.smul f.2 g.2⟩⟩
+
+@[simp]
+lemma coe_smul' [Ring R] [AddCommMonoid M] [Module R M] [DSmoothSMul R M] (f : DSmoothMap X R)
+    (g : DSmoothMap X M) : ⇑(f • g) = ⇑f • ⇑g :=
+  rfl
+
+lemma smul_apply' [Ring R] [AddCommMonoid M] [Module R M] [DSmoothSMul R M] (f : DSmoothMap X R)
+    (g : DSmoothMap X M) (x : X) : (f • g) x = f x • g x :=
+  rfl
+
+instance module' [Ring R] [AddCommMonoid M] [Module R M] [DiffeologicalRing R] [DSmoothAdd M]
+    [DSmoothSMul R M] : Module (DSmoothMap X R) (DSmoothMap X M) where
+  smul := (· • ·)
+  smul_add c f g := by ext x; exact smul_add (c x) (f x) (g x)
+  add_smul c₁ c₂ f := by ext x; exact add_smul (c₁ x) (c₂ x) (f x)
+  mul_smul c₁ c₂ f := by ext x; exact mul_smul (c₁ x) (c₂ x) (f x)
+  one_smul f := by ext x; exact one_smul R (f x)
+  zero_smul f := by ext x; exact zero_smul _ _
+  smul_zero r := by ext x; exact smul_zero _
+
+/-- Precomposition `DSmoothMap Y M → DSmoothMap X M` with `f : DSmoothMap X Y` as a semilinear
+map over `f.compRightRingHom : DSmoothMap Y R →+* DSmoothMap X R`. -/
+@[simps!]
+def compRightLinearMap' [Ring R] [AddCommMonoid M] [Module R M] [DiffeologicalRing R] [DSmoothAdd M]
+    [DSmoothSMul R M] (f : DSmoothMap X Y) :
+    DSmoothMap Y M →ₛₗ[f.compRightRingHom (A := R)] DSmoothMap X M where
+  toFun g := g.comp f
+  map_add' _ _ := add_comp _ _ _
+  map_smul' g h := by ext x; rfl
