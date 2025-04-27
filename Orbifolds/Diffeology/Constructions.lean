@@ -9,6 +9,12 @@ diffeological spaces. General limits and colimits are found in
 `Orbifolds.Diffeology.DiffSp`.
 
 Mostly based on `Mathlib.Topology.Constructions`.
+
+## TODO
+
+* binary disjoint unions
+* arbitrary disjoint unions
+* more API on arbitrary products
 -/
 
 open TopologicalSpace Set
