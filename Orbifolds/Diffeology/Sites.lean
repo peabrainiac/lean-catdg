@@ -1,6 +1,6 @@
 import Mathlib.Algebra.Category.AlgebraCat.Basic
 import Mathlib.CategoryTheory.Sites.Coverage
-import Mathlib.CategoryTheory.Sites.DenseSubSite.Basic
+import Mathlib.CategoryTheory.Sites.DenseSubsite.Basic
 import Orbifolds.Diffeology.Algebra.DSmoothMap
 
 /-!
