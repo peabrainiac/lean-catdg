@@ -30,7 +30,7 @@ class GrothendieckTopology.IsCohesiveSite extends J.IsLocallyConnectedSite, IsSi
   nonempty_fromTerminal {X} : Nonempty (⊤_ C ⟶ X)
 
 /-- Every cohesive site is in particular a local site. -/
-instance [J.IsCohesiveSite] : LocalSite J where
+instance [J.IsCohesiveSite] : J.IsLocalSite where
   eq_top_of_mem S hS := by
     rw [← S.id_mem_iff_eq_top]
     let ⟨f, hf⟩ := (IsLocallyConnectedSite.isConnected_of_mem S hS).is_nonempty
@@ -56,14 +56,14 @@ noncomputable instance : CohesiveStructure (Sheaf J (Type max u v)) (Type max u 
   codisc := _
   π₀DiscAdj := π₀ConstantSheafAdj.{u,v,max v} J
   discΓAdj := constantSheafΓAdj J _
-  ΓCodiscAdj := Sheaf.ΓCodiscAdj J
+  ΓCodiscAdj := ΓCoconstantSheafAdj J
   preservesFiniteProducts_π₀ := inferInstance
   fullyFaithfulDisc := fullyFaithfulConstantSheaf J
-  fullyFaithfulCodisc := Sheaf.fullyFaithfulCodisc J
+  fullyFaithfulCodisc := fullyFaithfulCoconstantSheaf J
 
-lemma Sheaf.ΓCodiscAdj_unit_app {X : Sheaf J (Type max u v)} :
-    (Sheaf.ΓCodiscAdj.{u,v} J).unit.app X = (by sorry) := by
-  simp [Sheaf.ΓCodiscAdj, Adjunction.ofNatIsoLeft, Adjunction.homEquiv]
+lemma ΓCoconstantSheafAdj_unit_app {X : Sheaf J (Type max u v)} :
+    (ΓCoconstantSheafAdj.{u,v} J).unit.app X = (by sorry) := by
+  simp [ΓCoconstantSheafAdj, Adjunction.ofNatIsoLeft, Adjunction.homEquiv]
   simp [Adjunction.equivHomsetLeftOfNatIso]
   simp [ΓNatIsoSheafSections, sheafSectionsNatIsoEvaluation]
   sorry
@@ -76,7 +76,7 @@ lemma Sheaf.discToCodisc_app {X : (Type max u v)} :
   rw [instCategorySheaf_comp_val, Category.assoc, IsIso.eq_inv_comp]
   ext Y x
   dsimp
-  simp [codisc, Sheaf.codisc, Presheaf.codisc, discΓAdj, constantSheafΓAdj, ΓCodiscAdj]
+  simp [codisc, coconstantSheaf, Presheaf.coconst, discΓAdj, constantSheafΓAdj, ΓCodiscAdj]
   ext y
   simp [disc, Adjunction.equivHomsetLeftOfNatIso]
   simp? [ΓNatIsoSheafSections]

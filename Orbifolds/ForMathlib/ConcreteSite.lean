@@ -47,7 +47,7 @@ noncomputable instance ConcreteSite.instUniqueTerminal (J : GrothendieckTopology
   (forget_natIso_coyoneda.app (⊤_ C)).toEquiv.unique (β := ⊤_ C ⟶ ⊤_ C)
 
 /-- Every concrete site is also a local site. -/
-instance (J : GrothendieckTopology C) [ConcreteSite J] : LocalSite J where
+instance (J : GrothendieckTopology C) [ConcreteSite J] : J.IsLocalSite where
   eq_top_of_mem S hS := (S.id_mem_iff_eq_top).1 <| by
     let ⟨Y, f, hf, y, hfy⟩ := ConcreteSite.sieves_isJointlySurjective hS default
     let y' : ⊤_ C ⟶ Y := ConcreteSite.forget_natIso_coyoneda.hom.app Y  y
