@@ -21,6 +21,7 @@ implemented in mathlib, so diffeological inductions are used instead.
 Main definitions / results:
 * `CartSp`: the category of euclidean spaces and smooth maps between them
 * `CartSp.openCoverCoverage`: the coverage given by jointly surjective open inductions
+* `CartSp` has all finite products
 * `EuclOp`: the category of open subsets of euclidean spaces and smooth maps between them
 * `EuclOp.openCoverCoverage`: the coverage given by jointly surjective open inductions
 * `CartSp.toEuclOp`: the fully faithful embedding of `CartSp` into `EuclOp`
@@ -35,7 +36,9 @@ Main definitions / results:
 
 universe u
 
-open CategoryTheory Sheaf TopologicalSpace
+open CategoryTheory Limits Sheaf TopologicalSpace
+
+section CartSp
 
 def CartSp := ℕ
 
@@ -102,6 +105,76 @@ def CartSp.openCoverCoverage : Coverage CartSp where
 /-- The open cover grothendieck topology on `CartSp`. -/
 def CartSp.openCoverTopology : GrothendieckTopology CartSp :=
   openCoverCoverage.toGrothendieck
+
+/-- The `0`-dimensional cartesian space is terminal in `CartSp`. -/
+def CartSp.isTerminal0 : IsTerminal (0 : CartSp) where
+  lift s := DSmoothMap.const 0
+  uniq c f h := by ext x; exact Subsingleton.elim (α := EuclideanSpace ℝ (Fin 0)) (f x) 0
+
+/-- The canonical linear homeomorphism between `EuclideanSpace 𝕜 (ι ⊕ κ)` and
+`EuclideanSpace 𝕜 ι × EuclideanSpace 𝕜 κ`. Note that this is not an isometry because
+product spaces are equipped with the supremum norm.
+TODO: upstream -/
+def EuclideanSpace.sumEquivProd {𝕜 : Type*} [RCLike 𝕜] {ι κ : Type*} [Fintype ι] [Fintype κ] :
+    EuclideanSpace 𝕜 (ι ⊕ κ) ≃L[𝕜] EuclideanSpace 𝕜 ι × EuclideanSpace 𝕜 κ :=
+  (PiLp.sumPiLpEquivProdLpPiLp 2 _).toContinuousLinearEquiv.trans <|
+    WithLp.prodContinuousLinearEquiv _ _ _ _
+
+/-- The canonical linear homeomorphism between `EuclideanSpace 𝕜 (Fin (n + m))` and
+`EuclideanSpace 𝕜 (Fin n) × EuclideanSpace 𝕜 (Fin m)`.
+TODO: upstream -/
+def EuclideanSpace.finAddEquivProd {𝕜 : Type*} [RCLike 𝕜] {n m : ℕ} :
+    EuclideanSpace 𝕜 (Fin (n + m)) ≃L[𝕜] EuclideanSpace 𝕜 (Fin n) × EuclideanSpace 𝕜 (Fin m) :=
+  (LinearIsometryEquiv.piLpCongrLeft 2 𝕜 𝕜 finSumFinEquiv.symm).toContinuousLinearEquiv.trans
+    sumEquivProd
+
+/-- The first projection realising `EuclideanSpace ℝ (Fin (n + m))` as the product of
+`EuclideanSpace ℝ n` and `EuclideanSpace ℝ m`. -/
+noncomputable abbrev CartSp.prodFst {n m : CartSp} :
+    @Quiver.Hom CartSp _ (@HAdd.hAdd ℕ ℕ _ _ n m) n :=
+  DSmoothMap.fst.comp EuclideanSpace.finAddEquivProd.toDDiffeomorph.toDSmoothMap
+
+/-- The second projection realising `EuclideanSpace ℝ (Fin (n + m))` as the product of
+`EuclideanSpace ℝ n` and `EuclideanSpace ℝ m`. -/
+noncomputable abbrev CartSp.prodSnd {n m : CartSp} :
+    @Quiver.Hom CartSp _ (@HAdd.hAdd ℕ ℕ _ _ n m) m :=
+  DSmoothMap.snd.comp EuclideanSpace.finAddEquivProd.toDDiffeomorph.toDSmoothMap
+
+/-- The explicit binary fan of `EuclideanSpace ℝ n` and `EuclideanSpace ℝ m` given by
+`EuclideanSpace ℝ (Fin (n + m))`. -/
+noncomputable def CartSp.prodBinaryFan (n m : CartSp) : BinaryFan n m :=
+  BinaryFan.mk prodFst prodSnd
+
+/-- The constructed binary fan is indeed a limit. -/
+noncomputable def CartSp.prodBinaryFanIsLimit (n m : CartSp) : IsLimit (prodBinaryFan n m) where
+  lift s := EuclideanSpace.finAddEquivProd.toDDiffeomorph.symm.toDSmoothMap.comp <|
+    DSmoothMap.prodMk (BinaryFan.fst s) (BinaryFan.snd s)
+  fac := by
+    rintro c (_ | _) <;> dsimp [prodBinaryFan, prodFst]
+    all_goals ext x
+    -- TODO: improve `DSmoothMap`-api so this just becomes something like `simp`
+    all_goals rw [CategoryTheory.comp_apply]
+    · change _ = DSmoothMap.fst (X := EuclideanSpace ℝ (Fin n)) (DDiffeomorph.refl _
+        (DSmoothMap.prodMk (X := EuclideanSpace ℝ _) (BinaryFan.fst c) (BinaryFan.snd c) x))
+      rw [← EuclideanSpace.finAddEquivProd.toDDiffeomorph.symm_trans_self]; rfl
+    · change _ = DSmoothMap.snd (X := EuclideanSpace ℝ (Fin n)) (DDiffeomorph.refl _
+        (DSmoothMap.prodMk (X := EuclideanSpace ℝ _) (BinaryFan.fst c) (BinaryFan.snd c) x))
+      rw [← EuclideanSpace.finAddEquivProd.toDDiffeomorph.symm_trans_self]; rfl
+  uniq c f h := by
+    ext x
+    change _ = EuclideanSpace.finAddEquivProd.toDDiffeomorph.toEquiv.symm _
+    rw [Equiv.eq_symm_apply]
+    refine Prod.ext ?_ ?_
+    · simpa using congrFun (congrArg DSmoothMap.toFun (h { as := WalkingPair.left })) x
+    · simpa using congrFun (congrArg DSmoothMap.toFun (h { as := WalkingPair.right })) x
+
+instance : HasFiniteProducts CartSp := by
+  refine @hasFiniteProducts_of_has_binary_and_terminal _ _ ?_ CartSp.isTerminal0.hasTerminal
+  exact @hasBinaryProducts_of_hasLimit_pair _ _ ⟨⟨_, CartSp.prodBinaryFanIsLimit _ _⟩⟩
+
+end CartSp
+
+section EuclOp
 
 def EuclOp := (n : ℕ) × Opens (EuclideanSpace ℝ (Fin n))
 
@@ -210,6 +283,8 @@ instance : CartSp.toEuclOp.IsDenseSubsite
       EuclOp.openCoverCoverage CartSp.openCoverCoverage
     --rw [Coverage.toGrothendieck_eq_sInf]
     sorry
+
+end EuclOp
 
 /-!
 ### Embeddings into other categories

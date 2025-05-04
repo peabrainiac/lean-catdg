@@ -353,7 +353,7 @@ end DDiffeomorph
 
 namespace ContinuousLinearEquiv
 
-variable (E E' : Type*) [NormedAddCommGroup E] [NormedSpace ℝ E] [DiffeologicalSpace E]
+variable {E E' : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [DiffeologicalSpace E]
   [ContDiffCompatible E] [NormedAddCommGroup E'] [NormedSpace ℝ E'] [DiffeologicalSpace E']
   [ContDiffCompatible E'] (e : E ≃L[ℝ] E')
 

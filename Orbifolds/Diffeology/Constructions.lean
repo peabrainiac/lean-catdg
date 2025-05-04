@@ -995,6 +995,18 @@ lemma dsmooth_uncurry : DSmooth (@uncurry X Y Z _ _ _) :=
   dsmooth_iff.mpr <| dsmooth_eval.comp <|
     (dsmooth_eval.comp <| dsmooth_fst.prod_mk dsmooth_snd.fst).prod_mk dsmooth_snd.snd
 
+/-- The projection `X × Y → X` as a `DSmoothMap`. -/
+def fst : DSmoothMap (X × Y) X :=
+  ⟨_, dsmooth_fst⟩
+
+/-- The projection `X × Y → Y` as a `DSmoothMap`. -/
+def snd : DSmoothMap (X × Y) Y :=
+  ⟨_, dsmooth_snd⟩
+
+/-- The continuous map `X → Y × Z` corresponding to two maps `X → Y`, `X → Z`. -/
+def prodMk (f : DSmoothMap X Y) (g : DSmoothMap X Z) : DSmoothMap X (Y × Z) :=
+  ⟨_, f.dsmooth.prod_mk g.dsmooth⟩
+
 end DSmoothMap
 
 end DSmoothMap
