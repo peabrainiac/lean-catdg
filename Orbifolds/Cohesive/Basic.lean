@@ -248,7 +248,7 @@ instance [PiecesHavePoints C D] : Epi (whiskerRight (shape C D).η (Γ : C ⥤ D
 discrete-to-codiscrete transformation are monomorphisms. -/
 lemma piecesHavePoints_iff_mono_discToCodisc_app :
     PiecesHavePoints C D ↔ ∀ X : D, Mono ((discToCodisc C D).app X) := by
-  exact π₀DiscAdj.GToL_app_epi_iff_LToR_app_mono discΓAdj ΓCodiscAdj
+  exact π₀DiscAdj.GToL_app_epi_iff_FToR_app_mono discΓAdj ΓCodiscAdj
 
 instance [PiecesHavePoints C D] {X : D} : Mono ((discToCodisc C D).app X) := by
   exact (piecesHavePoints_iff_mono_discToCodisc_app C D).1 ‹_› X
