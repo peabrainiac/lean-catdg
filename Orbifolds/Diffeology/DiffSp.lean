@@ -72,7 +72,7 @@ structure Hom (X Y : DiffSp.{u}) where
 
 instance : Category DiffSp where
   Hom X Y := Hom X Y
-  id X := ⟨DSmoothMap.id⟩
+  id X := ⟨DSmoothMap.id _⟩
   comp f g := ⟨g.hom'.comp f.hom'⟩
 
 instance : ConcreteCategory.{u} DiffSp (fun X Y => DSmoothMap X Y) where
@@ -95,7 +95,7 @@ def Hom.Simps.hom (X Y : DiffSp) (f : Hom X Y) :=
 initialize_simps_projections Hom (hom' → hom)
 
 @[simp]
-lemma hom_id (X : DiffSp) : (𝟙 X : X ⟶ X).hom = DSmoothMap.id := rfl
+lemma hom_id (X : DiffSp) : (𝟙 X : X ⟶ X).hom = DSmoothMap.id X := rfl
 
 @[simp]
 lemma id_app (X : DiffSp) (x : ↑X) : (𝟙 X : X ⟶ X) x = x := rfl
@@ -132,7 +132,7 @@ lemma ofHom_hom {X Y : DiffSp} (f : X ⟶ Y) :
     ofHom (Hom.hom f) = f := rfl
 
 @[simp]
-lemma ofHom_id {X : Type u} [DiffeologicalSpace X] : ofHom (DSmoothMap.id) = 𝟙 (of X) := rfl
+lemma ofHom_id {X : Type u} [DiffeologicalSpace X] : ofHom (DSmoothMap.id X) = 𝟙 (of X) := rfl
 
 @[simp]
 lemma ofHom_comp {X Y Z : Type u} [DiffeologicalSpace X] [DiffeologicalSpace Y]
@@ -177,12 +177,12 @@ instance inhabited : Inhabited DiffSp :=
 /-- The functor equipping each type with the discrete diffeology. -/
 def discrete : Type u ⥤ DiffSp.{u} where
   obj X := @of X ⊥
-  map f := @ofHom _ _ (_) (_) <| @Subtype.mk _ _ f dsmooth_bot
+  map f := @ofHom _ _ (_) (_) <| @DSmoothMap.mk _ _ (_) (_) f dsmooth_bot
 
 /-- The functor equipping each type with the indiscrete diffeology. -/
 def indiscrete : Type u ⥤ DiffSp.{u} where
   obj X := @of X ⊤
-  map f := @ofHom _ _ (_) (_) <| @Subtype.mk _ _ f dsmooth_top
+  map f := @ofHom _ _ (_) (_) <| @DSmoothMap.mk _ _ (_) (_) f dsmooth_top
 
 /-- Adjunction `discrete ⊣ forget`, adapted from
   `Mathlib.Topology.Category.TopCat.Adjunctions`. -/
@@ -220,19 +220,20 @@ def diffToDeltaGenerated : DiffSp.{u} ⥤ DeltaGenerated.{u} where
 /-- The functor equipping each topological space with the continuous diffeology. -/
 def topToDiff : TopCat.{u} ⥤ DiffSp.{u} where
   obj X := of (withContinuousDiffeology X)
-  map f := @ofHom _ _ (_) (_) <| @Subtype.mk _ _ f f.hom.continuous.dsmooth
+  map f := @ofHom _ _ (_) (_) <| @DSmoothMap.mk _ _ (_) (_) f f.hom.continuous.dsmooth
 
 /-- The functor equipping each delta-generated space with the continuous diffeology. -/
 def deltaGeneratedToDiff : DeltaGenerated.{u} ⥤ DiffSp.{u} where
   obj X := of (withContinuousDiffeology X)
-  map f := @ofHom _ _ (_) (_) <| @Subtype.mk _ _ f f.hom.continuous.dsmooth
+  map f := @ofHom _ _ (_) (_) <| @DSmoothMap.mk _ _ (_) (_) f f.hom.continuous.dsmooth
 
 /-- Adjunction between the D-topology and continuous diffeology as functors between
   `DiffSp` and `TopCat`. -/
 def dTopAdj : dTop ⊣ topToDiff :=
   Adjunction.mkOfUnitCounit {
     unit := {
-      app := fun X ↦ @ofHom _ _ (_) (_) <| @Subtype.mk _ _ id dsmooth_id.continuous.dsmooth' }
+      app := fun X ↦ @ofHom _ _ (_) (_) <| @DSmoothMap.mk _ _ (_) (_) id
+        dsmooth_id.continuous.dsmooth' }
     counit := {
       app := fun X ↦ @TopCat.ofHom _ _ (_) (_) <| @ContinuousMap.mk _ _ (_) (_) id <|
         continuous_iff_coinduced_le.mpr deltaGenerated_le } }
@@ -242,7 +243,8 @@ def dTopAdj : dTop ⊣ topToDiff :=
 def dTopAdj' : diffToDeltaGenerated ⊣ deltaGeneratedToDiff :=
   Adjunction.mkOfUnitCounit {
     unit := {
-      app := fun X ↦ @ofHom _ _ (_) (_) <| @Subtype.mk _ _ id dsmooth_id.continuous.dsmooth' }
+      app := fun X ↦ @ofHom _ _ (_) (_) <| @DSmoothMap.mk _ _ (_) (_) id
+        dsmooth_id.continuous.dsmooth' }
     counit := {
       app := fun X ↦ @TopCat.ofHom _ _ (_) (_) <| @ContinuousMap.mk _ _ (_) (_) id <|
         continuous_iff_coinduced_le.mpr dTop_continuousDiffeology_eq_self.le } }

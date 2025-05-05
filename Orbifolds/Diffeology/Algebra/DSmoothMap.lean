@@ -38,7 +38,7 @@ theorem mul_comp [Mul A] [DSmoothMul A] (f₁ f₂ : DSmoothMap Y A) (g : DSmoot
 
 @[to_additive]
 instance [One A] : One (DSmoothMap X A) :=
-  ⟨.const 1⟩
+  ⟨const X 1⟩
 
 @[to_additive (attr := norm_cast, simp)]
 theorem coe_one [One A] : ⇑(1 : DSmoothMap X A) = 1 :=
@@ -55,7 +55,7 @@ theorem one_comp [One A] (g : DSmoothMap X Y) : (1 : DSmoothMap Y A).comp g = 1 
 /-! ### `Nat.cast` -/
 
 instance [NatCast A] : NatCast (DSmoothMap X A) :=
-  ⟨fun n => .const n⟩
+  ⟨fun n => const X n⟩
 
 @[simp, norm_cast]
 theorem coe_natCast [NatCast A] (n : ℕ) : ((n : DSmoothMap X A) : X → A) = n :=
@@ -66,7 +66,7 @@ theorem natCast_apply [NatCast A] (n : ℕ) (x : X) : (n : DSmoothMap X A) x = n
   rfl
 
 instance [IntCast A] : IntCast (DSmoothMap X A) :=
-  ⟨fun n => .const n⟩
+  ⟨fun n => const X n⟩
 
 /-! ### `Int.cast` -/
 

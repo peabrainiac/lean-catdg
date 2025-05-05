@@ -53,8 +53,8 @@ def DiffSp.toSmoothSp : DiffSp.{u} ⥤ SmoothSp.{u} where
     have hf'' : ∀ l (g : l ⟶ n) (hg : s g), f'' ∘ g = f g hg := fun l g hg ↦ by
       ext x
       dsimp [f'']
-      have h := @hf _ _ 0 (DSmoothMap.const (hf' (g x)).2.choose)
-        (DSmoothMap.const x) _ _ (hf' (g x)).1 hg
+      have h := @hf _ _ 0 (DSmoothMap.const _ (hf' (g x)).2.choose)
+        (DSmoothMap.const _ x) _ _ (hf' (g x)).1 hg
         (by ext; exact (hf' (g x)).2.choose_spec)
       exact DFunLike.congr_fun h 0
     refine ⟨⟨f'', ?_⟩, ?_, ?_⟩

@@ -50,7 +50,7 @@ instance (n : ℕ) : OfNat CartSp n where
 
 instance : SmallCategory CartSp where
   Hom := fun n m ↦ DSmoothMap n m
-  id := fun n ↦ DSmoothMap.id
+  id := fun n ↦ DSmoothMap.id _
   comp := fun f g ↦ g.comp f
 
 instance : HasForget CartSp where
@@ -58,8 +58,8 @@ instance : HasForget CartSp where
   forget_faithful := { map_injective := fun {_ _} ↦ DSmoothMap.coe_injective }
 
 instance CartSp.instFunLike (n m : CartSp) : FunLike (n ⟶ m) n m where
-  coe := Subtype.val
-  coe_injective' := Subtype.coe_injective
+  coe f := DFunLike.coe (F := DSmoothMap _ _) f
+  coe_injective' := DFunLike.coe_injective (F := DSmoothMap _ _)
 
 @[simp]
 theorem CartSp.id_app (n : CartSp) (x : n) : (𝟙 n : n ⟶ n) x = x := rfl
@@ -100,7 +100,7 @@ def CartSp.openCoverCoverage : Coverage CartSp where
         (f ≫ g).2.subtype_mk (fun x ↦ hf'.2 (Set.mem_range_self x)))⟩
       refine ⟨f', hf'.1, ?_⟩; ext x; change f'.1 (f''.invFun _) = _
       simp_rw [show f'.1 = Subtype.val ∘ f'' by rfl]
-      dsimp; rw [DDiffeomorph.apply_symm_apply,CategoryTheory.comp_apply]; rfl
+      dsimp; exact congrArg Subtype.val <| f''.apply_symm_apply _
 
 /-- The open cover grothendieck topology on `CartSp`. -/
 def CartSp.openCoverTopology : GrothendieckTopology CartSp :=
@@ -108,7 +108,7 @@ def CartSp.openCoverTopology : GrothendieckTopology CartSp :=
 
 /-- The `0`-dimensional cartesian space is terminal in `CartSp`. -/
 def CartSp.isTerminal0 : IsTerminal (0 : CartSp) where
-  lift s := DSmoothMap.const 0
+  lift s := DSmoothMap.const _ 0
   uniq c f h := by ext x; exact Subsingleton.elim (α := EuclideanSpace ℝ (Fin 0)) (f x) 0
 
 /-- The canonical linear homeomorphism between `EuclideanSpace 𝕜 (ι ⊕ κ)` and
@@ -147,19 +147,15 @@ noncomputable def CartSp.prodBinaryFan (n m : CartSp) : BinaryFan n m :=
 
 /-- The constructed binary fan is indeed a limit. -/
 noncomputable def CartSp.prodBinaryFanIsLimit (n m : CartSp) : IsLimit (prodBinaryFan n m) where
-  lift s := EuclideanSpace.finAddEquivProd.toDDiffeomorph.symm.toDSmoothMap.comp <|
-    DSmoothMap.prodMk (BinaryFan.fst s) (BinaryFan.snd s)
+  lift c := EuclideanSpace.finAddEquivProd.toDDiffeomorph.symm.toDSmoothMap.comp <|
+    DSmoothMap.prodMk (BinaryFan.fst c) (BinaryFan.snd c)
   fac := by
     rintro c (_ | _) <;> dsimp [prodBinaryFan, prodFst]
-    all_goals ext x
-    -- TODO: improve `DSmoothMap`-api so this just becomes something like `simp`
+    all_goals ext (x : EuclideanSpace _ _)
+    -- TODO: figure out how to better deal with simp-breaking situations like this
     all_goals rw [CategoryTheory.comp_apply]
-    · change _ = DSmoothMap.fst (X := EuclideanSpace ℝ (Fin n)) (DDiffeomorph.refl _
-        (DSmoothMap.prodMk (X := EuclideanSpace ℝ _) (BinaryFan.fst c) (BinaryFan.snd c) x))
-      rw [← EuclideanSpace.finAddEquivProd.toDDiffeomorph.symm_trans_self]; rfl
-    · change _ = DSmoothMap.snd (X := EuclideanSpace ℝ (Fin n)) (DDiffeomorph.refl _
-        (DSmoothMap.prodMk (X := EuclideanSpace ℝ _) (BinaryFan.fst c) (BinaryFan.snd c) x))
-      rw [← EuclideanSpace.finAddEquivProd.toDDiffeomorph.symm_trans_self]; rfl
+    · exact congrArg Prod.fst (EuclideanSpace.finAddEquivProd.toDDiffeomorph.apply_symm_apply _)
+    · exact congrArg Prod.snd (EuclideanSpace.finAddEquivProd.toDDiffeomorph.apply_symm_apply _)
   uniq c f h := by
     ext x
     change _ = EuclideanSpace.finAddEquivProd.toDDiffeomorph.toEquiv.symm _
@@ -183,7 +179,7 @@ instance : CoeSort EuclOp Type where
 
 instance : SmallCategory EuclOp where
   Hom := fun u v ↦ DSmoothMap u v
-  id := fun n ↦ DSmoothMap.id
+  id := fun n ↦ DSmoothMap.id _
   comp := fun f g ↦ g.comp f
 
 instance : HasForget EuclOp where
@@ -191,8 +187,8 @@ instance : HasForget EuclOp where
   forget_faithful := { map_injective := fun {_ _} ↦ DSmoothMap.coe_injective }
 
 instance EuclOp.instFunLike (u v : EuclOp) : FunLike (u ⟶ v) u v where
-  coe := Subtype.val
-  coe_injective' := Subtype.coe_injective
+  coe f := DFunLike.coe (F := DSmoothMap _ _) f
+  coe_injective' := DFunLike.coe_injective (F := DSmoothMap _ _)
 
 @[simp]
 theorem EuclOp.id_app (u : EuclOp) (x : u) : (𝟙 u : u ⟶ u) x = x := rfl
@@ -232,7 +228,7 @@ def EuclOp.openCoverCoverage : Coverage EuclOp where
         (f ≫ g).2.subtype_mk (fun x ↦ hf'.2 (Set.mem_range_self x)))⟩
       refine ⟨f', hf'.1, ?_⟩; ext x; change f'.1 (f''.invFun _) = _
       simp_rw [show f'.1 = Subtype.val ∘ f'' by rfl]
-      dsimp; rw [DDiffeomorph.apply_symm_apply,CategoryTheory.comp_apply]; rfl
+      dsimp; exact congrArg Subtype.val <| f''.apply_symm_apply _
 
 /-- The open cover grothendieck topology on `EuclOp`. -/
 def EuclOp.openCoverTopology : GrothendieckTopology EuclOp :=

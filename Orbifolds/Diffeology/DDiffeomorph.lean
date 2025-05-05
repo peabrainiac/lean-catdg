@@ -31,8 +31,6 @@ instance : EquivLike (X ᵈ≃ Y) X Y where
   right_inv Φ := Φ.right_inv
   coe_injective' _ _ h _ := toEquiv_injective (DFunLike.ext' h)
 
-instance : CoeFun (X ᵈ≃ Y) fun _ ↦ X → Y := ⟨DFunLike.coe⟩
-
 @[continuity]
 protected theorem continuous (h : X ᵈ≃ Y) : Continuous[DTop,DTop] h := h.dsmooth_toFun.continuous
 
@@ -57,11 +55,6 @@ theorem toEquiv_inj {h h' : X ᵈ≃ Y} : h.toEquiv = h'.toEquiv ↔ h = h' :=
 
 theorem coeFn_injective : Injective ((↑) : X ᵈ≃ Y → X → Y) :=
   DFunLike.coe_injective
-
--- TODO simp lemmas for this
-def toDSmoothMap (d : X ᵈ≃ Y) : DSmoothMap X Y := ⟨d,d.dsmooth⟩
-
-local instance : Coe (X ᵈ≃ Y) (DSmoothMap X Y) := ⟨DDiffeomorph.toDSmoothMap⟩
 
 protected theorem bijective (h : X ᵈ≃ Y) : Function.Bijective h :=
   h.toEquiv.bijective
@@ -236,6 +229,36 @@ theorem dsmooth_ddiffeomorph_comp_iff (h : X ᵈ≃ Y) {f : Z → X} :
   refine ⟨fun h' ↦ ?_, fun hf ↦ h.dsmooth.comp hf⟩
   rw [←id_comp f, ←coe_refl, ←self_trans_symm h, coe_trans, comp_assoc]
   exact h.symm.dsmooth.comp h'
+
+section DSmoothMap
+
+instance instContinuousMapClass : DSmoothMapClass (X ᵈ≃ Y) X Y where
+  map_dsmooth f := f.dsmooth
+
+abbrev toDSmoothMap (d : X ᵈ≃ Y) : DSmoothMap X Y := d
+
+@[simp]
+theorem toDSmoothMap_refl : (DDiffeomorph.refl X : DSmoothMap X X) = DSmoothMap.id X :=
+  rfl
+
+@[simp]
+theorem toDSmoothMap_trans (f : X ᵈ≃ Y) (g : Y ᵈ≃ Z) :
+    (f.trans g : DSmoothMap X Z) = (g : DSmoothMap Y Z).comp f :=
+  rfl
+
+/-- Left inverse to a continuous map from a homeomorphism, mirroring `Equiv.symm_comp_self`. -/
+@[simp]
+theorem symm_comp_toDSmoothMap (f : X ᵈ≃ Y) :
+    (f.symm : DSmoothMap Y X).comp (f : DSmoothMap X Y) = DSmoothMap.id X := by
+  rw [← toDSmoothMap_trans, self_trans_symm, toDSmoothMap_refl]
+
+/-- Right inverse to a continuous map from a homeomorphism, mirroring `Equiv.self_comp_symm`. -/
+@[simp]
+theorem toDSmoothMap_comp_symm (f : X ᵈ≃ Y) :
+    (f : DSmoothMap X Y).comp (f.symm : DSmoothMap Y X) = DSmoothMap.id Y := by
+  rw [← toDSmoothMap_trans, symm_trans_self, toDSmoothMap_refl]
+
+end DSmoothMap
 
 section Constructions
 
