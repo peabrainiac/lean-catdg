@@ -106,6 +106,43 @@ def CartSp.openCoverCoverage : Coverage CartSp where
 def CartSp.openCoverTopology : GrothendieckTopology CartSp :=
   openCoverCoverage.toGrothendieck
 
+/-- A sieve belongs to `CartSp.openCoverTopology` iff it contains a presieve from
+`CartSp.openCoverCoverage`. -/
+lemma CartSp.openCoverTopology.mem_sieves_iff {n : CartSp} {s : Sieve n} :
+    s ∈ openCoverTopology n ↔ ∃ r, r ≤ s.arrows ∧ r ∈ openCoverCoverage n := by
+  refine ⟨fun h ↦ ?_, fun ⟨r, hr⟩ ↦ Coverage.mem_toGrothendieck_sieves_of_superset _ hr.1 hr.2⟩
+  induction h with
+  | of n s hs =>
+    exact ⟨s, Sieve.le_generate s, hs⟩
+  | top n =>
+    refine ⟨fun k f ↦ Induction f ∧ IsOpenMap f, le_top, fun k f hf ↦ hf, ?_⟩
+    exact Set.univ_subset_iff.1 <| Set.subset_iUnion_of_subset n <|
+        Set.subset_iUnion₂_of_subset (𝟙 n) ⟨induction_id, IsOpenMap.id⟩ (Set.range_id.symm.subset)
+  | transitive n s r _ _ hs hr =>
+    let ⟨s', hs'⟩ := hs
+    refine ⟨fun k f ↦ r f ∧ Induction f ∧ IsOpenMap f, fun _ _ h ↦ h.1, fun _ _ h ↦ h.2, ?_⟩
+    rw [← Set.univ_subset_iff, ← hs'.2.2]
+    refine Set.iUnion_subset fun m ↦ Set.iUnion₂_subset fun f hf ↦ ?_
+    let ⟨r', hr'⟩ := hr (hs'.1 _ hf)
+    simp_rw [← Set.image_univ, ← hr'.2.2, Set.image_iUnion]
+    refine Set.iUnion_subset fun k ↦ Set.iUnion₂_subset fun g hg ↦ ?_
+    refine Set.subset_iUnion_of_subset k <| Set.subset_iUnion₂_of_subset (g ≫ f) ⟨?_, ?_, ?_⟩ ?_
+    · exact hr'.1 _ hg
+    · exact (hs'.2.1 _ _ hf).1.comp (hr'.2.1 _ _ hg).1
+    · exact (hs'.2.1 _ _ hf).2.comp (hr'.2.1 _ _ hg).2
+    · rw [← Set.range_comp, Set.image_univ]; rfl
+
+/- A sieve belongs to `CartSp.openCoverTopology` iff the open inductions in it are jointly
+surjective. -/
+lemma CartSp.openCoverTopology.mem_sieves_iff' {n : CartSp} {s : Sieve n} :
+    s ∈ openCoverTopology n ↔
+    ⋃ (m) (f : m ⟶ n) (_ : s f ∧ Induction f ∧ IsOpenMap f), Set.range f = Set.univ := by
+  refine mem_sieves_iff.trans ⟨fun ⟨r, hr⟩ ↦ ?_, fun h ↦ ?_⟩
+  · rw [← Set.univ_subset_iff, ← hr.2.2]
+    exact Set.iUnion_subset fun m ↦ Set.iUnion₂_subset fun f hf ↦ Set.subset_iUnion_of_subset m <|
+      Set.subset_iUnion₂_of_subset f ⟨hr.1 _ hf, hr.2.1 m f hf⟩ subset_rfl
+  · exact ⟨fun m f ↦ s f ∧ Induction f ∧ IsOpenMap f, fun _ _ h ↦ h.1, fun _ _ h ↦ h.2, h⟩
+
 /-- The `0`-dimensional cartesian space is terminal in `CartSp`. -/
 def CartSp.isTerminal0 : IsTerminal (0 : CartSp) where
   lift s := DSmoothMap.const _ 0
@@ -233,6 +270,43 @@ def EuclOp.openCoverCoverage : Coverage EuclOp where
 /-- The open cover grothendieck topology on `EuclOp`. -/
 def EuclOp.openCoverTopology : GrothendieckTopology EuclOp :=
   openCoverCoverage.toGrothendieck
+
+/-- A sieve belongs to `EuclOp.openCoverTopology` iff it contains a presieve from
+`EuclOp.openCoverCoverage`. -/
+lemma EuclOp.openCoverTopology.mem_sieves_iff {n : EuclOp} {s : Sieve n} :
+    s ∈ openCoverTopology n ↔ ∃ r, r ≤ s.arrows ∧ r ∈ openCoverCoverage n := by
+  refine ⟨fun h ↦ ?_, fun ⟨r, hr⟩ ↦ Coverage.mem_toGrothendieck_sieves_of_superset _ hr.1 hr.2⟩
+  induction h with
+  | of n s hs =>
+    exact ⟨s, Sieve.le_generate s, hs⟩
+  | top n =>
+    refine ⟨fun k f ↦ Induction f ∧ IsOpenMap f, le_top, fun k f hf ↦ hf, ?_⟩
+    exact Set.univ_subset_iff.1 <| Set.subset_iUnion_of_subset n <|
+        Set.subset_iUnion₂_of_subset (𝟙 n) ⟨induction_id, IsOpenMap.id⟩ (Set.range_id.symm.subset)
+  | transitive n s r _ _ hs hr =>
+    let ⟨s', hs'⟩ := hs
+    refine ⟨fun k f ↦ r f ∧ Induction f ∧ IsOpenMap f, fun _ _ h ↦ h.1, fun _ _ h ↦ h.2, ?_⟩
+    rw [← Set.univ_subset_iff, ← hs'.2.2]
+    refine Set.iUnion_subset fun m ↦ Set.iUnion₂_subset fun f hf ↦ ?_
+    let ⟨r', hr'⟩ := hr (hs'.1 _ hf)
+    simp_rw [← Set.image_univ, ← hr'.2.2, Set.image_iUnion]
+    refine Set.iUnion_subset fun k ↦ Set.iUnion₂_subset fun g hg ↦ ?_
+    refine Set.subset_iUnion_of_subset k <| Set.subset_iUnion₂_of_subset (g ≫ f) ⟨?_, ?_, ?_⟩ ?_
+    · exact hr'.1 _ hg
+    · exact (hs'.2.1 _ _ hf).1.comp (hr'.2.1 _ _ hg).1
+    · exact (hs'.2.1 _ _ hf).2.comp (hr'.2.1 _ _ hg).2
+    · rw [← Set.range_comp, Set.image_univ]; rfl
+
+/- A sieve belongs to `EuclOp.openCoverTopology` iff the open inductions in it are jointly
+surjective. -/
+lemma EuclOp.openCoverTopology.mem_sieves_iff' {n : EuclOp} {s : Sieve n} :
+    s ∈ openCoverTopology n ↔
+    ⋃ (m) (f : m ⟶ n) (_ : s f ∧ Induction f ∧ IsOpenMap f), Set.range f = Set.univ := by
+  refine mem_sieves_iff.trans ⟨fun ⟨r, hr⟩ ↦ ?_, fun h ↦ ?_⟩
+  · rw [← Set.univ_subset_iff, ← hr.2.2]
+    exact Set.iUnion_subset fun m ↦ Set.iUnion₂_subset fun f hf ↦ Set.subset_iUnion_of_subset m <|
+      Set.subset_iUnion₂_of_subset f ⟨hr.1 _ hf, hr.2.1 m f hf⟩ subset_rfl
+  · exact ⟨fun m f ↦ s f ∧ Induction f ∧ IsOpenMap f, fun _ _ h ↦ h.1, fun _ _ h ↦ h.2, h⟩
 
 /-- The embedding of `CartSp` into `EuclOp`. -/
 noncomputable def CartSp.toEuclOp : CartSp ⥤ EuclOp where
