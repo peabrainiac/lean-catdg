@@ -172,6 +172,10 @@ theorem Induction.codRestrict {f : X → Y} (hf : Induction f) {s : Set Y} (hs :
     Induction (s.codRestrict f hs) :=
   Induction.of_comp' (hf.dsmooth.codRestrict hs) dsmooth_subtype_val hf
 
+theorem Induction.restrict {f : X → Y} (hf : Induction f) {s : Set X} {t : Set Y}
+    (hf' : MapsTo f s t) : Induction hf'.restrict :=
+  (hf.comp induction_subtype_val).codRestrict _
+
 theorem ContDiffOn.dsmooth_restrict [NormedAddCommGroup X] [NormedSpace ℝ X] [ContDiffCompatible X]
     [NormedAddCommGroup Y] [NormedSpace ℝ Y] [ContDiffCompatible Y]
     {f : X → Y} (hf : ContDiffOn ℝ ∞ f s) : DSmooth (s.restrict f) := by

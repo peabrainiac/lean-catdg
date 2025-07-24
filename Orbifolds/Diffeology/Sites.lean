@@ -25,10 +25,10 @@ Main definitions / results:
 * `EuclOp`: the category of open subsets of euclidean spaces and smooth maps between them
 * `EuclOp.openCoverCoverage`: the coverage given by jointly surjective open inductions
 * `CartSp.toEuclOp`: the fully faithful embedding of `CartSp` into `EuclOp`
+* `CartSp.toEuclOp` exhibits `CartSp` as a dense sub-site of `EuclOp`
 
 ## TODO
 * Switch from `HasForget` to the new `ConcreteCategory` design
-* `CartSp.toEuclOp` makes `CartSp` a dense sub-site of `EuclOp`
 * Generalise `CartSp` to take a smoothness parameter in `ℕ∞`
 * Generalise `EuclOp` to take a smoothness parameter in `WithTop ℕ∞`
 * General results about concrete sites
@@ -346,13 +346,51 @@ instance : CartSp.toEuclOp.Full := CartSp.toEuclOp_fullyFaithful.full
 
 instance : CartSp.toEuclOp.Faithful := CartSp.toEuclOp_fullyFaithful.faithful
 
+-- TODO: upstream to mathlib.
+lemma IsOpenMap.restrict_mapsTo {X Y : Type*} [TopologicalSpace X] [TopologicalSpace Y] {f : X → Y}
+    (hf : IsOpenMap f) {s : Set X} {t : Set Y} (hf' : Set.MapsTo f s t) (hs : IsOpen s) :
+    IsOpenMap hf'.restrict :=
+  (hf.restrict hs).codRestrict _
+
+/-- `CartSp.toEuclOp` exhibits `CartSp` as a dense sub-site of `EuclOp` with respect to the
+open cover topologies.
+In particular, the sheaf topoi of the two sites are equivalent via `IsDenseSubsite.sheafEquiv`. -/
 instance : CartSp.toEuclOp.IsDenseSubsite
     CartSp.openCoverTopology EuclOp.openCoverTopology where
   functorPushforward_mem_iff {n} s := by
-    unfold EuclOp.openCoverTopology CartSp.openCoverTopology
-      EuclOp.openCoverCoverage CartSp.openCoverCoverage
-    --rw [Coverage.toGrothendieck_eq_sInf]
-    sorry
+    rw [CartSp.openCoverTopology.mem_sieves_iff', EuclOp.openCoverTopology.mem_sieves_iff']
+    refine (DDiffeomorph.Set.univ (Eucl n)).injective.image_injective.eq_iff.symm.trans ?_
+    rw [Set.image_univ, (DDiffeomorph.Set.univ (Eucl n)).surjective.range_eq]
+    simp_rw [Set.image_iUnion, ← Set.range_comp]
+    refine Eq.congr_left (subset_antisymm ?_ ?_)
+    · refine Set.iUnion_subset fun u ↦ Set.iUnion₂_subset fun f hf ↦ ?_
+      obtain ⟨m, g, h, hg, rfl⟩ := hf.1; replace hf := hf.2
+      refine Set.range_subset_iff.2 fun x ↦ ?_
+      let ⟨ε,hε,hε'⟩ := Metric.isOpen_iff.1 u.2.2 x.1 x.2
+      let i : DSmoothMap _ _ := ⟨_, dsmooth_inclusion hε'⟩
+      let e := DDiffeomorph.univBall x.1 hε
+      refine Set.mem_iUnion_of_mem _ <| Set.mem_iUnion₂_of_mem
+        (i := ⟨_, (DDiffeomorph.Set.univ _).dsmooth.comp <|
+          h.dsmooth.comp <| i.dsmooth.comp e.dsmooth⟩ ≫ g) ⟨?_, ?_, ?_⟩ ?_
+      · exact s.downward_closed hg _
+      · exact (DDiffeomorph.Set.univ _).induction.comp <| hf.1.comp <|
+          (induction_inclusion hε').comp e.induction
+      · have : DTopCompatible (Metric.ball x.1 ε) := Metric.isOpen_ball.dTopCompatible
+        have : DTopCompatible (Set.univ : Set (Eucl n)) := isOpen_univ.dTopCompatible
+        exact (DDiffeomorph.Set.univ (Eucl n)).toHomeomorph'.isOpenMap.comp <| hf.2.comp <|
+          (Metric.isOpen_ball.isOpenMap_inclusion hε').comp e.toHomeomorph'.isOpenMap
+      use 0
+      have h : i (e 0) = x := by ext1; simp_rw [← DDiffeomorph.coe_univBall_zero x.1 hε]; rfl
+      simp_rw [← h]; rfl
+    · refine Set.iUnion_subset fun m ↦ Set.iUnion₂_subset fun f hf ↦ ?_
+      refine Set.subset_iUnion_of_subset _ <| Set.subset_iUnion₂_of_subset
+        (CartSp.toEuclOp.map f) ⟨?_, ?_, ?_⟩ ?_
+      · exact ⟨m, f, 𝟙 _, hf.1, (Category.id_comp _).symm⟩
+      · exact hf.2.1.restrict (Set.mapsTo_univ _ _)
+      · exact hf.2.2.restrict_mapsTo (Set.mapsTo_univ _ _) isOpen_univ
+      · refine HasSubset.subset.trans_eq ?_
+          (congrArg Set.range (Set.MapsTo.restrict_commutes _ _ _ (Set.mapsTo_univ _ _)).symm)
+        rw [Set.range_comp, Subtype.range_val, ← Set.image_univ]; rfl
 
 end EuclOp
 
