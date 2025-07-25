@@ -42,8 +42,7 @@ is nonempty. -/
 class GrothendieckTopology.IsLocallyConnectedSite where
   /-- Every covering sieve `S ∈ J X` is connected when interpreted as a full subcategory of the
   slice category `Over X`. -/
-  isConnected_of_mem : ∀ {X}, ∀ S ∈ J X,
-    IsConnected (FullSubcategory fun f : Over X ↦ S.arrows f.hom)
+  isConnected_of_mem : ∀ {X}, ∀ S ∈ J X, IsConnected S.arrows.category
 
 /-- Every category with a terminal object is nonempty.
 TODO: add a similar instance for `HasInitial` and move both to another file. -/
@@ -69,7 +68,7 @@ lemma isSheaf_const_obj {X : Type w} : Presheaf.IsSheaf J ((Functor.const _).obj
   refine ⟨@x f.left f.hom hf, ?_, ?_⟩
   · intro Z g hg
     have := IsLocallyConnectedSite.isConnected_of_mem S hS
-    refine constant_of_preserves_morphisms (J := FullSubcategory fun f : Over Y ↦ S.arrows f.hom)
+    refine constant_of_preserves_morphisms (J := S.arrows.category)
       (fun f ↦ @x f.obj.left f.obj.hom f.property) ?_ ⟨f, hf⟩ ⟨.mk g, hg⟩
     intro f g h
     simpa using hx (𝟙 _) h.left f.property g.property

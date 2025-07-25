@@ -1,6 +1,6 @@
 import Mathlib.Algebra.Category.AlgebraCat.Basic
 import Mathlib.CategoryTheory.Sites.Coverage
-import Mathlib.CategoryTheory.Sites.DenseSubsite.Basic
+import Orbifolds.Cohesive.CohesiveSite
 import Orbifolds.Diffeology.Algebra.DSmoothMap
 
 /-!
@@ -22,6 +22,7 @@ Main definitions / results:
 * `CartSp`: the category of euclidean spaces and smooth maps between them
 * `CartSp.openCoverCoverage`: the coverage given by jointly surjective open inductions
 * `CartSp` has all finite products
+* `CartSp` is a cohesive site
 * `EuclOp`: the category of open subsets of euclidean spaces and smooth maps between them
 * `EuclOp.openCoverCoverage`: the coverage given by jointly surjective open inductions
 * `CartSp.toEuclOp`: the fully faithful embedding of `CartSp` into `EuclOp`
@@ -204,6 +205,46 @@ noncomputable def CartSp.prodBinaryFanIsLimit (n m : CartSp) : IsLimit (prodBina
 instance : HasFiniteProducts CartSp := by
   refine @hasFiniteProducts_of_has_binary_and_terminal _ _ ?_ CartSp.isTerminal0.hasTerminal
   exact @hasBinaryProducts_of_hasLimit_pair _ _ ⟨⟨_, CartSp.prodBinaryFanIsLimit _ _⟩⟩
+
+noncomputable instance : Unique (⊤_ CartSp) := by
+  have : Unique ((forget CartSp).obj 0) := inferInstanceAs (Unique (Eucl 0))
+  exact ((forget _).mapIso (terminalIsTerminal.uniqueUpToIso CartSp.isTerminal0)).toEquiv.unique
+
+/-- `CartSp` is a locally connected site, roughly meaning that each of its objects is connected.
+Note that this is different from `EuclOp`, which also contains disconnected open sets and thus isn't
+locally connected. -/
+instance : CartSp.openCoverTopology.IsLocallyConnectedSite where
+  isConnected_of_mem {n} s hs := by
+    simp_rw [CartSp.openCoverTopology.mem_sieves_iff', Set.eq_univ_iff_forall, Set.mem_iUnion] at hs
+    have hs' : ∀ f : ⊤_ _ ⟶ n, s.arrows f := fun f ↦ by
+      let ⟨m, g, hg, x, hx⟩ := hs (f 0)
+      convert s.downward_closed (Z := ⊤_ _) hg.1 (DSmoothMap.const _ x)
+      ext _; exact (congrArg _ (Subsingleton.allEq (α := ⊤_ CartSp) _ _)).trans hx.symm
+    have _ : Nonempty s.arrows.category := ⟨.mk (Y := ⊤_ _) (DSmoothMap.const _ 0), hs' _⟩
+    refine .of_constant_of_preserves_morphisms fun {α} F hF ↦ ?_
+    let F' : n → α := fun x ↦ F ⟨.mk (DSmoothMap.const _ x), hs' _⟩
+    have hF' : IsLocallyConstant F' := by
+      refine (IsLocallyConstant.iff_exists_open _).2 fun x ↦ ?_
+      let ⟨m, f, hf, y, hy⟩ := hs x
+      refine ⟨Set.range f, hf.2.2.isOpen_range, ⟨y, hy⟩, fun x' ⟨y', hy'⟩ ↦ ?_⟩
+      rw [← hy, ← hy']
+      exact (@hF ⟨.mk (DSmoothMap.const _ (f y')), hs' _⟩ ⟨.mk f, hf.1⟩
+        (Over.homMk (DSmoothMap.const _ y'))).trans
+        (@hF ⟨.mk (DSmoothMap.const _ (f y)), hs' _⟩ ⟨.mk f, hf.1⟩
+          (Over.homMk (DSmoothMap.const _ y))).symm
+    exact fun f g ↦ (@hF ⟨.mk (DSmoothMap.const _ (f.1.hom 0)), hs' _⟩ ⟨.mk f.1.hom, f.2⟩
+      (Over.homMk (DSmoothMap.const _ 0))).symm.trans <|
+      (IsLocallyConstant.iff_is_const.1 hF' _ _).trans <|
+      @hF ⟨.mk (DSmoothMap.const _ (g.1.hom 0)), hs' _⟩ ⟨.mk g.1.hom, g.2⟩
+        (Over.homMk (DSmoothMap.const _ 0))
+
+/-- `CartSp` is a cohesive site (i.e. in particular locally connected and local, but with a few more
+properties). From this it follows that the sheaves on it form a cohesive topos.
+Note that `EuclOp` (defined below) is *not* a cohesive site, as it isn't locally connected. Sheaves
+on it form a cohesive topos too nonetheless, simply because the sheaf topoi on `EuclOp` and `CartSp`
+are equivalent. -/
+instance : CartSp.openCoverTopology.IsCohesiveSite where
+  nonempty_fromTerminal := ⟨DSmoothMap.const _ 0⟩
 
 end CartSp
 
