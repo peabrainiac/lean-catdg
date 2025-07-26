@@ -1011,6 +1011,22 @@ def snd : DSmoothMap (X × Y) Y :=
 def prodMk (f : DSmoothMap X Y) (g : DSmoothMap X Z) : DSmoothMap X (Y × Z) :=
   ⟨_, f.dsmooth.prod_mk g.dsmooth⟩
 
+/-- The equivalence between smooth functions `X → Y` and plain functions when `X` is discrete.
+TODO: replace the topological assumptions with `[DiscreteDiffeology X]` once that is defined. -/
+def equivFnOfDiscrete [TopologicalSpace X] [DiscreteTopology X] [DTopCompatible X] :
+    DSmoothMap X Y ≃ (X → Y) where
+  toFun f := f
+  invFun f := ⟨f, by
+    convert dsmooth_bot; rw [← dTop_eq_bot_iff, dTop_eq]; exact DiscreteTopology.eq_bot⟩
+  left_inv f := by ext; rfl
+  right_inv f := by ext; rfl
+
+/-- The equivalence between smooth functions `X → Y` and `Y` when `X` is discrete.
+TODO: remove topological assumptions.
+TODO: `DDiffeomorph` variants of these two constructions. -/
+def equivFnOfUnique [Unique X] [TopologicalSpace X] [DTopCompatible X] : DSmoothMap X Y ≃ Y :=
+  equivFnOfDiscrete.trans <| Equiv.funUnique X Y
+
 end DSmoothMap
 
 end DSmoothMap

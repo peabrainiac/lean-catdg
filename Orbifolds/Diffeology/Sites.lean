@@ -2,6 +2,7 @@ import Mathlib.Algebra.Category.AlgebraCat.Basic
 import Mathlib.CategoryTheory.Sites.Coverage
 import Orbifolds.Cohesive.CohesiveSite
 import Orbifolds.Diffeology.Algebra.DSmoothMap
+import Orbifolds.ForMathlib.ConcreteSite
 
 /-!
 # CartSp and EuclOp
@@ -29,6 +30,8 @@ Main definitions / results:
 * `CartSp.toEuclOp` exhibits `CartSp` as a dense sub-site of `EuclOp`
 
 ## TODO
+* Show that `EuclOp` has all finite products
+* Show that that `CartSp.toEuclOp` preserves finite products
 * Switch from `HasForget` to the new `ConcreteCategory` design
 * Generalise `CartSp` to take a smoothness parameter in `ℕ∞`
 * Generalise `EuclOp` to take a smoothness parameter in `WithTop ℕ∞`
@@ -206,6 +209,7 @@ instance : HasFiniteProducts CartSp := by
   refine @hasFiniteProducts_of_has_binary_and_terminal _ _ ?_ CartSp.isTerminal0.hasTerminal
   exact @hasBinaryProducts_of_hasLimit_pair _ _ ⟨⟨_, CartSp.prodBinaryFanIsLimit _ _⟩⟩
 
+-- TODO: figure out how to get this from more general instances
 noncomputable instance : Unique (⊤_ CartSp) := by
   have : Unique ((forget CartSp).obj 0) := inferInstanceAs (Unique (Eucl 0))
   exact ((forget _).mapIso (terminalIsTerminal.uniqueUpToIso CartSp.isTerminal0)).toEquiv.unique
@@ -245,6 +249,17 @@ on it form a cohesive topos too nonetheless, simply because the sheaf topoi on `
 are equivalent. -/
 instance : CartSp.openCoverTopology.IsCohesiveSite where
   nonempty_fromTerminal := ⟨DSmoothMap.const _ 0⟩
+
+/-- `CartSp` is a concrete site, in that it is concrete with elements corresponding to morphisms
+from the terminal object and carries a topology consisting entirely of jointly surjective sieves. -/
+noncomputable instance : CartSp.openCoverTopology.IsConcreteSite where
+  forget_natIso_coyoneda := NatIso.ofComponents fun n ↦
+    (DSmoothMap.equivFnOfUnique (Y := Eucl n)).toIso.symm
+  forget_natIso_coyoneda_apply := rfl
+  sieves_isJointlySurjective hs := by
+    rw [CartSp.openCoverTopology.mem_sieves_iff] at hs
+    obtain ⟨r, hr⟩ := hs
+    exact .mono hr.1 <| Presieve.isJointlySurjective_iff_iUnion_range_eq_univ.2 hr.2.2
 
 end CartSp
 
@@ -348,6 +363,32 @@ lemma EuclOp.openCoverTopology.mem_sieves_iff' {n : EuclOp} {s : Sieve n} :
     exact Set.iUnion_subset fun m ↦ Set.iUnion₂_subset fun f hf ↦ Set.subset_iUnion_of_subset m <|
       Set.subset_iUnion₂_of_subset f ⟨hr.1 _ hf, hr.2.1 m f hf⟩ subset_rfl
   · exact ⟨fun m f ↦ s f ∧ Induction f ∧ IsOpenMap f, fun _ _ h ↦ h.1, fun _ _ h ↦ h.2, h⟩
+
+/-- `Set.univ : Eucl 0` is terminal in `EuclOp`. -/
+def EuclOp.isTerminal0Top : IsTerminal (C := EuclOp) ⟨0, ⊤⟩ where
+  lift s := DSmoothMap.const _ ⟨0, Set.mem_univ _⟩
+  uniq c f h := by
+    ext x; exact Subsingleton.elim (α := Set.univ (α := Eucl 0)) (f x) ⟨0, Set.mem_univ _⟩
+
+-- TODO: show more generally that `EuclOp` has finite products
+instance : HasTerminal EuclOp := EuclOp.isTerminal0Top.hasTerminal
+
+-- TODO: figure out how to get this from more general instances
+noncomputable instance : Unique (⊤_ EuclOp) := by
+  have : Unique ((forget EuclOp).obj ⟨0, ⊤⟩) :=
+    uniqueOfSubsingleton (α := (Set.univ (α := Eucl 0))) ⟨0, Set.mem_univ _⟩
+  exact ((forget _).mapIso (terminalIsTerminal.uniqueUpToIso EuclOp.isTerminal0Top)).toEquiv.unique
+
+/-- `CartSp` is a concrete site, in that it is concrete with elements corresponding to morphisms
+from the terminal object and carries a topology consisting entirely of jointly surjective sieves. -/
+noncomputable instance : EuclOp.openCoverTopology.IsConcreteSite where
+  forget_natIso_coyoneda := NatIso.ofComponents fun u ↦
+    (DSmoothMap.equivFnOfUnique (Y := u.2)).toIso.symm
+  forget_natIso_coyoneda_apply := rfl
+  sieves_isJointlySurjective hs := by
+    rw [EuclOp.openCoverTopology.mem_sieves_iff] at hs
+    obtain ⟨r, hr⟩ := hs
+    exact .mono hr.1 <| Presieve.isJointlySurjective_iff_iUnion_range_eq_univ.2 hr.2.2
 
 /-- The embedding of `CartSp` into `EuclOp`. -/
 noncomputable def CartSp.toEuclOp : CartSp ⥤ EuclOp where

@@ -8,7 +8,7 @@ TODO: switch from `HasForget` to the new `ConcreteCategory` API
 
 universe u v w u₂ v₂ w₂
 
-open CategoryTheory Limits Sheaf Opposite
+open CategoryTheory Limits Sheaf Opposite GrothendieckTopology
 
 namespace CategoryTheory
 
@@ -17,19 +17,28 @@ attribute [local instance] HasForget.instFunLike
 
 variable {C : Type u} [Category.{v} C]
 
+namespace Presieve
+
+variable [HasForget.{w} C] {X : C}
+
 /-- A presieve `S` on `X` in a concrete category is jointly surjective if every `x : X` is in
   the image of some `f` in `S`. -/
-def Presieve.IsJointlySurjective [HasForget.{w} C] {X : C} (S : Presieve X) : Prop :=
+def IsJointlySurjective (S : Presieve X) : Prop :=
   ∀ x : X, ∃ Y, ∃ f ∈ @S Y, ∃ y, f y = x
 
-lemma Presieve.isJointlySurjective_iff_iUnion_range_eq_univ [HasForget.{w} C]
-    {X : C} {S : Presieve X} : IsJointlySurjective S ↔
-    ⋃ (Y : C) (f ∈ @S Y), Set.range f = Set.univ := by
+lemma isJointlySurjective_iff_iUnion_range_eq_univ {S : Presieve X} :
+    IsJointlySurjective S ↔ ⋃ (Y : C) (f ∈ S (Y := Y)), Set.range f = Set.univ := by
   simp [IsJointlySurjective, Set.iUnion_eq_univ_iff]
+
+lemma IsJointlySurjective.mono {S R : Presieve X} (hR : S ≤ R) (hS : S.IsJointlySurjective) :
+    R.IsJointlySurjective :=
+  forall_imp (fun _ ↦ .imp fun _ ↦ .imp fun _ ↦ And.imp_left fun _ ↦ hR _ ‹_›) hS
+
+end Presieve
 
 /-- A site is concrete if it is a concrete category in such a way that points correspond to
   morphisms from a terminal object, and all sieves are jointly surjective. -/
-class ConcreteSite (J : GrothendieckTopology C)
+class GrothendieckTopology.IsConcreteSite (J : GrothendieckTopology C)
     extends HasTerminal C, HasForget.{v} C where
   /-- The forgetful functor is given by morphisms from the terminal object. Since a forgetful
     functor might already exists, this is encoded here as a natural isomorphism. -/
@@ -39,22 +48,22 @@ class ConcreteSite (J : GrothendieckTopology C)
     (DFunLike.coe (F := ⊤_ C ⟶ X) <| forget_natIso_coyoneda.hom.app X x) = fun _ ↦ x
   /-- All covering sieves are jointly surjective. -/
   sieves_isJointlySurjective {X : C} {S : Sieve X} :
-    S ∈ J.sieves X → S.arrows.IsJointlySurjective
+    S ∈ J X → S.arrows.IsJointlySurjective
 
 /-- The terminal object of a concrete site has exactly one point. -/
-noncomputable instance ConcreteSite.instUniqueTerminal (J : GrothendieckTopology C)
-    [ConcreteSite J] : Unique (⊤_ C) :=
+noncomputable instance GrothendieckTopology.IsConcreteSite.instUniqueTerminal
+    (J : GrothendieckTopology C) [J.IsConcreteSite] : Unique (⊤_ C) :=
   (forget_natIso_coyoneda.app (⊤_ C)).toEquiv.unique (β := ⊤_ C ⟶ ⊤_ C)
 
 /-- Every concrete site is also a local site. -/
-instance (J : GrothendieckTopology C) [ConcreteSite J] : J.IsLocalSite where
+instance (J : GrothendieckTopology C) [J.IsConcreteSite] : J.IsLocalSite where
   eq_top_of_mem S hS := (S.id_mem_iff_eq_top).1 <| by
-    let ⟨Y, f, hf, y, hfy⟩ := ConcreteSite.sieves_isJointlySurjective hS default
-    let y' : ⊤_ C ⟶ Y := ConcreteSite.forget_natIso_coyoneda.hom.app Y  y
+    let ⟨Y, f, hf, y, hfy⟩ := IsConcreteSite.sieves_isJointlySurjective hS default
+    let y' : ⊤_ C ⟶ Y := IsConcreteSite.forget_natIso_coyoneda.hom.app Y  y
     convert S.downward_closed hf y'
     exact Subsingleton.elim _ _
 
-variable (J : GrothendieckTopology C) [ConcreteSite J]
+variable (J : GrothendieckTopology C) [J.IsConcreteSite]
 
 def Presheaf.IsConcrete (P :  Cᵒᵖ ⥤ Type w) : Prop :=
   ∀ X : C, Function.Injective fun p : P.obj (.op X) ↦ fun f : (⊤_ C ⟶ X) ↦ P.map (.op f) p
