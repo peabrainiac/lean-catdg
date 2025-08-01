@@ -48,12 +48,12 @@ instance instDiffeologicalSpaceUnits : DiffeologicalSpace Mˣ :=
   DiffeologicalSpace.induced (embedProduct M) inferInstance
 
 @[to_additive]
-theorem induction_embedProduct : Induction (embedProduct M) :=
-  ⟨embedProduct_injective _,rfl⟩
+theorem isInduction_embedProduct : IsInduction (embedProduct M) :=
+  ⟨⟨rfl⟩, embedProduct_injective _⟩
 
 @[to_additive] lemma diffeology_eq_inf : instDiffeologicalSpaceUnits =
     dM.induced (val : Mˣ → M) ⊓ dM.induced (fun u ↦ ↑u⁻¹ : Mˣ → M) :=
-  induction_embedProduct.2
+  isInduction_embedProduct.eq_induced
 
 @[to_additive]
 theorem dsmooth_embedProduct : DSmooth (embedProduct M) :=
@@ -66,7 +66,7 @@ theorem dsmooth_val : DSmooth ((↑) : Mˣ → M) :=
 @[to_additive]
 protected theorem dsmooth_iff {f : X → Mˣ} :
     DSmooth f ↔ DSmooth (val ∘ f) ∧ DSmooth (fun x ↦ ↑(f x)⁻¹ : X → M) := by
-  simp_rw [induction_embedProduct.dsmooth_iff, Function.comp_def, dsmooth_prod_mk]; rfl
+  simp_rw [isInduction_embedProduct.dsmooth_iff, Function.comp_def, dsmooth_prod_mk]; rfl
 
 @[to_additive]
 theorem dsmooth_coe_inv : DSmooth (fun u ↦ ↑u⁻¹ : Mˣ → M) :=

@@ -40,11 +40,11 @@ protected theorem continuous' [TopologicalSpace X] [TopologicalSpace Y] [DTopCom
 
 protected theorem dsmooth (h : X ᵈ≃ Y) : DSmooth h := h.dsmooth_toFun
 
-protected theorem induction (h : X ᵈ≃ Y) : Induction h :=
-  h.left_inv.induction h.dsmooth_invFun h.dsmooth
+protected theorem isInduction (h : X ᵈ≃ Y) : IsInduction h :=
+  h.left_inv.isInduction h.dsmooth_invFun h.dsmooth
 
-protected theorem subduction (h : X ᵈ≃ Y) : Subduction h :=
-  h.right_inv.subduction h.dsmooth h.dsmooth_invFun
+protected theorem isSubduction (h : X ᵈ≃ Y) : IsSubduction h :=
+  h.right_inv.isSubduction h.dsmooth h.dsmooth_invFun
 
 @[simp]
 theorem coe_toEquiv (h : X ᵈ≃ Y) : ⇑h.toEquiv = h := rfl
@@ -160,8 +160,8 @@ theorem symm_image_image (h : X ᵈ≃ Y) (s : Set X) : h.symm '' (h '' s) = s :
   h.toEquiv.symm_image_image s
 
 /-- An induction is a diffeomorphism onto its image. -/
-noncomputable def ofInduction {f : X → Y} (hf : Induction f) : X ᵈ≃ range f where
-  toEquiv := Equiv.ofInjective f hf.1
+noncomputable def ofIsInduction {f : X → Y} (hf : IsInduction f) : X ᵈ≃ range f where
+  toEquiv := Equiv.ofInjective f hf.2
   dsmooth_toFun := hf.dsmooth
   dsmooth_invFun := hf.dsmooth_iff.2 <| by simp [dsmooth_subtype_val]
 

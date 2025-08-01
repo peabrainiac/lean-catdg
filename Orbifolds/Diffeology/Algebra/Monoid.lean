@@ -71,13 +71,11 @@ instance Pi.dsmoothMul {ι : Type*} {M : ι → Type*} [∀ i, DiffeologicalSpac
 -- TODO: DSmoothMul instance on discrete spaces, once those are available as a typeclass
 
 /-- For any monoid homomorphism to a diffeological monoid, the induced diffeology makes
-  the domain a diffeological monoid too.
-  TODO: replace the `Induction` hypothesis here with something that does not include
-  injectivity, once that exists. In the meantime, see `dsmoothMul_induced`. -/
+  the domain a diffeological monoid too. -/
 @[to_additive "For any monoid homomorphism to a diffeological monoid, the induced diffeology makes
   the domain a diffeological monoid too."]
-theorem Induction.dsmoothMul {M N F : Type*} [Mul M] [Mul N] [FunLike F M N] [MulHomClass F M N]
-    [DiffeologicalSpace M] [DiffeologicalSpace N] [DSmoothMul N] (f : F) (hf : Induction f) :
+theorem IsDInducing.dsmoothMul {M N F : Type*} [Mul M] [Mul N] [FunLike F M N] [MulHomClass F M N]
+    [DiffeologicalSpace M] [DiffeologicalSpace N] [DSmoothMul N] (f : F) (hf : IsDInducing f) :
     DSmoothMul M :=
   ⟨(hf.dsmoothSMul hf.dsmooth (map_mul f _ _)).1⟩
 
@@ -93,8 +91,7 @@ end DSmoothMul
 @[to_additive]
 instance Subsemigroup.dsmoothMul {M : Type*} [DiffeologicalSpace M] [Semigroup M] [DSmoothMul M]
     (S : Subsemigroup M) : DSmoothMul S :=
-  Induction.dsmoothMul ({ toFun := (↑), map_mul' := fun _ _ ↦ rfl} : MulHom S M)
-    ⟨Subtype.val_injective,rfl⟩
+  IsDInducing.dsmoothMul ({ toFun := (↑), map_mul' := fun _ _ ↦ rfl} : MulHom S M) ⟨rfl⟩
 
 section Monoid
 
@@ -148,7 +145,7 @@ with respect to the induced diffeology, is also smooth. -/
 @[to_additive "If addition on an additive monoid is smooth, then addition on the additive units
 of the monoid, with respect to the induced diffeology, is also smooth."]
 instance {M : Type*} [DiffeologicalSpace M] [Monoid M] [DSmoothMul M] : DSmoothMul Mˣ :=
-  induction_embedProduct.dsmoothMul (embedProduct M)
+  isInduction_embedProduct.dsmoothMul (embedProduct M)
 
 end Units
 

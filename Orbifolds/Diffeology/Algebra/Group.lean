@@ -128,12 +128,9 @@ theorem dsmoothInv_inf {G : Type*} [Inv G] {d₁ d₂ : DiffeologicalSpace G}
     (h₁ : @DSmoothInv G d₁ _) (h₂ : @DSmoothInv G d₂ _) : @DSmoothInv G (d₁ ⊓ d₂) _ :=
   inf_eq_iInf d₁ d₂ ▸ dsmoothInv_iInf fun b ↦ (by cases b <;> assumption)
 
-/-
-  TODO: replace the `Induction` hypothesis here with something that does not include
-  injectivity, once that exists. In the meantime, see `dsmoothInv_induced`. -/
 @[to_additive]
-theorem Induction.dsmoothInv {G H : Type*} [Inv G] [Inv H] [DiffeologicalSpace G]
-    [DiffeologicalSpace H] [DSmoothInv H] {f : G → H} (hf : Induction f)
+theorem IsDInducing.dsmoothInv {G H : Type*} [Inv G] [Inv H] [DiffeologicalSpace G]
+    [DiffeologicalSpace H] [DSmoothInv H] {f : G → H} (hf : IsDInducing f)
     (hf_inv : ∀ x, f x⁻¹ = (f x)⁻¹) : DSmoothInv G :=
   ⟨hf.dsmooth_iff.2 <| by simpa only [Function.comp_def, hf_inv] using hf.dsmooth.inv⟩
 
@@ -232,7 +229,7 @@ open MulOpposite
 
 @[to_additive]
 instance {G : Type*} [DiffeologicalSpace G] [Inv G] [DSmoothInv G] : DSmoothInv Gᵐᵒᵖ :=
-  by exact opDDiffeomorph.symm.induction.dsmoothInv unop_inv
+  by exact opDDiffeomorph.symm.isInduction.dsmoothInv unop_inv
 
 /-- If multiplication is continuous in `α`, then it also is in `αᵐᵒᵖ`. -/
 @[to_additive "If addition is continuous in `α`, then it also is in `αᵃᵒᵖ`."]
@@ -262,13 +259,11 @@ variable {G}
 
 omit [DiffeologicalSpace H] [Group H] [DiffeologicalGroup H] in
 /-- For any group homomorphism to a diffeological group, the induced diffeology makes the
-  domain a diffeological group too.
-  TODO: replace the `Induction` hypothesis here with something that does not include
-  injectivity, once that exists. In the meantime, see `diffeologicalGroup_induced`. -/
+  domain a diffeological group too. -/
 @[to_additive "For any group homomorphism to a diffeological group, the induced diffeology makes
   the domain a diffeological group too."]
-protected theorem Induction.diffeologicalGroup {F : Type*} [Group H] [DiffeologicalSpace H]
-    [FunLike F H G] [MonoidHomClass F H G] (f : F) (hf : Induction f) : DiffeologicalGroup H :=
+protected theorem IsDInducing.diffeologicalGroup {F : Type*} [Group H] [DiffeologicalSpace H]
+    [FunLike F H G] [MonoidHomClass F H G] (f : F) (hf : IsDInducing f) : DiffeologicalGroup H :=
   { toDSmoothMul := hf.dsmoothMul _
     toDSmoothInv := hf.dsmoothInv (map_inv f) }
 
@@ -284,7 +279,7 @@ namespace Subgroup
 
 @[to_additive]
 instance (S : Subgroup G) : DiffeologicalGroup S :=
-  Induction.diffeologicalGroup S.subtype induction_subtype_val
+  isInduction_subtype_val.diffeologicalGroup S.subtype
 
 end Subgroup
 
@@ -304,14 +299,14 @@ variable {G : Type*} [DiffeologicalSpace G] [Group G] [DiffeologicalGroup G]
 
 omit [DiffeologicalGroup G] in
 @[to_additive]
-theorem QuotientGroup.subduction_coe : Subduction ((↑) : G → G ⧸ N) :=
-  subduction_quotient_mk'
+theorem QuotientGroup.isSubduction_coe : IsSubduction ((↑) : G → G ⧸ N) :=
+  isSubduction_quotient_mk'
 
 @[to_additive]
 instance diffeologicalGroup_quotient [N.Normal] : DiffeologicalGroup (G ⧸ N) where
-  dsmooth_mul := ((subduction_coe N).prod_map (subduction_coe N)).dsmooth_iff.2
+  dsmooth_mul := ((isSubduction_coe N).prod_map (isSubduction_coe N)).dsmooth_iff.2
     (dsmooth_quot_mk.comp dsmooth_mul)
-  dsmooth_inv := (subduction_coe N).dsmooth_iff.2
+  dsmooth_inv := (isSubduction_coe N).dsmooth_iff.2
     (dsmooth_quot_mk.comp dsmooth_inv)
 
 end QuotientDiffeologicalGroup

@@ -63,13 +63,11 @@ theorem dsmoothSMul_induced [SMul M X] [DSmoothSMul M X] {N : Type*} [SMul N Y]
   simpa only [Function.comp_def, hsmul] using (hf.comp dsmooth_fst).smul <| hg.comp dsmooth_snd
 
 /-- For any action homomorphism where the action on the codomain is smooth, the induced
-  diffeology makes the action on the domain smooth too.
-  TODO: replace the `Induction` hypothesis here with something that does not include
-  injectivity, once that exists. In the meantime, see `dsmoothSMul_induced`. -/
+  diffeology makes the action on the domain smooth too. -/
 @[to_additive "For any action homomorphism where the action on the codomain is smooth, the induced
   diffeology makes the action on the domain smooth too."]
-lemma Induction.dsmoothSMul [SMul M X] [DSmoothSMul M X] {N : Type*} [SMul N Y]
-    [DiffeologicalSpace N] {g : Y → X} {f : N → M} (hg : Induction g) (hf : DSmooth f)
+lemma IsDInducing.dsmoothSMul [SMul M X] [DSmoothSMul M X] {N : Type*} [SMul N Y]
+    [DiffeologicalSpace N] {g : Y → X} {f : N → M} (hg : IsDInducing g) (hf : DSmooth f)
     (hsmul : ∀ {c x}, g (c • x) = f c • g x) : DSmoothSMul N Y := ⟨by
   simpa only [hg.dsmooth_iff, Function.comp_def, hsmul]
     using (hf.comp dsmooth_fst).smul <| hg.dsmooth.comp dsmooth_snd⟩
@@ -77,7 +75,7 @@ lemma Induction.dsmoothSMul [SMul M X] [DSmoothSMul M X] {N : Type*} [SMul N Y]
 @[to_additive]
 instance SMulMemClass.dsmoothSMul [SMul M X] [DSmoothSMul M X] {S : Type*} [SetLike S X]
     [SMulMemClass S M X] (s : S) : DSmoothSMul M s :=
-  induction_subtype_val.dsmoothSMul dsmooth_id rfl
+  isInduction_subtype_val.dsmoothSMul dsmooth_id rfl
 
 section Monoid
 
@@ -85,7 +83,7 @@ variable [Monoid M] [MulAction M X] [DSmoothSMul M X]
 
 @[to_additive]
 instance Units.dsmoothSMul : DSmoothSMul Mˣ X :=
-  induction_id.dsmoothSMul Units.dsmooth_val rfl
+  isInduction_id.dsmoothSMul Units.dsmooth_val rfl
 
 /-- Composing a smooth action with a smooth homomorphism results in a smooth action. -/
 @[to_additive]
@@ -98,7 +96,7 @@ theorem MulAction.dsmoothSMul_compHom {N : Type*} [DiffeologicalSpace N] [Monoid
 
 @[to_additive]
 instance Submonoid.dsmoothSMul {S : Submonoid M} : DSmoothSMul S X :=
-  induction_id.dsmoothSMul dsmooth_subtype_val rfl
+  isInduction_id.dsmoothSMul dsmooth_subtype_val rfl
 
 end Monoid
 

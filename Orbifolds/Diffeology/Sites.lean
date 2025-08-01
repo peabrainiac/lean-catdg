@@ -79,11 +79,11 @@ theorem comp_app {n m k : CartSp} (f : n ⟶ m) (g : m ⟶ k) (x : n) :
   Since mathlib apparently doesn't have smooth embeddings yet, diffeological inductions are
   used instead. -/
 def openCoverCoverage : Coverage CartSp where
-  covering n := {s | (∀ (m : _) (f : m ⟶ n), s f → Induction f.1 ∧ IsOpenMap f.1) ∧
+  covering n := {s | (∀ (m : _) (f : m ⟶ n), s f → IsInduction f.1 ∧ IsOpenMap f.1) ∧
     ⋃ (m : CartSp) (f ∈ s (Y := m)), range f.1 = univ}
   pullback n m g s hs := by
     use fun k ↦ {f | (∃ (k : _) (f' : k ⟶ n), s f' ∧ range (g.1 ∘ f.1) ⊆ range f'.1)
-      ∧ Induction f.1 ∧ IsOpenMap f.1}
+      ∧ IsInduction f.1 ∧ IsOpenMap f.1}
     refine ⟨⟨fun k f hf ↦ hf.2, ?_⟩, ?_⟩
     · refine iUnion_eq_univ_iff.2 fun x ↦ ?_
       let ⟨k,hk⟩ := iUnion_eq_univ_iff.1 hs.2 (g x)
@@ -96,13 +96,13 @@ def openCoverCoverage : Coverage CartSp where
       refine ⟨⟨?_, ?_⟩, ?_⟩
       · refine ⟨k, f, hf, _root_.subset_trans ?_ (image_subset_iff.2 hxε)⟩
         simp_rw [range_comp]; apply image_mono; simpa using subset_rfl
-      · refine ⟨induction_subtype_val.comp e.induction, ?_⟩
+      · refine ⟨isInduction_subtype_val.comp e.isInduction, ?_⟩
         have := (Metric.isOpen_ball  (x := x) (ε := ε)).dTopCompatible
         exact (Metric.isOpen_ball).isOpenMap_subtype_val.comp e.toHomeomorph'.isOpenMap
       · change x ∈ range (Subtype.val ∘ e.toEquiv)
         rw [e.toEquiv.surjective.range_comp]; simp [hε]
     · intro k f ⟨⟨k',f',hf'⟩,_⟩; use k'
-      let f'' := (DDiffeomorph.ofInduction (hs.1 k' f' hf'.1).1)
+      let f'' := (DDiffeomorph.ofIsInduction (hs.1 k' f' hf'.1).1)
       use ⟨_,(f''.dsmooth_invFun.comp <|
         (f ≫ g).2.subtype_mk (fun x ↦ hf'.2 (mem_range_self x)))⟩
       refine ⟨f', hf'.1, ?_⟩; ext x; change f'.1 (f''.invFun _) = _
@@ -122,12 +122,12 @@ lemma openCoverTopology.mem_sieves_iff {n : CartSp} {s : Sieve n} :
   | of n s hs =>
     exact ⟨s, Sieve.le_generate s, hs⟩
   | top n =>
-    refine ⟨fun k f ↦ Induction f ∧ IsOpenMap f, le_top, fun k f hf ↦ hf, ?_⟩
+    refine ⟨fun k f ↦ IsInduction f ∧ IsOpenMap f, le_top, fun k f hf ↦ hf, ?_⟩
     exact univ_subset_iff.1 <| subset_iUnion_of_subset n <|
-        subset_iUnion₂_of_subset (𝟙 n) ⟨induction_id, IsOpenMap.id⟩ (range_id.symm.subset)
+        subset_iUnion₂_of_subset (𝟙 n) ⟨isInduction_id, IsOpenMap.id⟩ (range_id.symm.subset)
   | transitive n s r _ _ hs hr =>
     let ⟨s', hs'⟩ := hs
-    refine ⟨fun k f ↦ r f ∧ Induction f ∧ IsOpenMap f, fun _ _ h ↦ h.1, fun _ _ h ↦ h.2, ?_⟩
+    refine ⟨fun k f ↦ r f ∧ IsInduction f ∧ IsOpenMap f, fun _ _ h ↦ h.1, fun _ _ h ↦ h.2, ?_⟩
     rw [← univ_subset_iff, ← hs'.2.2]
     refine iUnion_subset fun m ↦ iUnion₂_subset fun f hf ↦ ?_
     let ⟨r', hr'⟩ := hr (hs'.1 _ hf)
@@ -143,12 +143,12 @@ lemma openCoverTopology.mem_sieves_iff {n : CartSp} {s : Sieve n} :
 surjective. -/
 lemma openCoverTopology.mem_sieves_iff' {n : CartSp} {s : Sieve n} :
     s ∈ openCoverTopology n ↔
-    ⋃ (m) (f : m ⟶ n) (_ : s f ∧ Induction f ∧ IsOpenMap f), range f = univ := by
+    ⋃ (m) (f : m ⟶ n) (_ : s f ∧ IsInduction f ∧ IsOpenMap f), range f = univ := by
   refine mem_sieves_iff.trans ⟨fun ⟨r, hr⟩ ↦ ?_, fun h ↦ ?_⟩
   · rw [← univ_subset_iff, ← hr.2.2]
     exact iUnion_subset fun m ↦ iUnion₂_subset fun f hf ↦ subset_iUnion_of_subset m <|
       subset_iUnion₂_of_subset f ⟨hr.1 _ hf, hr.2.1 m f hf⟩ subset_rfl
-  · exact ⟨fun m f ↦ s f ∧ Induction f ∧ IsOpenMap f, fun _ _ h ↦ h.1, fun _ _ h ↦ h.2, h⟩
+  · exact ⟨fun m f ↦ s f ∧ IsInduction f ∧ IsOpenMap f, fun _ _ h ↦ h.1, fun _ _ h ↦ h.2, h⟩
 
 /-- The `0`-dimensional cartesian space is terminal in `CartSp`. -/
 def isTerminal0 : IsTerminal (0 : CartSp) where
@@ -297,11 +297,11 @@ theorem comp_app {u v w : EuclOp} (f : u ⟶ v) (g : v ⟶ w) (x : u) :
   Since mathlib apparently doesn't have smooth embeddings yet, diffeological inductions are
   used instead. -/
 def openCoverCoverage : Coverage EuclOp where
-  covering u := {s | (∀ (v : _) (f : v ⟶ u), s f → Induction f.1 ∧ IsOpenMap f.1) ∧
+  covering u := {s | (∀ (v : _) (f : v ⟶ u), s f → IsInduction f.1 ∧ IsOpenMap f.1) ∧
     ⋃ (v : EuclOp) (f ∈ s (Y := v)), range f.1 = univ}
   pullback u v g s hs := by
     use fun k ↦ {f | (∃ (k : _) (f' : k ⟶ u), s f' ∧ range (g.1 ∘ f.1) ⊆ range f'.1)
-      ∧ Induction f.1 ∧ IsOpenMap f.1}
+      ∧ IsInduction f.1 ∧ IsOpenMap f.1}
     refine ⟨⟨fun k f hf ↦ hf.2, ?_⟩, ?_⟩
     · refine iUnion_eq_univ_iff.2 fun x ↦ ?_
       let ⟨w,hw⟩ := iUnion_eq_univ_iff.1 hs.2 (g x)
@@ -315,11 +315,11 @@ def openCoverCoverage : Coverage EuclOp where
         rw [range_comp, range_inclusion]
         convert image_preimage_subset _ _; ext x
         rw [mem_setOf_eq, Subtype.val_injective.mem_set_image]
-      · exact induction_inclusion <| Subtype.coe_image_subset _ _
+      · exact isInduction_inclusion <| Subtype.coe_image_subset _ _
       · exact h.isOpenMap_inclusion <| Subtype.coe_image_subset _ _
       · dsimp; rw [range_inclusion]; exact ⟨_, hgx, rfl⟩
     · intro k f ⟨⟨k',f',hf'⟩,_⟩; use k'
-      let f'' := (DDiffeomorph.ofInduction (hs.1 k' f' hf'.1).1)
+      let f'' := (DDiffeomorph.ofIsInduction (hs.1 k' f' hf'.1).1)
       use ⟨_,(f''.dsmooth_invFun.comp <|
         (f ≫ g).2.subtype_mk (fun x ↦ hf'.2 (mem_range_self x)))⟩
       refine ⟨f', hf'.1, ?_⟩; ext x; change f'.1 (f''.invFun _) = _
@@ -339,12 +339,12 @@ lemma openCoverTopology.mem_sieves_iff {n : EuclOp} {s : Sieve n} :
   | of n s hs =>
     exact ⟨s, Sieve.le_generate s, hs⟩
   | top n =>
-    refine ⟨fun k f ↦ Induction f ∧ IsOpenMap f, le_top, fun k f hf ↦ hf, ?_⟩
+    refine ⟨fun k f ↦ IsInduction f ∧ IsOpenMap f, le_top, fun k f hf ↦ hf, ?_⟩
     exact univ_subset_iff.1 <| subset_iUnion_of_subset n <|
-        subset_iUnion₂_of_subset (𝟙 n) ⟨induction_id, IsOpenMap.id⟩ (range_id.symm.subset)
+        subset_iUnion₂_of_subset (𝟙 n) ⟨isInduction_id, IsOpenMap.id⟩ (range_id.symm.subset)
   | transitive n s r _ _ hs hr =>
     let ⟨s', hs'⟩ := hs
-    refine ⟨fun k f ↦ r f ∧ Induction f ∧ IsOpenMap f, fun _ _ h ↦ h.1, fun _ _ h ↦ h.2, ?_⟩
+    refine ⟨fun k f ↦ r f ∧ IsInduction f ∧ IsOpenMap f, fun _ _ h ↦ h.1, fun _ _ h ↦ h.2, ?_⟩
     rw [← univ_subset_iff, ← hs'.2.2]
     refine iUnion_subset fun m ↦ iUnion₂_subset fun f hf ↦ ?_
     let ⟨r', hr'⟩ := hr (hs'.1 _ hf)
@@ -360,12 +360,12 @@ lemma openCoverTopology.mem_sieves_iff {n : EuclOp} {s : Sieve n} :
 surjective. -/
 lemma openCoverTopology.mem_sieves_iff' {n : EuclOp} {s : Sieve n} :
     s ∈ openCoverTopology n ↔
-    ⋃ (m) (f : m ⟶ n) (_ : s f ∧ Induction f ∧ IsOpenMap f), range f = univ := by
+    ⋃ (m) (f : m ⟶ n) (_ : s f ∧ IsInduction f ∧ IsOpenMap f), range f = univ := by
   refine mem_sieves_iff.trans ⟨fun ⟨r, hr⟩ ↦ ?_, fun h ↦ ?_⟩
   · rw [← univ_subset_iff, ← hr.2.2]
     exact iUnion_subset fun m ↦ iUnion₂_subset fun f hf ↦ subset_iUnion_of_subset m <|
       subset_iUnion₂_of_subset f ⟨hr.1 _ hf, hr.2.1 m f hf⟩ subset_rfl
-  · exact ⟨fun m f ↦ s f ∧ Induction f ∧ IsOpenMap f, fun _ _ h ↦ h.1, fun _ _ h ↦ h.2, h⟩
+  · exact ⟨fun m f ↦ s f ∧ IsInduction f ∧ IsOpenMap f, fun _ _ h ↦ h.1, fun _ _ h ↦ h.2, h⟩
 
 /-- `univ : Set (Eucl 0)` is terminal in `EuclOp`. -/
 def isTerminal0Top : IsTerminal (C := EuclOp) ⟨0, ⊤⟩ where
@@ -406,7 +406,7 @@ noncomputable def CartSp.toEuclOp : CartSp ⥤ EuclOp where
 instance : CartSp.toEuclOp.IsCoverDense EuclOp.openCoverTopology := by
   constructor; intro u
   refine EuclOp.openCoverCoverage.mem_toGrothendieck_sieves_of_superset (R := ?_) ?_ ?_
-  · exact fun {v} f ↦ v.2.1 = univ ∧ Induction f.1 ∧ IsOpenMap f.1
+  · exact fun {v} f ↦ v.2.1 = univ ∧ IsInduction f.1 ∧ IsOpenMap f.1
   · intro v f hf
     refine ⟨⟨v.1, ⟨_, dsmooth_id.restrict (mapsTo_univ _ _)⟩, ?_, ?_⟩⟩
     · let e : CartSp.toEuclOp.obj v.1 ⟶ v :=
@@ -419,7 +419,7 @@ instance : CartSp.toEuclOp.IsCoverDense EuclOp.openCoverTopology := by
     let e := (DDiffeomorph.Set.univ _).trans (DDiffeomorph.univBall x.1 hε)
     use ⟨_, (dsmooth_inclusion hxε).comp e.dsmooth⟩
     refine ⟨⟨rfl, ?_, ?_⟩, ?_⟩
-    · exact (induction_inclusion hxε).comp e.induction
+    · exact (isInduction_inclusion hxε).comp e.isInduction
     · have := (@isOpen_univ (EuclideanSpace ℝ (Fin u.1)) _).dTopCompatible
       have h : IsOpen (Metric.ball x.1 ε) := Metric.isOpen_ball
       have := h.dTopCompatible
@@ -462,8 +462,8 @@ instance : CartSp.toEuclOp.IsDenseSubsite
         (i := ⟨_, (DDiffeomorph.Set.univ _).dsmooth.comp <|
           h.dsmooth.comp <| i.dsmooth.comp e.dsmooth⟩ ≫ g) ⟨?_, ?_, ?_⟩ ?_
       · exact s.downward_closed hg _
-      · exact (DDiffeomorph.Set.univ _).induction.comp <| hf.1.comp <|
-          (induction_inclusion hε').comp e.induction
+      · exact (DDiffeomorph.Set.univ _).isInduction.comp <| hf.1.comp <|
+          (isInduction_inclusion hε').comp e.isInduction
       · have : DTopCompatible (Metric.ball x.1 ε) := Metric.isOpen_ball.dTopCompatible
         have : DTopCompatible (univ : Set (Eucl n)) := isOpen_univ.dTopCompatible
         exact (DDiffeomorph.Set.univ (Eucl n)).toHomeomorph'.isOpenMap.comp <| hf.2.comp <|

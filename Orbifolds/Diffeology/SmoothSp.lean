@@ -60,7 +60,7 @@ def DiffSp.toSmoothSp : DiffSp.{u} ⥤ SmoothSp.{u} where
     refine ⟨⟨f'', ?_⟩, ?_, ?_⟩
     · refine dsmooth_iff_locally_dsmooth.2 fun x : n ↦
         ⟨_, (hs.1 _ _ (hf' x).1).2.isOpen_range, (hf' x).2, ?_⟩
-      rw [(DDiffeomorph.ofInduction (hs.1 _ _ (hf' x).1).1).subduction.dsmooth_iff]
+      rw [(DDiffeomorph.ofIsInduction (hs.1 _ _ (hf' x).1).1).isSubduction.dsmooth_iff]
       convert (f (f' x) (hf' x).1).2; exact hf'' (k x) (f' x) (hf' x).1
     · intro l g hg; ext x; exact congr_fun (hf'' l g hg) _
     · intro f''' hf'''; ext (x : n)

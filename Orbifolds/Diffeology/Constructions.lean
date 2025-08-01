@@ -77,21 +77,21 @@ theorem dsmooth_ofAdd : DSmooth (ofAdd : X → Multiplicative X) := dsmooth_id
 
 theorem dsmooth_toAdd : DSmooth (toAdd : Multiplicative X → X) := dsmooth_id
 
-theorem induction_ofMul : Induction (ofMul : X → Additive X) := induction_id
+theorem isInduction_ofMul : IsInduction (ofMul : X → Additive X) := isInduction_id
 
-theorem induction_toMul : Induction (toMul : Additive X → X) := induction_id
+theorem isInduction_toMul : IsInduction (toMul : Additive X → X) := isInduction_id
 
-theorem induction_ofAdd : Induction (ofAdd : X → Multiplicative X) := induction_id
+theorem isInduction_ofAdd : IsInduction (ofAdd : X → Multiplicative X) := isInduction_id
 
-theorem induction_toAdd : Induction (toAdd : Multiplicative X → X) := induction_id
+theorem isInduction_toAdd : IsInduction (toAdd : Multiplicative X → X) := isInduction_id
 
-theorem subduction_ofMul : Subduction (ofMul : X → Additive X) := subduction_id
+theorem isSubduction_ofMul : IsSubduction (ofMul : X → Additive X) := isSubduction_id
 
-theorem subduction_toMul : Subduction (toMul : Additive X → X) := subduction_id
+theorem isSubduction_toMul : IsSubduction (toMul : Additive X → X) := isSubduction_id
 
-theorem subduction_ofAdd : Subduction (ofAdd : X → Multiplicative X) := subduction_id
+theorem isSubduction_ofAdd : IsSubduction (ofAdd : X → Multiplicative X) := isSubduction_id
 
-theorem subduction_toAdd : Subduction (toAdd : Multiplicative X → X) := subduction_id
+theorem isSubduction_toAdd : IsSubduction (toAdd : Multiplicative X → X) := isSubduction_id
 
 end
 
@@ -113,13 +113,13 @@ theorem dsmooth_toDual : DSmooth (toDual : X → Xᵒᵈ) := dsmooth_id
 
 theorem dsmooth_ofDual : DSmooth (ofDual : Xᵒᵈ → X) := dsmooth_id
 
-theorem induction_toDual : Induction (toDual : X → Xᵒᵈ) := induction_id
+theorem isInduction_toDual : IsInduction (toDual : X → Xᵒᵈ) := isInduction_id
 
-theorem induction_ofDual : Induction (ofDual : Xᵒᵈ → X) := induction_id
+theorem isInduction_ofDual : IsInduction (ofDual : Xᵒᵈ → X) := isInduction_id
 
-theorem subduction_toDual : Subduction (toDual : X → Xᵒᵈ) := subduction_id
+theorem isSubduction_toDual : IsSubduction (toDual : X → Xᵒᵈ) := isSubduction_id
 
-theorem subduction_ofDual : Subduction (ofDual : Xᵒᵈ → X) := subduction_id
+theorem isSubduction_ofDual : IsSubduction (ofDual : Xᵒᵈ → X) := isSubduction_id
 
 end OrderDual
 
@@ -128,15 +128,22 @@ section Subtype
 variable {X : Type*} [DiffeologicalSpace X] {s : Set X} {p : X → Prop}
   {Y : Type*} [DiffeologicalSpace Y]
 
-theorem induction_subtype_val : Induction ((↑) : s → X) :=
-  ⟨Subtype.coe_injective,rfl⟩
+theorem isDInducing_subtype_val : IsDInducing ((↑) : s → X) :=
+  ⟨rfl⟩
 
-theorem Induction.of_codRestrict {f : X → Y} {t : Set Y} (ht : ∀ x, f x ∈ t)
-    (hf : Induction (t.codRestrict f ht)) : Induction f :=
-  induction_subtype_val.comp hf
+theorem isInduction_subtype_val : IsInduction ((↑) : s → X) :=
+  ⟨isDInducing_subtype_val, Subtype.coe_injective⟩
+
+theorem IsDInducing.of_codRestrict {f : X → Y} {t : Set Y} (ht : ∀ x, f x ∈ t)
+    (hf : IsDInducing (t.codRestrict f ht)) : IsDInducing f :=
+  isDInducing_subtype_val.comp hf
+
+theorem IsInduction.of_codRestrict {f : X → Y} {t : Set Y} (ht : ∀ x, f x ∈ t)
+    (hf : IsInduction (t.codRestrict f ht)) : IsInduction f :=
+  isInduction_subtype_val.comp hf
 
 theorem dsmooth_subtype_val : DSmooth ((↑) : s → X) :=
-  induction_subtype_val.dsmooth
+  isInduction_subtype_val.dsmooth
 
 theorem DSmooth.subtype_val {f : Y → Subtype p} (hf : DSmooth f) :
     DSmooth fun x ↦ (f x : X) :=
@@ -150,8 +157,11 @@ theorem DSmooth.subtype_map {f : X → Y} (h : DSmooth f) {q : Y → Prop}
     (hpq : ∀ x, p x → q (f x)) : DSmooth (Subtype.map f hpq) :=
   (h.comp dsmooth_subtype_val).subtype_mk _
 
-theorem induction_inclusion {s t : Set X} (h : s ⊆ t) : Induction (inclusion h) :=
-  induction_subtype_val.of_comp (Set.val_comp_inclusion h ▸ induction_subtype_val)
+theorem isDInducing_inclusion {s t : Set X} (h : s ⊆ t) : IsDInducing (inclusion h) :=
+  isDInducing_subtype_val.of_comp (Set.val_comp_inclusion h ▸ isDInducing_subtype_val)
+
+theorem isInduction_inclusion {s t : Set X} (h : s ⊆ t) : IsInduction (inclusion h) :=
+  isInduction_subtype_val.of_comp (Set.val_comp_inclusion h ▸ isInduction_subtype_val)
 
 theorem dsmooth_inclusion {s t : Set X} (h : s ⊆ t) : DSmooth (inclusion h) :=
   dsmooth_id.subtype_map h
@@ -168,13 +178,21 @@ theorem DSmooth.restrictPreimage {f : X → Y} {s : Set Y} (h : DSmooth f) :
     DSmooth (s.restrictPreimage f) :=
   h.restrict _
 
-theorem Induction.codRestrict {f : X → Y} (hf : Induction f) {s : Set Y} (hs : ∀ x, f x ∈ s) :
-    Induction (s.codRestrict f hs) :=
-  Induction.of_comp' (hf.dsmooth.codRestrict hs) dsmooth_subtype_val hf
+theorem IsDInducing.codRestrict {f : X → Y} (hf : IsDInducing f) {s : Set Y} (hs : ∀ x, f x ∈ s) :
+    IsDInducing (s.codRestrict f hs) :=
+  IsDInducing.of_comp' (hf.dsmooth.codRestrict hs) dsmooth_subtype_val hf
 
-theorem Induction.restrict {f : X → Y} (hf : Induction f) {s : Set X} {t : Set Y}
-    (hf' : MapsTo f s t) : Induction hf'.restrict :=
-  (hf.comp induction_subtype_val).codRestrict _
+theorem IsInduction.codRestrict {f : X → Y} (hf : IsInduction f) {s : Set Y} (hs : ∀ x, f x ∈ s) :
+    IsInduction (s.codRestrict f hs) :=
+  IsInduction.of_comp' (hf.dsmooth.codRestrict hs) dsmooth_subtype_val hf
+
+theorem IsDInducing.restrict {f : X → Y} (hf : IsDInducing f) {s : Set X} {t : Set Y}
+    (hf' : MapsTo f s t) : IsDInducing hf'.restrict :=
+  (hf.comp isDInducing_subtype_val).codRestrict _
+
+theorem IsInduction.restrict {f : X → Y} (hf : IsInduction f) {s : Set X} {t : Set Y}
+    (hf' : MapsTo f s t) : IsInduction hf'.restrict :=
+  (hf.comp isInduction_subtype_val).codRestrict _
 
 theorem ContDiffOn.dsmooth_restrict [NormedAddCommGroup X] [NormedSpace ℝ X] [ContDiffCompatible X]
     [NormedAddCommGroup Y] [NormedSpace ℝ Y] [ContDiffCompatible Y]
@@ -510,8 +528,11 @@ section Quotient
 variable {X Y Z : Type*} [DiffeologicalSpace X] [DiffeologicalSpace Y] [DiffeologicalSpace Z]
   {r : X → X → Prop} {s : Setoid X}
 
-theorem subduction_quot_mk : Subduction (@Quot.mk X r) :=
-  ⟨Quot.exists_rep, rfl⟩
+theorem isDCoinducing_quot_mk : IsDCoinducing (@Quot.mk X r) :=
+  ⟨rfl⟩
+
+theorem isSubduction_quot_mk : IsSubduction (@Quot.mk X r) :=
+  ⟨isDCoinducing_quot_mk, Quot.exists_rep⟩
 
 theorem dsmooth_quot_mk : DSmooth (@Quot.mk X r) :=
   dsmooth_coinduced_rng
@@ -520,8 +541,11 @@ theorem dsmooth_quot_lift {f : X → Y} (hr : ∀ a b, r a b → f a = f b) (h :
     DSmooth (Quot.lift f hr : Quot r → Y) :=
   dsmooth_coinduced_dom.2 h
 
-theorem subduction_quotient_mk' : Subduction (@Quotient.mk' X s) :=
-  subduction_quot_mk
+theorem isDCoinducing_quotient_mk' : IsDCoinducing (@Quotient.mk' X s) :=
+  isDCoinducing_quot_mk
+
+theorem isSubduction_quotient_mk' : IsSubduction (@Quotient.mk' X s) :=
+  isSubduction_quot_mk
 
 theorem dsmooth_quotient_mk' : DSmooth (@Quotient.mk' X s) :=
   dsmooth_coinduced_rng
@@ -684,16 +708,16 @@ theorem isPlot_prod_iff {n} {p : Eucl n → X × Y} :
   ⟨fun hp ↦ ⟨hp.dsmooth.fst.isPlot,hp.dsmooth.snd.isPlot⟩,fun h ↦ h.1.prod h.2⟩
 
 /-- The first projection in a product of diffeological spaces is a subduction. -/
-theorem subduction_fst [Nonempty Y] : Subduction (@Prod.fst X Y) := by
+theorem isSubduction_fst [Nonempty Y] : IsSubduction (@Prod.fst X Y) := by
   let y : Y := Nonempty.some inferInstance
   have h : Function.LeftInverse (@Prod.fst X Y) fun x ↦ (x,y) := fun _ ↦ rfl
-  exact h.subduction dsmooth_fst dsmooth_id.curry_left
+  exact h.isSubduction dsmooth_fst dsmooth_id.curry_left
 
 /-- The second projection in a product of diffeological spaces is a subduction. -/
-theorem subduction_snd [Nonempty X] : Subduction (@Prod.snd X Y) := by
+theorem isSubduction_snd [Nonempty X] : IsSubduction (@Prod.snd X Y) := by
   let x : X := Nonempty.some inferInstance
   have h : Function.LeftInverse (@Prod.snd X Y) fun y ↦ (x,y) := fun _ ↦ rfl
-  exact h.subduction dsmooth_snd dsmooth_id.curry_right
+  exact h.isSubduction dsmooth_snd dsmooth_id.curry_right
 
 omit [DiffeologicalSpace X] [DiffeologicalSpace Z] in
 /-- A product of induced diffeologies is induced by the product map. -/
@@ -728,39 +752,53 @@ theorem DiffeologicalSpace.prod_coinduced_coinduced {X Y Z W : Type*}
     (hp₂.1.comp (dsmooth_inclusion (inter_subset_right))),funext fun x ↦ ?_⟩
   simp_rw [Function.comp_def,Prod.map,←f.comp_apply,←hp₁.2,←g.comp_apply,←hp₂.2]; rfl
 
+theorem IsDInducing.prod_map {f : X → Y} {g : Z → W} (hf : IsDInducing f) (hg : IsDInducing g) :
+    IsDInducing (Prod.map f g) :=
+  ⟨by rw [hf.1, hg.1, DiffeologicalSpace.prod_induced_induced f g]; rfl⟩
 
-theorem Induction.prod_map {f : X → Y} {g : Z → W} (hf : Induction f) (hg : Induction g) :
-    Induction (Prod.map f g) :=
-  ⟨hf.1.prodMap hg.1,by rw [hf.2,hg.2,DiffeologicalSpace.prod_induced_induced f g]; rfl⟩
+theorem IsInduction.prod_map {f : X → Y} {g : Z → W} (hf : IsInduction f) (hg : IsInduction g) :
+    IsInduction (Prod.map f g) :=
+  ⟨hf.1.prod_map hg.1, hf.2.prodMap hg.2⟩
 
-theorem Subduction.prod_map {f : X → Y} {g : Z → W} (hf : Subduction f) (hg : Subduction g) :
-    Subduction (Prod.map f g) :=
-  ⟨hf.1.prodMap hg.1,by rw [hf.2,hg.2,DiffeologicalSpace.prod_coinduced_coinduced hf.1 hg.1]; rfl⟩
+theorem IsSubduction.prod_map {f : X → Y} {g : Z → W} (hf : IsSubduction f) (hg : IsSubduction g) :
+    IsSubduction (Prod.map f g) :=
+  ⟨⟨by rw [hf.1.1, hg.1.1, DiffeologicalSpace.prod_coinduced_coinduced hf.2 hg.2]; rfl⟩,
+    hf.2.prodMap hg.2⟩
 
 @[simp]
-theorem induction_const_prod {x : X} {f : Y → Z} :
-    (Induction fun y ↦ (x, f y)) ↔ Induction f := by
-  refine and_congr ((Prod.mk_right_injective x).of_comp_iff f) ?_
-  simp_rw [instDiffeologicalSpaceProd, DiffeologicalSpace.induced_inf,
+theorem isDInducing_const_prod {x : X} {f : Y → Z} :
+    (IsDInducing fun y ↦ (x, f y)) ↔ IsDInducing f := by
+  simp_rw [isDInducing_iff, instDiffeologicalSpaceProd, DiffeologicalSpace.induced_inf,
     DiffeologicalSpace.induced_compose, Function.comp_def,
     DiffeologicalSpace.induced_const, top_inf_eq]
 
 @[simp]
-theorem induction_prod_const {y : Y} {f : X → Z} :
-    (Induction fun x ↦ (f x, y)) ↔ Induction f := by
-  refine and_congr ((Prod.mk_left_injective y).of_comp_iff f) ?_
-  simp_rw [instDiffeologicalSpaceProd, DiffeologicalSpace.induced_inf,
+theorem isInduction_const_prod {x : X} {f : Y → Z} :
+    (IsInduction fun y ↦ (x, f y)) ↔ IsInduction f := by
+  rw [isInduction_iff, isInduction_iff]
+  exact and_congr isDInducing_const_prod ((Prod.mk_right_injective x).of_comp_iff f)
+
+@[simp]
+theorem isDInducing_prod_const {y : Y} {f : X → Z} :
+    (IsDInducing fun x ↦ (f x, y)) ↔ IsDInducing f := by
+  simp_rw [isDInducing_iff, instDiffeologicalSpaceProd, DiffeologicalSpace.induced_inf,
     DiffeologicalSpace.induced_compose, Function.comp_def,
     DiffeologicalSpace.induced_const, inf_top_eq]
 
-theorem induction_graph {f : X → Y} (hf : DSmooth f) : Induction fun x ↦ (x, f x) :=
-  Induction.of_comp' (dsmooth_id.prod_mk hf) dsmooth_fst induction_id
+@[simp]
+theorem isInduction_prod_const {y : Y} {f : X → Z} :
+    (IsInduction fun x ↦ (f x, y)) ↔ IsInduction f := by
+  rw [isInduction_iff, isInduction_iff]
+  exact and_congr isDInducing_prod_const ((Prod.mk_left_injective y).of_comp_iff f)
 
-theorem induction_prod_mk (x : X) : Induction (Prod.mk x : Y → X × Y) :=
-  induction_const_prod.2 induction_id
+theorem isInduction_graph {f : X → Y} (hf : DSmooth f) : IsInduction fun x ↦ (x, f x) :=
+  IsInduction.of_comp' (dsmooth_id.prod_mk hf) dsmooth_fst isInduction_id
 
-theorem induction_prod_mk_left (y : X) : Induction (fun x : X ↦ (x, y)) :=
-  induction_prod_const.2 induction_id
+theorem isInduction_prod_mk (x : X) : IsInduction (Prod.mk x : Y → X × Y) :=
+  isInduction_const_prod.2 isInduction_id
+
+theorem isInduction_prod_mk_left (y : X) : IsInduction (fun x : X ↦ (x, y)) :=
+  isInduction_prod_const.2 isInduction_id
 
 /-- Products of reflexive diffeological spaces are reflexive. -/
 instance [hX : ReflexiveDiffeologicalSpace X] [hY :ReflexiveDiffeologicalSpace Y] :
@@ -925,8 +963,8 @@ theorem dsmooth_uLift_down : DSmooth (ULift.down : ULift.{v, u} X → X) :=
 theorem dsmooth_uLift_up : DSmooth (ULift.up : X → ULift.{v, u} X) :=
   dsmooth_induced_rng.2 dsmooth_id
 
-theorem induction_uLift_down : Induction (ULift.down : ULift.{v, u} X → X) :=
-  ⟨ULift.down_injective,rfl⟩
+theorem isInduction_uLift_down : IsInduction (ULift.down : ULift.{v, u} X → X) :=
+  ⟨⟨rfl⟩, ULift.down_injective⟩
 
 -- TODO: ulift discrete diffeologies once instance is available
 
