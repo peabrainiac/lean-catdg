@@ -6,6 +6,8 @@ import Mathlib.Topology.LocallyConstant.Basic
 In large parts based on `Mathlib.Topology.Order`.
 -/
 
+open Topology
+
 section Induced
 
 variable {X Y Z : Type*}
@@ -492,5 +494,89 @@ theorem Function.LeftInverse.isInduction {f : X → Y} {g : Y → X} (h : LeftIn
 theorem Function.LeftInverse.isSubduction {f : X → Y} {g : Y → X} (h : LeftInverse f g)
     (hf : DSmooth f) (hg : DSmooth g) : IsSubduction f :=
   .of_comp' hg hf (h.comp_eq_id ▸ isSubduction_id)
+
+/-- An open induction is an induction that is also an open map with respect to the D-topologies.
+What makes this an especially interesting notion compared to e.g. closed inductions is that while
+inductions are not always embeddings, open inductions are always open embeddings; furthermore,
+inductions are open iff their range is open. In comparison, an induction whose range is closed can
+still be both not an embedding and not a closed map. -/
+@[fun_prop, mk_iff]
+structure IsOpenInduction (f : X → Y) : Prop extends IsInduction f where
+  isOpenMap : @IsOpenMap _ _ DTop DTop f
+
+theorem IsOpenInduction.isOpenMap' [TopologicalSpace X] [DTopCompatible X] [TopologicalSpace Y]
+    [DTopCompatible Y] {f : X → Y} (hf : IsOpenInduction f) : IsOpenMap f :=
+  dTop_eq X ▸ dTop_eq Y ▸ hf.isOpenMap
+
+theorem IsOpenInduction.isEmbedding {f : X → Y} (hf : IsOpenInduction f) :
+    @IsEmbedding _ _ DTop DTop f := by
+  let _ := @DTop X _; let _ := @DTop Y _
+  refine ⟨⟨?_⟩, hf.injective⟩
+  rw [hf.eq_induced, dTop_induced_comm (hf.2.isOpen_range)]
+
+theorem IsOpenInduction.isEmbedding' [TopologicalSpace X] [DTopCompatible X] [TopologicalSpace Y]
+    [DTopCompatible Y] {f : X → Y} (hf : IsOpenInduction f) : IsEmbedding f :=
+  dTop_eq X ▸ dTop_eq Y ▸ hf.isEmbedding
+
+theorem IsOpenInduction.isOpenEmbedding {f : X → Y} (hf : IsOpenInduction f) :
+    @IsOpenEmbedding _ _ DTop DTop f := by
+  let _ := @DTop X _; let _ := @DTop Y _
+  exact ⟨hf.isEmbedding, hf.2.isOpen_range⟩
+
+theorem IsOpenInduction.isOpenEmbedding' [TopologicalSpace X] [DTopCompatible X]
+    [TopologicalSpace Y] [DTopCompatible Y] {f : X → Y} (hf : IsOpenInduction f) :
+    IsOpenEmbedding f :=
+  dTop_eq X ▸ dTop_eq Y ▸ hf.isOpenEmbedding
+
+theorem IsInduction.isOpenInduction_of_isOpen_range {f : X → Y} (hf : IsInduction f)
+    (hf' : IsOpen[DTop] (Set.range f)) : IsOpenInduction f := by
+  let _ := @DTop X _; let _ := @DTop Y _
+  refine ⟨hf, IsOpenEmbedding.isOpenMap ⟨⟨⟨?_⟩, hf.2⟩, hf'⟩⟩
+  rw [hf.eq_induced, dTop_induced_comm hf']
+
+theorem IsInduction.isOpenInduction_of_isOpen_range' [TopologicalSpace Y] [DTopCompatible Y]
+    {f : X → Y} (hf : IsInduction f) (hf' : IsOpen (Set.range f)) : IsOpenInduction f :=
+  hf.isOpenInduction_of_isOpen_range (dTop_eq Y ▸ hf')
+
+theorem isOpenInduction_iff_isInduction_and_isOpen_range {f : X → Y} :
+    IsOpenInduction f ↔ IsInduction f ∧ IsOpen[DTop] (Set.range f) := by
+  let _ := @DTop X _; let _ := @DTop Y _
+  exact ⟨fun h ↦ ⟨h.1, h.2.isOpen_range⟩, fun h ↦ h.1.isOpenInduction_of_isOpen_range h.2⟩
+
+theorem isOpenInduction_iff_isInduction_and_isOpen_range' [TopologicalSpace Y] [DTopCompatible Y]
+    {f : X → Y} : IsOpenInduction f ↔ IsInduction f ∧ IsOpen (Set.range f) :=
+  dTop_eq Y ▸ isOpenInduction_iff_isInduction_and_isOpen_range
+
+theorem IsInduction.isOpenInduction_of_surjective {f : X → Y} (hf : IsInduction f)
+    (hf' : f.Surjective) : IsOpenInduction f :=
+  hf.isOpenInduction_of_isOpen_range <| hf'.range_eq ▸ @isOpen_univ _ DTop
+
+@[fun_prop]
+theorem isOpenInduction_id : IsOpenInduction (@id X) := ⟨isInduction_id, @IsOpenMap.id _ DTop⟩
+
+theorem IsOpenInduction.comp {f : X → Y} {g : Y → Z} (hg : IsOpenInduction g)
+    (hf : IsOpenInduction f) : IsOpenInduction (g ∘ f) :=
+  ⟨hg.1.comp hf.1, @IsOpenMap.comp _ _ _ _ _ (_) (_) (_) hg.2 hf.2⟩
+
+@[fun_prop]
+theorem IsOpenInduction.comp' {f : X → Y} {g : Y → Z} (hg : IsOpenInduction g)
+    (hf : IsOpenInduction f) : IsOpenInduction fun x ↦ g (f x) :=
+  IsOpenInduction.comp hg hf
+
+theorem IsOpenInduction.of_comp {f : X → Y} {g : Y → Z} (hg : IsOpenInduction g)
+    (h : IsOpenInduction (g ∘ f)) : IsOpenInduction f := by
+  let _ := @DTop X _; let _ := @DTop Y _; let _ := @DTop Z _
+  exact ⟨hg.1.of_comp h.1, (hg.isOpenEmbedding.of_comp _ h.isOpenEmbedding).isOpenMap⟩
+
+theorem IsOpenInduction.of_comp_iff {f : X → Y} {g : Y → Z} (hg : IsOpenInduction g) :
+    IsOpenInduction (g ∘ f) ↔ IsOpenInduction f :=
+  ⟨hg.of_comp, hg.comp⟩
+
+theorem IsOpenInduction.of_comp' {f : X → Y} {g : Y → Z} (hg : IsInduction g)
+    (h : IsOpenInduction (g ∘ f)) : IsOpenInduction f := by
+  let _ := @DTop X _; let _ := @DTop Y _; let _ := @DTop Z _
+  refine (hg.of_comp h.1).isOpenInduction_of_isOpen_range ?_
+  rw [hg.eq_induced, ← hg.2.preimage_image (Set.range f), ← Set.range_comp]
+  exact (isOpen_induced h.isOpenMap.isOpen_range).mono dTop_induced_le_induced_dTop
 
 end Inductions

@@ -43,6 +43,9 @@ protected theorem dsmooth (h : X ᵈ≃ Y) : DSmooth h := h.dsmooth_toFun
 protected theorem isInduction (h : X ᵈ≃ Y) : IsInduction h :=
   h.left_inv.isInduction h.dsmooth_invFun h.dsmooth
 
+protected theorem isOpenInduction (h : X ᵈ≃ Y) : IsOpenInduction h :=
+  h.isInduction.isOpenInduction_of_surjective h.surjective
+
 protected theorem isSubduction (h : X ᵈ≃ Y) : IsSubduction h :=
   h.right_inv.isSubduction h.dsmooth h.dsmooth_invFun
 

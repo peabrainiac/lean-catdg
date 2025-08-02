@@ -134,6 +134,14 @@ theorem isDInducing_subtype_val : IsDInducing ((↑) : s → X) :=
 theorem isInduction_subtype_val : IsInduction ((↑) : s → X) :=
   ⟨isDInducing_subtype_val, Subtype.coe_injective⟩
 
+theorem IsOpen.isOpenInduction_subtype_val (hs : IsOpen[DTop] s) :
+    IsOpenInduction ((↑) : s → X) :=
+  isInduction_subtype_val.isOpenInduction_of_isOpen_range <| Subtype.range_coe ▸ hs
+
+theorem IsOpen.isOpenInduction_subtype_val' [TopologicalSpace X] [DTopCompatible X]
+    (hs : IsOpen s) : IsOpenInduction ((↑) : s → X) :=
+  isOpenInduction_subtype_val (dTop_eq X ▸ hs)
+
 theorem IsDInducing.of_codRestrict {f : X → Y} {t : Set Y} (ht : ∀ x, f x ∈ t)
     (hf : IsDInducing (t.codRestrict f ht)) : IsDInducing f :=
   isDInducing_subtype_val.comp hf
@@ -163,6 +171,14 @@ theorem isDInducing_inclusion {s t : Set X} (h : s ⊆ t) : IsDInducing (inclusi
 theorem isInduction_inclusion {s t : Set X} (h : s ⊆ t) : IsInduction (inclusion h) :=
   isInduction_subtype_val.of_comp (Set.val_comp_inclusion h ▸ isInduction_subtype_val)
 
+theorem IsOpen.isOpenInduction_inclusion {s t : Set X} (hs : IsOpen[DTop] s) (h : s ⊆ t) :
+    IsOpenInduction (inclusion h) :=
+  .of_comp' isInduction_subtype_val (Set.val_comp_inclusion h ▸ hs.isOpenInduction_subtype_val)
+
+theorem IsOpen.isOpenInduction_inclusion' [TopologicalSpace X] [DTopCompatible X] {s t : Set X}
+    (hs : IsOpen s) (h : s ⊆ t) : IsOpenInduction (inclusion h) :=
+  (dTop_eq X ▸ hs).isOpenInduction_inclusion h
+
 theorem dsmooth_inclusion {s t : Set X} (h : s ⊆ t) : DSmooth (inclusion h) :=
   dsmooth_id.subtype_map h
 
@@ -186,6 +202,10 @@ theorem IsInduction.codRestrict {f : X → Y} (hf : IsInduction f) {s : Set Y} (
     IsInduction (s.codRestrict f hs) :=
   IsInduction.of_comp' (hf.dsmooth.codRestrict hs) dsmooth_subtype_val hf
 
+theorem IsOpenInduction.codRestrict {f : X → Y} (hf : IsOpenInduction f) {s : Set Y}
+    (hs : ∀ x, f x ∈ s) : IsOpenInduction (s.codRestrict f hs) :=
+  IsOpenInduction.of_comp' isInduction_subtype_val hf
+
 theorem IsDInducing.restrict {f : X → Y} (hf : IsDInducing f) {s : Set X} {t : Set Y}
     (hf' : MapsTo f s t) : IsDInducing hf'.restrict :=
   (hf.comp isDInducing_subtype_val).codRestrict _
@@ -193,6 +213,15 @@ theorem IsDInducing.restrict {f : X → Y} (hf : IsDInducing f) {s : Set X} {t :
 theorem IsInduction.restrict {f : X → Y} (hf : IsInduction f) {s : Set X} {t : Set Y}
     (hf' : MapsTo f s t) : IsInduction hf'.restrict :=
   (hf.comp isInduction_subtype_val).codRestrict _
+
+theorem IsOpenInduction.restrict {f : X → Y} (hf : IsOpenInduction f) {s : Set X} {t : Set Y}
+    (hs : IsOpen[DTop] s) (hf' : MapsTo f s t) : IsOpenInduction hf'.restrict :=
+  (hf.comp hs.isOpenInduction_subtype_val).codRestrict _
+
+theorem IsOpenInduction.restrict' [TopologicalSpace X] [DTopCompatible X] {f : X → Y}
+    (hf : IsOpenInduction f) {s : Set X} {t : Set Y} (hs : IsOpen s) (hf' : MapsTo f s t) :
+    IsOpenInduction hf'.restrict :=
+  hf.restrict (dTop_eq X ▸ hs) hf'
 
 theorem ContDiffOn.dsmooth_restrict [NormedAddCommGroup X] [NormedSpace ℝ X] [ContDiffCompatible X]
     [NormedAddCommGroup Y] [NormedSpace ℝ Y] [ContDiffCompatible Y]
