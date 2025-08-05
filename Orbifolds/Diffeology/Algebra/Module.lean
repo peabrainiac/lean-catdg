@@ -77,11 +77,11 @@ lemma LinearMap.isPlot (X : Type*) [AddCommGroup X] [Module ℝ X] [Diffeologica
   exact (EuclideanSpace.proj (𝕜 := ℝ) i).contDiff.dsmooth.smul dsmooth_const
 
 /-- If a diffeological module is locally compact with respect to the D-topology, then it is
-  also a topological module. Notice that due to the D-topology not commuting with products
-  in general, `X` being locally compact is necessary here to ensure that addition and scalar
-  multiplication are continuous (although for the latter, `R` being locally compact would also
-  suffice). An example of a diffeological vector space over `ℝ` whose addition is
-  discontinuous is described in https://arxiv.org/abs/2205.09562. -/
+also a topological module. Notice that due to the D-topology not commuting with products
+in general, `X` being locally compact is necessary here to ensure that addition and scalar
+multiplication are continuous (although for the latter, `R` being locally compact would also
+suffice). An example of a diffeological vector space over `ℝ` whose addition is
+discontinuous is described in https://arxiv.org/abs/2205.09562. -/
 example {R : Type*} [Ring R] [DiffeologicalSpace R] [TopologicalSpace R] [DTopCompatible R]
     [DiffeologicalRing R] {X : Type*} [AddCommGroup X] [Module R X] [DiffeologicalSpace X]
     [TopologicalSpace X] [DTopCompatible X] [DiffeologicalAddGroup X] [DSmoothSMul R X]
@@ -100,7 +100,7 @@ diffeology because scalar multiplication fails to be continuous.
 -/
 
 /-- A module diffeology on a module `X` is a diffeology with which `X` is a
-  diffeological module. -/
+diffeological module. -/
 structure ModuleDiffeology (R : Type*) [DiffeologicalSpace R] [Ring R] [DiffeologicalRing R]
     (X : Type*) [AddCommGroup X] [Module R X] extends
     DiffeologicalSpace X, DiffeologicalAddGroup X, DSmoothSMul R X
@@ -151,8 +151,8 @@ theorem toDiffeologicalSpace_le {d₁ d₂ : ModuleDiffeology R X} :
   Iff.rfl
 
 /-- The coarsest module diffeology that is finer than a given diffeology.
-  Called `reflector` for the lack of a better name and because it is left-adjoint to
-  `ModuleDiffeology.toDiffeologicalSpace`. -/
+Called `reflector` for the lack of a better name and because it is left-adjoint to
+`ModuleDiffeology.toDiffeologicalSpace`. -/
 def reflector (d : DiffeologicalSpace X) : ModuleDiffeology R X :=
   ⟨sInf {d' | d ≤ d' ∧ @DiffeologicalAddGroup X d' _ ∧ @DSmoothSMul R X _ _ d'},
     diffeologicalAddGroup_sInf fun _ h ↦ h.2.1, dsmoothSMul_sInf fun _ h ↦ h.2.2⟩
@@ -163,8 +163,8 @@ lemma gc_toDiffeologicalSpace :
     fun h ↦ toDiffeologicalSpace_le.1 <| sInf_le ⟨h, toDiffeologicalAddGroup _, toDSmoothSMul _⟩⟩
 
 /-- The galois insertion between `ModuleDiffeology R X` and `DiffeologicalSpace X` whose
-  lower part sends each diffeology to the finest coarser module diffeology, and whose
-  upper part sends each module diffeology to itself. -/
+lower part sends each diffeology to the finest coarser module diffeology, and whose
+upper part sends each module diffeology to itself. -/
 def gci_toDiffeologicalSpace :
     GaloisInsertion reflector (toDiffeologicalSpace (R := R) (X := X)) where
   gc := gc_toDiffeologicalSpace
@@ -198,7 +198,7 @@ redefine this to make the D-topology defeq to mathlib's `moduleTopology R X`.
 section FineDiffeology
 
 /-- The finest diffeology turning a given module over a diffeological ring into a
-  diffeological module. -/
+diffeological module. -/
 def fineDiffeology (R : Type*) [DiffeologicalSpace R] [Ring R] [DiffeologicalRing R]
     (X : Type*) [AddCommGroup X] [Module R X] : DiffeologicalSpace X :=
   (⊥ : ModuleDiffeology R X).toDiffeologicalSpace
@@ -259,9 +259,9 @@ lemma LinearMap.dsmooth (R : Type*) [DiffeologicalSpace R] [Ring R] [Diffeologic
       (dsmoothSMul_induced f dsmooth_id (map_smul f _ _))
 
 /-- On finite-dimensional normed spaces, the fine diffeology equals the standard diffeology
-  consisting of plots that are smooth with respect to the norm. Since the fine diffeology does
-  not depend on any norm, this in particular shows that `euclideanDiffeology` does not actually
-  depend on the choice of norm either. -/
+consisting of plots that are smooth with respect to the norm. Since the fine diffeology does
+not depend on any norm, this in particular shows that `euclideanDiffeology` does not actually
+depend on the choice of norm either. -/
 lemma fineDiffeology_eq_euclideanDiffeology (X : Type*) [NormedAddCommGroup X] [NormedSpace ℝ X]
     [FiniteDimensional ℝ X] : fineDiffeology ℝ X = euclideanDiffeology := by
   refine le_antisymm (@fineDiffeology_le ℝ _ _ _ X _ _ (_) _ _) ?_

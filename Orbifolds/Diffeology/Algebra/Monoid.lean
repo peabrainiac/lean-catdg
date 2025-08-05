@@ -71,7 +71,7 @@ instance Pi.dsmoothMul {ι : Type*} {M : ι → Type*} [∀ i, DiffeologicalSpac
 -- TODO: DSmoothMul instance on discrete spaces, once those are available as a typeclass
 
 /-- For any monoid homomorphism to a diffeological monoid, the induced diffeology makes
-  the domain a diffeological monoid too. -/
+the domain a diffeological monoid too. -/
 @[to_additive "For any monoid homomorphism to a diffeological monoid, the induced diffeology makes
   the domain a diffeological monoid too."]
 theorem IsDInducing.dsmoothMul {M N F : Type*} [Mul M] [Mul N] [FunLike F M N] [MulHomClass F M N]
@@ -199,10 +199,10 @@ theorem dsmoothMul_inf {M : Type*} [Mul M] {d₁ d₂ : DiffeologicalSpace M}
 section Topology
 
 /-- If the D-topology makes `M` locally compact, then any smooth multiplication on `X` is also
-  continuous. Local compactness is needed here because multiplication is a priori only
-  continuous with respect to the D-topology on `M × M`, not the product topology - when `M` is
-  locally compact the topologies agree, but otherwise the product topology could be
-  fine enough for multiplication to not be continuous. -/
+continuous. Local compactness is needed here because multiplication is a priori only
+continuous with respect to the D-topology on `M × M`, not the product topology - when `M` is
+locally compact the topologies agree, but otherwise the product topology could be
+fine enough for multiplication to not be continuous. -/
 @[to_additive "If the D-topology makes `M` locally compact, then any smooth addition on `X`
   is also continuous. Local compactness is needed here because addition is a priori only
   continuous with respect to the D-topology on `M × M`, not the product topology - when `M` is
@@ -216,7 +216,7 @@ lemma DSmoothMul.continuousMul {M : Type*} [DiffeologicalSpace M] [Monoid M] [DS
   exact dTop_prod_eq_prod_dTop_of_locallyCompact_right.symm
 
 /-- Variant of `DSmoothMul.continuousMul` phrased in terms of spaces equipped with
-  `DTopCompatible` topologies. -/
+`DTopCompatible` topologies. -/
 @[to_additive "Variant of `DSmoothAdd.continuousAdd` phrased in terms of spaces equipped with
   `DTopCompatible` topologies."]
 instance {M : Type*} [Monoid M] [DiffeologicalSpace M] [TopologicalSpace M] [DTopCompatible M]

@@ -91,7 +91,7 @@ instance : DiffSp.toSmoothSp.{u}.Full := DiffSp.toSmoothSp.fullyFaithful.full
 instance : DiffSp.toSmoothSp.{u}.Faithful := DiffSp.toSmoothSp.fullyFaithful.faithful
 
 /-- The global sections functor taking a smooth space to its type of points. Note that this
-  is by no means faithful; `SmoothSp` is not a concrete category. -/
+is by no means faithful; `SmoothSp` is not a concrete category. -/
 def SmoothSp.Γ : SmoothSp.{u} ⥤ Type u where
   obj X := X.val.obj (.op 0)
   map f := f.val.app (.op 0)
@@ -114,7 +114,7 @@ def SmoothSp.concr : SmoothSp.{u} ⥤ DiffSp.{u} where
   map_comp := fun _ _ ↦ by rfl
 
 /-- The adjunction between the concretisation functor `SmoothSp ⥤ DiffSp` and the
-  embedding `DiffSp ⥤ SmoothSp`. -/
+embedding `DiffSp ⥤ SmoothSp`. -/
 def DiffSp.reflectorAdjunction : SmoothSp.concr.{u} ⊣ DiffSp.toSmoothSp.{u} :=
   Adjunction.mkOfUnitCounit {
     unit := {
@@ -170,14 +170,14 @@ local instance (M N : Type*) [AddCommGroup M] [Module ℝ M] [DiffeologicalSpace
   fineDiffeology ℝ _
 
 /-- One possible future target for formalisation: the smooth spaces `Ω k` of smooth
-  `k`-forms. Maps `X → Ω k` correspond to smooth `k`-forms on `X`, so they can be used to
-  define differential forms and the De-Rham-cohomology on all smooth spaces.
+`k`-forms. Maps `X → Ω k` correspond to smooth `k`-forms on `X`, so they can be used to
+define differential forms and the De-Rham-cohomology on all smooth spaces.
 
-  Right now, one major obstactle to this is showing that pullbacks of smooth `k`-forms along
-  smooth maps are smooth (i.e. the first `sorry`); it requires showing that
-  `AlternatingMap.compLinearMap` is a smooth function of `f` and `g` and that `fderiv`
-  is a smooth function of `x`, but we have not yet even put a diffeology on the involved spaces
-  of continuous linear functions. -/
+Right now, one major obstactle to this is showing that pullbacks of smooth `k`-forms along
+smooth maps are smooth (i.e. the first `sorry`); it requires showing that
+`AlternatingMap.compLinearMap` is a smooth function of `f` and `g` and that `fderiv`
+is a smooth function of `x`, but we have not yet even put a diffeology on the involved spaces
+of continuous linear functions. -/
 noncomputable def SmoothSp.Ω {k : ℕ} : SmoothSp where
   val := {
     obj n := DSmoothMap (Eucl n.unop) ((Eucl n.unop) [⋀^(Fin k)]→ₗ[ℝ] ℝ)

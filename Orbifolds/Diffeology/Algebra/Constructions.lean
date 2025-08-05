@@ -41,7 +41,7 @@ open MulOpposite
 variable [Monoid M] [DiffeologicalSpace X]
 
 /-- The units of a monoid are equipped with the diffeology induced by the embedding
-  into `M × M`. -/
+into `M × M`. -/
 @[to_additive "The units of a monoid are equipped with the diffeology induced by the embedding
 into `M × M`."]
 instance instDiffeologicalSpaceUnits : DiffeologicalSpace Mˣ :=

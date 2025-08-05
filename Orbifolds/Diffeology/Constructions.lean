@@ -387,7 +387,7 @@ theorem dTop_bot {X : Type*} : DTop[⊥] = (⊥ : TopologicalSpace X) := by
   by_cases h : x ∈ u; all_goals simp [hx,h]
 
 /-- The discrete diffeologoy is the only diffeology whose D-topology is discrete.
-  Note that the corresponding statement for indiscrete spaces is false. -/
+Note that the corresponding statement for indiscrete spaces is false. -/
 theorem dTop_eq_bot_iff {X : Type*} {dX : DiffeologicalSpace X} : DTop[dX] = ⊥ ↔ dX = ⊥ := by
   refine ⟨fun h ↦ ?_,fun h ↦ by rw [h,dTop_bot]⟩
   refine (dX.eq_bot_iff).2 fun n p hp ↦ ⟨p 0,funext fun x ↦ ?_⟩
@@ -395,8 +395,8 @@ theorem dTop_eq_bot_iff {X : Type*} {dX : DiffeologicalSpace X} : DTop[dX] = ⊥
     p (h ▸ hp.continuous) _ _
 
 /-- A map from an indiscrete space is smooth iff its range is indiscrete.
-  Note that this can't be characterised purely topologically, since it might be the case that
-  all involved D-topologies are indiscrete but the diffeologies are not. -/
+Note that this can't be characterised purely topologically, since it might be the case that
+all involved D-topologies are indiscrete but the diffeologies are not. -/
 theorem dsmooth_top_iff_indiscrete_range {X Y : Type*} {dY : DiffeologicalSpace Y} {f : X → Y} :
     DSmooth[⊤,dY] f ↔ @instDiffeologicalSpaceSubtype Y dY (Set.range f) = ⊤ := by
   let _ : DiffeologicalSpace X := ⊤
@@ -416,7 +416,7 @@ theorem dsmooth_bot_iff_isLocallyConstant {X Y : Type*} {dX : DiffeologicalSpace
 
 open PartialHomeomorph in
 /-- A map is a plot in the coinduced diffeology iff it is constant or lifts locally.
-  TODO: golf this using `DiffeologicalSpace.mkOfPlotsOn`? -/
+TODO: golf this using `DiffeologicalSpace.mkOfPlotsOn`? -/
 theorem isPlot_coinduced_iff {X Y : Type*} {dX : DiffeologicalSpace X} {f : X → Y}
     {n : ℕ} {p : Eucl n → Y} : IsPlot[dX.coinduced f] p ↔ (∃ y, p = fun _ ↦ y) ∨
     ∀ x : Eucl n, ∃ u, IsOpen u ∧ x ∈ u ∧ ∃ p' : u → X, DSmooth p' ∧ p ∘ (↑) = f ∘ p' := by
@@ -504,7 +504,7 @@ theorem isPlot_coinduced_iff {X Y : Type*} {dX : DiffeologicalSpace X} {f : X �
     exact ⟨hu,hxu,dsmooth_coinduced_rng.comp hp'.1⟩
 
 /-- For surjective functions, the plots of the coinduced diffeology are precicely those that
-  locally lift. -/
+locally lift. -/
 theorem Function.Surjective.isPlot_coinduced_iff {X Y : Type*} {dX : DiffeologicalSpace X}
     {f : X → Y} (hf : Function.Surjective f) {n : ℕ} {p : Eucl n → Y} : IsPlot[dX.coinduced f] p ↔
     ∀ x : Eucl n, ∃ u, IsOpen u ∧ x ∈ u ∧ ∃ p' : u → X, DSmooth p' ∧ p ∘ (↑) = f ∘ p' := by
@@ -520,8 +520,8 @@ lemma dTop_eq_iSup_coinduced {X : Type*} [dX : DiffeologicalSpace X] :
   exact forall_congr' fun n ↦ ⟨fun h p ↦ h p p.2,fun h p hp ↦ h ⟨p,hp⟩⟩
 
 /-- The topology coinduced by a map out of a sigma type is the surpremum of the topologies
-  coinduced by its components.
-  Maybe should go into mathlib? A similar `induced_to_pi` is already there. -/
+coinduced by its components.
+Maybe should go into mathlib? A similar `induced_to_pi` is already there. -/
 lemma coinduced_sigma {ι Y : Type u} {X : ι → Type v} [tX : (i : ι) → TopologicalSpace (X i)]
     (f : (i : ι) → X i → Y) : coinduced (fun x : (i : ι) × X i ↦ f x.1 x.2) inferInstance =
     ⨆ i : ι, coinduced (f i) inferInstance := by
@@ -756,7 +756,7 @@ theorem DiffeologicalSpace.prod_induced_induced (f : X → Y) (g : Z → W) :
   delta instDiffeologicalSpaceProd; simp_rw [induced_inf, induced_compose]; rfl
 
 /-- The diffeology coinduced by a product map is at least as fine as the product of the
-  coinduced diffelogies. Note that equality only holds when both maps are surjective. -/
+coinduced diffelogies. Note that equality only holds when both maps are surjective. -/
 theorem DiffeologicalSpace.coinduced_prod_le {X Y Z W : Type*}
     [dX : DiffeologicalSpace X] [dZ : DiffeologicalSpace Z] (f : X → Y) (g : Z → W) :
     coinduced (fun p ↦ (f p.1, g p.2)) instDiffeologicalSpaceProd ≤
@@ -765,7 +765,7 @@ theorem DiffeologicalSpace.coinduced_prod_le {X Y Z W : Type*}
   dsmooth_iff_coinduced_le.1 (dsmooth_coinduced_rng.prod_map dsmooth_coinduced_rng)
 
 /-- A product of coinduced diffeologies is coinduced by the product map, if both maps
-  are surjective. -/
+are surjective. -/
 theorem DiffeologicalSpace.prod_coinduced_coinduced {X Y Z W : Type*}
     [dX : DiffeologicalSpace X] [dZ : DiffeologicalSpace Z] {f : X → Y} {g : Z → W}
     (hf : Function.Surjective f) (hg : Function.Surjective g) :
@@ -844,20 +844,20 @@ instance {X Y : Type*} [NormedAddCommGroup X] [NormedSpace ℝ X] [Diffeological
   exact ⟨fun h ↦ h.1.prodMk h.2, fun h ↦ ⟨h.fst, h.snd⟩⟩⟩
 
 /-- The D-topology of the product diffeology is at least as fine as the product of
-  the D-topologies. -/
+the D-topologies. -/
 theorem dTop_prod_le_prod_dTop :
     (DTop : TopologicalSpace (X × Y)) ≤ @instTopologicalSpaceProd _ _ DTop DTop :=
   continuous_id_iff_le.1 ((@continuous_prodMk _ X Y DTop DTop DTop _ _).2
     ⟨dsmooth_fst.continuous,dsmooth_snd.continuous⟩)
 
 /-- For locally compact spaces `X`, the product functor `X × -` takes quotient maps to quotient
-  maps. Note that surjectivity is actually required here - coinducing maps do not necessarily
-  get taken to coinducing maps.
-  Adapted from
-  https://dantopology.wordpress.com/2023/04/21/the-product-of-the-identity-map-and-a-quotient-map/.
-  TODO: give an explicit description of the coinduced topology without assuming surjectivity
-  TODO: give an explicit description even without local compactness, using `deltaGenerated`
-  TODO: maybe move to mathlib? -/
+maps. Note that surjectivity is actually required here - coinducing maps do not necessarily
+get taken to coinducing maps.
+Adapted from
+https://dantopology.wordpress.com/2023/04/21/the-product-of-the-identity-map-and-a-quotient-map/.
+TODO: give an explicit description of the coinduced topology without assuming surjectivity
+TODO: give an explicit description even without local compactness, using `deltaGenerated`
+TODO: maybe move to mathlib? -/
 theorem Topology.IsQuotientMap.id_prod {X Y Z : Type*} [TopologicalSpace X] [TopologicalSpace Y]
     [TopologicalSpace Z] [LocallyCompactSpace X] {f : Y → Z} (hf : IsQuotientMap f) :
     IsQuotientMap (Prod.map (@id X) f) := by
@@ -896,7 +896,7 @@ theorem Topology.IsQuotientMap.prod_id {X Y Z : Type*} [TopologicalSpace X] [Top
 
 
 /-- Equivalent of `Function.Surjective.sigma_map` for quotient maps.
-  TODO: move to mathlib. -/
+TODO: move to mathlib. -/
 theorem Topology.IsQuotientMap.sigma_map {ι ι' : Type*} {X : ι → Type*} {Y : ι' → Type*}
     [(i : ι) → TopologicalSpace (X i)] [(i : ι') → TopologicalSpace (Y i)] {f₁ : ι → ι'}
     {f₂ : (i : ι) → X i → Y (f₁ i)} (h₁ : Function.Surjective f₁)
@@ -912,10 +912,10 @@ lemma coinduced_sigma' {ι Y : Type*} {X : ι → Type v} [tX : (i : ι) → Top
   rw [instTopologicalSpaceSigma,coinduced_iSup]; rfl
 
 /-- For locally compact diffeological spaces, the D-topology commutes with products.
-  This is not true in general, because the product topology might not be delta-generated;
-  however, according to a remark in https://arxiv.org/abs/1302.2935 it should be always true
-  if one takes the product in the category of delta-generated spaces instead of in Top.
-  TODO: work this all out more generally -/
+This is not true in general, because the product topology might not be delta-generated;
+however, according to a remark in https://arxiv.org/abs/1302.2935 it should be always true
+if one takes the product in the category of delta-generated spaces instead of in Top.
+TODO: work this all out more generally -/
 theorem dTop_prod_eq_prod_dTop_of_locallyCompact_left [@LocallyCompactSpace X DTop] :
     (DTop : TopologicalSpace (X × Y)) = @instTopologicalSpaceProd _ _ DTop DTop := by
   let _ := @DTop X _; let _ := @DTop Y _
@@ -935,7 +935,7 @@ theorem dTop_prod_eq_prod_dTop_of_locallyCompact_left [@LocallyCompactSpace X DT
     toEuclidean.symm.contDiff.dsmooth).continuous.coinduced_le
 
 /-- Version of `dTop_prod_eq_prod_dTop_of_locallyCompact_left` where the second factor
-  is assumed to be locally compact instead of the first one. -/
+is assumed to be locally compact instead of the first one. -/
 theorem dTop_prod_eq_prod_dTop_of_locallyCompact_right [@LocallyCompactSpace Y DTop] :
     (DTop : TopologicalSpace (X × Y)) = @instTopologicalSpaceProd _ _ DTop DTop := by
   letI := @DTop X _; letI := @DTop Y _
@@ -968,9 +968,9 @@ theorem isPlot_pi_iff {n} {p : Eucl n → ((i : ι) → Y i)} :
   simp_rw [isPlot_iff_dsmooth,dsmooth_pi_iff]
 
 /-
-  TODO: mathematically, this follows easily from
-  `dTop_prod_eq_prod_dTop_of_locallyCompact_left`, but I'm not yet sure how to best formalise
-  that in lean. -/
+TODO: mathematically, this follows easily from
+`dTop_prod_eq_prod_dTop_of_locallyCompact_left`, but I'm not yet sure how to best formalise
+that in lean. -/
 instance [Fintype ι] [(i : ι) → TopologicalSpace (Y i)] [(i : ι) → LocallyCompactSpace (Y i)]
     [(i : ι) → DTopCompatible (Y i)] : DTopCompatible ((i : ι) → Y i) := ⟨by
   all_goals sorry⟩

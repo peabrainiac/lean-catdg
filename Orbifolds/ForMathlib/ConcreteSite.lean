@@ -22,13 +22,17 @@ namespace Presieve
 variable [HasForget.{w} C] {X : C}
 
 /-- A presieve `S` on `X` in a concrete category is jointly surjective if every `x : X` is in
-  the image of some `f` in `S`. -/
+the image of some `f` in `S`. -/
 def IsJointlySurjective (S : Presieve X) : Prop :=
-  ∀ x : X, ∃ Y, ∃ f ∈ @S Y, ∃ y, f y = x
+  ∀ x : X, ∃ Y, ∃ f ∈ S (Y := Y), ∃ y, f y = x
 
 lemma isJointlySurjective_iff_iUnion_range_eq_univ {S : Presieve X} :
     IsJointlySurjective S ↔ ⋃ (Y : C) (f ∈ S (Y := Y)), Set.range f = Set.univ := by
   simp [IsJointlySurjective, Set.iUnion_eq_univ_iff]
+
+lemma IsJointlySurjective.iUnion_eq_univ {S : Presieve X} (hS : S.IsJointlySurjective) :
+    ⋃ (Y : C) (f ∈ S (Y := Y)), Set.range f = Set.univ :=
+  isJointlySurjective_iff_iUnion_range_eq_univ.1 hS
 
 lemma IsJointlySurjective.mono {S R : Presieve X} (hR : S ≤ R) (hS : S.IsJointlySurjective) :
     R.IsJointlySurjective :=
@@ -37,11 +41,11 @@ lemma IsJointlySurjective.mono {S R : Presieve X} (hR : S ≤ R) (hS : S.IsJoint
 end Presieve
 
 /-- A site is concrete if it is a concrete category in such a way that points correspond to
-  morphisms from a terminal object, and all sieves are jointly surjective. -/
+morphisms from a terminal object, and all sieves are jointly surjective. -/
 class GrothendieckTopology.IsConcreteSite (J : GrothendieckTopology C)
     extends HasTerminal C, HasForget.{v} C where
   /-- The forgetful functor is given by morphisms from the terminal object. Since a forgetful
-    functor might already exists, this is encoded here as a natural isomorphism. -/
+  functor might already exists, this is encoded here as a natural isomorphism. -/
   forget_natIso_coyoneda : (CategoryTheory.forget C) ≅ coyoneda.obj (.op (⊤_ C))
   /-- Said isomorphism takes `x : X` to a morphism with underlying map `fun _ ↦ x`. -/
   forget_natIso_coyoneda_apply {X : C} {x : X} :

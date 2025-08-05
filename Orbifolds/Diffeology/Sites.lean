@@ -76,8 +76,8 @@ theorem comp_app {n m k : CartSp} (f : n ⟶ m) (g : m ⟶ k) (x : n) :
     (f ≫ g : n → k) x = g (f x) := rfl
 
 /-- The open cover coverage on `CartSp`, consisting of all coverings by open smooth embeddings.
-  Since mathlib apparently doesn't have smooth embeddings yet, diffeological inductions are
-  used instead. -/
+Since mathlib apparently doesn't have smooth embeddings yet, diffeological inductions are
+used instead. -/
 def openCoverCoverage : Coverage CartSp where
   covering n := {s | (∀ (m : _) (f : m ⟶ n), s f → IsOpenInduction f) ∧
     ⋃ (m : CartSp) (f ∈ s (Y := m)), range f.1 = univ}
@@ -291,8 +291,8 @@ theorem comp_app {u v w : EuclOp} (f : u ⟶ v) (g : v ⟶ w) (x : u) :
     (f ≫ g : u → w) x = g (f x) := rfl
 
 /-- The open cover coverage on `EuclOp`, consisting of all coverings by open smooth embeddings.
-  Since mathlib apparently doesn't have smooth embeddings yet, diffeological inductions are
-  used instead. -/
+Since mathlib apparently doesn't have smooth embeddings yet, diffeological inductions are
+used instead. -/
 def openCoverCoverage : Coverage EuclOp where
   covering u := {s | (∀ (v : _) (f : v ⟶ u), s f → IsOpenInduction f.1) ∧
     ⋃ (v : EuclOp) (f ∈ s (Y := v)), range f.1 = univ}
@@ -482,9 +482,9 @@ noncomputable def CartSp.toAlgebraCatOpFullyFaithful : CartSp.toAlgebraCatOp.Ful
   preimage {n m} f := by
     let f' (k : Fin m) : DSmoothMap _ _ := f.unop ⟨_, (EuclideanSpace.proj (𝕜 := ℝ) k).dsmooth⟩
     exact (∑ k, f' k • DSmoothMap.const (X := Eucl n) (EuclideanSpace.single k (1 : ℝ)):)
-    /-exact ⟨_, dsmooth_finset_sum Finset.univ fun k _ ↦
-      (f.unop ⟨_, (EuclideanSpace.proj k).dsmooth⟩).dsmooth.smul <|
-        dsmooth_const (y := EuclideanSpace.single k (1 : ℝ))⟩-/
+    --exact ⟨_, dsmooth_finset_sum Finset.univ fun k _ ↦
+    --  (f.unop ⟨_, (EuclideanSpace.proj k).dsmooth⟩).dsmooth.smul <|
+    --    dsmooth_const (y := EuclideanSpace.single k (1 : ℝ))⟩-/
   map_preimage {n m} f := by
     refine Quiver.Hom.unop_inj ?_
     ext1; ext1 (g : DSmoothMap _ _)

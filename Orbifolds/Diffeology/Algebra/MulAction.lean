@@ -9,7 +9,7 @@ diffeological groups and vector spaces.
 -/
 
 /-- Class `ContinuousVAdd M X` saying that the additive action `(+ᵥ) : M → X → X`
-  is smooth in both arguments. -/
+is smooth in both arguments. -/
 class DSmoothVAdd (M X : Type*) [VAdd M X] [DiffeologicalSpace M] [DiffeologicalSpace X] :
     Prop where
   dsmooth_vadd : DSmooth fun p : M × X ↦ p.1 +ᵥ p.2
@@ -17,7 +17,7 @@ class DSmoothVAdd (M X : Type*) [VAdd M X] [DiffeologicalSpace M] [Diffeological
 export DSmoothVAdd (dsmooth_vadd)
 
 /-- Class `DSmoothSMul M X` saying that the scalar multiplication `(•) : M → X → X`
-  is smooth in both arguments. -/
+is smooth in both arguments. -/
 @[to_additive]
 class DSmoothSMul (M X : Type*) [SMul M X] [DiffeologicalSpace M] [DiffeologicalSpace X] :
     Prop where
@@ -51,7 +51,7 @@ instance MulOpposite.dsmoothSMul [SMul M X] [DSmoothSMul M X] : DSmoothSMul M X�
 
 omit dY in
 /-- For any action homomorphism where the action on the codomain is smooth, the induced
-  diffeology makes the action on the domain smooth too. -/
+diffeology makes the action on the domain smooth too. -/
 @[to_additive "For any action homomorphism where the action on the codomain is smooth, the induced
   diffeology makes the action on the domain smooth too."]
 theorem dsmoothSMul_induced [SMul M X] [DSmoothSMul M X] {N : Type*} [SMul N Y]
@@ -63,7 +63,7 @@ theorem dsmoothSMul_induced [SMul M X] [DSmoothSMul M X] {N : Type*} [SMul N Y]
   simpa only [Function.comp_def, hsmul] using (hf.comp dsmooth_fst).smul <| hg.comp dsmooth_snd
 
 /-- For any action homomorphism where the action on the codomain is smooth, the induced
-  diffeology makes the action on the domain smooth too. -/
+diffeology makes the action on the domain smooth too. -/
 @[to_additive "For any action homomorphism where the action on the codomain is smooth, the induced
   diffeology makes the action on the domain smooth too."]
 lemma IsDInducing.dsmoothSMul [SMul M X] [DSmoothSMul M X] {N : Type*} [SMul N Y]
@@ -136,10 +136,10 @@ theorem dsmoothSMul_inf {X : Type*} [SMul M X] {d₁ d₂ : DiffeologicalSpace X
 section Topology
 
 /-- If the D-topology makes `X` locally compact, then any smooth action on `X` is also
-  continuous. Local compactness is needed here because scalar multiplication is a priori only
-  continuous with respect to the D-topology on `M × X`, not the product topology - if either
-  space is locally compact the topologies agree, but otherwise the product topology could be
-  fine enough for multiplication to not be continuous. -/
+continuous. Local compactness is needed here because scalar multiplication is a priori only
+continuous with respect to the D-topology on `M × X`, not the product topology - if either
+space is locally compact the topologies agree, but otherwise the product topology could be
+fine enough for multiplication to not be continuous. -/
 @[to_additive "If the D-topology makes `X` locally compact, then any smooth action on `X` is
   also continuous. Local compactness is needed here because the action is a priori
   only continuous with respect to the D-topology on `M × X`, not the product topology - if
@@ -154,7 +154,7 @@ lemma DSmoothSMul.continuousSMul {M X : Type*} [SMul M X] [DiffeologicalSpace M]
   exact dTop_prod_eq_prod_dTop_of_locallyCompact_right.symm
 
 /-- Variant of `DSmoothSMul.continuousSMul` phrased in terms of spaces equipped with
-  `DTopCompatible` topologies. -/
+`DTopCompatible` topologies. -/
 @[to_additive "Variant of `DSmoothVAdd.continuousVAdd` phrased in terms of spaces equipped
   with `DTopCompatible` topologies."]
 instance {M X : Type*} [SMul M X] [DiffeologicalSpace M] [DiffeologicalSpace X]

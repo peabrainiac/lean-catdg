@@ -46,14 +46,14 @@ end DSmoothMulGroup
 -/
 
 /-- Class saying that negation in a type is smooth. A diffeological additive group is then
-  a type with the instances `AddGroup G`, `DSmoothAdd G` and `DSmoothNeg G`. -/
+a type with the instances `AddGroup G`, `DSmoothAdd G` and `DSmoothNeg G`. -/
 class DSmoothNeg (G : Type*) [DiffeologicalSpace G] [Neg G] : Prop where
   dsmooth_neg : DSmooth fun a : G ↦ -a
 
 export DSmoothNeg (dsmooth_neg)
 
 /-- Class saying that inversion in a type is smooth. A diffeological group is then
-  a type with the instances `Group G`, `DSmoothMul G` and `DSmoothInv G`. -/
+a type with the instances `Group G`, `DSmoothMul G` and `DSmoothInv G`. -/
 @[to_additive]
 class DSmoothInv (G : Type*) [DiffeologicalSpace G] [Inv G] : Prop where
   dsmooth_inv : DSmooth fun a : G ↦ a⁻¹
@@ -153,12 +153,12 @@ the multiplication and inversion operations are smooth.
 section DiffeologicalGroup
 
 /-- A diffeological (additive) group is a group in which the addition and negation operations
-  are dsmooth. -/
+are dsmooth. -/
 class DiffeologicalAddGroup (G : Type*) [DiffeologicalSpace G] [AddGroup G] extends
   DSmoothAdd G, DSmoothNeg G
 
 /-- A diffeological group is a group in which the multiplication and inversion operations are
-  smooth. -/
+smooth. -/
 @[to_additive]
 class DiffeologicalGroup (G : Type*) [DiffeologicalSpace G] [Group G] extends DSmoothMul G,
   DSmoothInv G
@@ -259,7 +259,7 @@ variable {G}
 
 omit [DiffeologicalSpace H] [Group H] [DiffeologicalGroup H] in
 /-- For any group homomorphism to a diffeological group, the induced diffeology makes the
-  domain a diffeological group too. -/
+domain a diffeological group too. -/
 @[to_additive "For any group homomorphism to a diffeological group, the induced diffeology makes
   the domain a diffeological group too."]
 protected theorem IsDInducing.diffeologicalGroup {F : Type*} [Group H] [DiffeologicalSpace H]
@@ -399,7 +399,7 @@ instance [DSmoothMul M] : DiffeologicalGroup Mˣ where
   dsmooth_inv := Units.dsmooth_iff.2 <| ⟨dsmooth_coe_inv, dsmooth_val⟩
 
 /-- The diffeological group isomorphism between the units of a product of two monoids,
-  and the product of the units of each monoid. -/
+and the product of the units of each monoid. -/
 @[to_additive
   "The diffeological group isomorphism between the additive units of a product of two
   additive monoids, and the product of the additive units of each additive monoid."]
@@ -447,12 +447,12 @@ An additive version `AddGroupDiffeology G` is defined as well.
 -/
 
 /-- An additive group diffeology on a group `G` is a diffeology that makes `G` into an
-  additive diffeological group. -/
+additive diffeological group. -/
 structure AddGroupDiffeology (G : Type u) [AddGroup G] : Type u extends DiffeologicalSpace G,
   DiffeologicalAddGroup G
 
 /-- A group diffeology on a group `G` is a diffeology that makes `G` into a
-  diffeological group. -/
+diffeological group. -/
 @[to_additive]
 structure GroupDiffeology (G : Type u) [Group G] : Type u extends DiffeologicalSpace G,
   DiffeologicalGroup G
@@ -589,10 +589,10 @@ instance {G : Type*} [DiffeologicalSpace G] [TopologicalSpace G] [DTopCompatible
   dTop_eq G ▸ DSmoothInv.continuousInv
 
 /-- If a diffeological group `G` is locally compact under the D-topology, then it is also a
-  topological group. Local compactness is needed here because multiplication is a priori only
-  continuous with respect to the D-topology on `G × G`, not the product topology - when `G` is
-  locally compact the topologies agree, but otherwise the product topology could be
-  fine enough for multiplication to not be continuous. -/
+topological group. Local compactness is needed here because multiplication is a priori only
+continuous with respect to the D-topology on `G × G`, not the product topology - when `G` is
+locally compact the topologies agree, but otherwise the product topology could be
+fine enough for multiplication to not be continuous. -/
 @[to_additive "If a diffeological group `G` is locally compact under the D-topology, then it is
   also a topological group. Local compactness is needed here because addition is a priori only
   continuous with respect to the D-topology on `G × G`, not the product topology - when `G` is
@@ -605,7 +605,7 @@ lemma DiffeologicalGroup.topologicalGroup {G : Type*} [DiffeologicalSpace G] [Gr
           toContinuousInv := DSmoothInv.continuousInv }
 
 /-- Variant of `DiffeologicalGroup.topologicalGroup` phrased in terms of spaces equipped with
-  `DTopCompatible` topologies. -/
+`DTopCompatible` topologies. -/
 @[to_additive "Variant of `DiffeologicalAddGroup.topologicalAddGroup` phrased in terms of
   spaces equipped with `DTopCompatible` topologies."]
 instance {G : Type*} [Group G] [DiffeologicalSpace G] [TopologicalSpace G] [DTopCompatible G]

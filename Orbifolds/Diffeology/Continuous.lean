@@ -34,13 +34,13 @@ def continuousDiffeology (X : Type u) [TopologicalSpace X] : DiffeologicalSpace 
       forall_congr' fun n ↦ ⟨fun h p hp ↦ h ⟨p,hp⟩,fun h p ↦ h p p.2⟩ }
 
 /-- The D-topology of the continuous diffeology is the delta-generification of the
-  original topology. -/
+original topology. -/
 lemma dTop_continuousDiffeology {X : Type u} [TopologicalSpace X] :
     DTop[continuousDiffeology X] = .deltaGenerated X :=
   rfl
 
 /-- For delta-generated spaces, the D-topology of the continuous diffeology is the
-  topology itself. -/
+topology itself. -/
 lemma dTop_continuousDiffeology_eq_self {X : Type u} [t : TopologicalSpace X]
     [DeltaGeneratedSpace X] : DTop[continuousDiffeology X] = t :=
   dTop_continuousDiffeology.trans eq_deltaGenerated.symm
@@ -68,7 +68,7 @@ lemma dTop_le_iff_le_continuousDiffeology {X : Type u} {d : DiffeologicalSpace X
       hu.preimage <| DiffeologicalSpace.le_iff'.1 h _ _ hp⟩
 
 /-- The D-topology and continuous diffeology form a Galois connection between diffeologies
-  and topologies on `X`. -/
+and topologies on `X`. -/
 theorem gc_dTop (X : Type*) : GaloisConnection (@DTop X) (@continuousDiffeology X) :=
   @dTop_le_iff_le_continuousDiffeology X
 

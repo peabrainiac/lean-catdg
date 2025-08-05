@@ -185,7 +185,7 @@ def indiscrete : Type u ⥤ DiffSp.{u} where
   map f := @ofHom _ _ (_) (_) <| @DSmoothMap.mk _ _ (_) (_) f dsmooth_top
 
 /-- Adjunction `discrete ⊣ forget`, adapted from
-  `Mathlib.Topology.Category.TopCat.Adjunctions`. -/
+`Mathlib.Topology.Category.TopCat.Adjunctions`. -/
 @[simps! unit counit]
 def discreteForgetAdj : discrete ⊣ forget DiffSp.{u} :=
   Adjunction.mkOfUnitCounit
@@ -193,7 +193,7 @@ def discreteForgetAdj : discrete ⊣ forget DiffSp.{u} :=
       counit := { app := fun X ↦ ⟨id, dsmooth_bot⟩ } }
 
 /-- Adjunction `forget ⊣ indiscrete`, adapted from
-  `Mathlib.Topology.Category.TopCat.Adjunctions`. -/
+`Mathlib.Topology.Category.TopCat.Adjunctions`. -/
 @[simps! unit counit]
 def forgetIndiscreteAdj : forget DiffSp.{u} ⊣ indiscrete :=
   Adjunction.mkOfUnitCounit
@@ -212,7 +212,7 @@ def dTop : DiffSp.{u} ⥤ TopCat.{u} where
   map f := @TopCat.ofHom _ _ (_) (_) <| @ContinuousMap.mk _ _ (_) (_) f f.hom.dsmooth.continuous
 
 /-- The functor sending each diffeological space to its D-topology, as a delta-generated
-  space. -/
+space. -/
 def diffToDeltaGenerated : DiffSp.{u} ⥤ DeltaGenerated.{u} where
   obj X := ⟨@TopCat.of X DTop,inferInstance⟩
   map f := @TopCat.ofHom _ _ (_) (_) <| @ContinuousMap.mk _ _ (_) (_) f f.hom.dsmooth.continuous
@@ -228,7 +228,7 @@ def deltaGeneratedToDiff : DeltaGenerated.{u} ⥤ DiffSp.{u} where
   map f := @ofHom _ _ (_) (_) <| @DSmoothMap.mk _ _ (_) (_) f f.hom.continuous.dsmooth
 
 /-- Adjunction between the D-topology and continuous diffeology as functors between
-  `DiffSp` and `TopCat`. -/
+`DiffSp` and `TopCat`. -/
 def dTopAdj : dTop ⊣ topToDiff :=
   Adjunction.mkOfUnitCounit {
     unit := {
@@ -239,7 +239,7 @@ def dTopAdj : dTop ⊣ topToDiff :=
         continuous_iff_coinduced_le.mpr deltaGenerated_le } }
 
 /-- Adjunction between the D-topology and continuous diffeology as functors between
-  `DiffSp` and `DeltaGenerated`. -/
+`DiffSp` and `DeltaGenerated`. -/
 def dTopAdj' : diffToDeltaGenerated ⊣ deltaGeneratedToDiff :=
   Adjunction.mkOfUnitCounit {
     unit := {
@@ -384,9 +384,9 @@ def binaryProductFunctor : DiffSp.{u} ⥤ DiffSp.{u} ⥤ DiffSp.{u} where
   map_comp := fun {X Y Z} f g ↦ rfl
 
 /-- The explicit products we defined are naturally isomorphic to the products coming from
-  the `HasLimits` instance on DiffSp. This is needed because the `HasLimits`
-  instance only stores proof that all limits exist, not the explicit constructions,
-  so the products derived from it are picked with the axiom of choice. -/
+the `HasLimits` instance on DiffSp. This is needed because the `HasLimits`
+instance only stores proof that all limits exist, not the explicit constructions,
+so the products derived from it are picked with the axiom of choice. -/
 noncomputable def binaryProductIsoProd : binaryProductFunctor.{u} ≅ (prod.functor) := by
   refine NatIso.ofComponents (fun X ↦ ?_) (fun _ ↦ ?_)
   · refine NatIso.ofComponents (fun Y ↦ ?_) (fun _ ↦ ?_)

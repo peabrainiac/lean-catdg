@@ -125,7 +125,7 @@ noncomputable def Limits.IsTerminal.isTerminalSheafValObj {C : Type u} [Category
   hX.isTerminalSheafVal.isTerminalObj_functor Y
 
 /-- For sheaves valued in a concrete category whose terminal object is a point,
-  sections of the terminal sheaf are unique. -/
+sections of the terminal sheaf are unique. -/
 noncomputable instance Sheaf.instUniqueTerminalValObjForget {C : Type u} [Category.{v} C]
     {J : GrothendieckTopology C} {A : Type u₂} [Category.{v₂} A] [HasLimits A]
     [HasForget.{w} A] [PreservesLimit (Functor.empty _) (forget A)] (Y : Cᵒᵖ) :

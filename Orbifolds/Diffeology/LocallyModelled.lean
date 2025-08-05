@@ -12,31 +12,31 @@ definitions and a few basic facts they have in common.
 open Topology
 
 /-- A diffeological space is locally modelled by a family of diffeological spaces if each point
-  in it has a neighbourhood that's diffeomorphic to a space in the family. -/
+in it has a neighbourhood that's diffeomorphic to a space in the family. -/
 class LocallyModelled {ι : Type*} (M : ι → Type*) [(i : ι) → DiffeologicalSpace (M i)]
     (X : Type*) [DiffeologicalSpace X] : Prop where
   locally_modelled : ∀ x : X, ∃ (u : Set X), IsOpen[DTop] u ∧ x ∈ u ∧
     ∃ (i : ι) (v : Set (M i)), IsOpen[DTop] v ∧ Nonempty (u ᵈ≃ v)
 
 /-- A diffeological space is a manifold if it is locally modelled by R^n.
-  We do not require Hausdorffness or second-countability here. -/
+We do not require Hausdorffness or second-countability here. -/
 abbrev IsDiffeologicalManifold (n : ℕ) (X : Type*) [DiffeologicalSpace X] :=
   LocallyModelled (fun _ : Unit ↦ Eucl n) X
 
 /-- A diffeological space is a manifold with boundary if it is locally modelled by the
-  half-space H^n.
-  We do not require Hausdorffness or second-countability here. -/
+half-space H^n.
+We do not require Hausdorffness or second-countability here. -/
 abbrev IsManifoldWithBoundary (n : ℕ) [Zero (Fin n)] (X : Type*) [DiffeologicalSpace X] :=
   LocallyModelled (fun _ : Unit ↦ {x : Eucl n | 0 ≤ x 0}) X
 
 /-- A diffeological space is an orbifold if it is locally modelled by quotients of R^n by finite
-  subgroups of GL(n). -/
+subgroups of GL(n). -/
 abbrev IsOrbifold (n : ℕ) (X : Type*) [DiffeologicalSpace X] :=
   LocallyModelled (fun Γ : {Γ : Subgroup ((Eucl n) ≃ₗ[ℝ] (Eucl n)) | Finite Γ} ↦
     MulAction.orbitRel.Quotient Γ (Eucl n)) X
 
 /-- Any D-open subset of a locally modelled space is locally modelled by the same family of
-  spaces. -/
+spaces. -/
 protected theorem IsOpen.locallyModelled {X ι : Type*} [DiffeologicalSpace X] {M : ι → Type*}
     [(i : ι) → DiffeologicalSpace (M i)] (h : LocallyModelled M X) {u : Set X}
     (hu : IsOpen[DTop] u) : LocallyModelled M u :=
@@ -64,7 +64,7 @@ protected theorem IsOpen.isDiffeologicalManifold {X : Type*} [DiffeologicalSpace
   hu.locallyModelled h
 
 /-- Any D-open subset of a diffeological manifold with boundary is a diffeological
-  manifold with boundary. -/
+manifold with boundary. -/
 protected theorem IsOpen.isManifoldWithBoundary {X : Type*} [DiffeologicalSpace X] {n : ℕ}
     [Zero (Fin n)] (h : IsManifoldWithBoundary n X) {u : Set X} (hu : IsOpen[DTop] u) :
     IsManifoldWithBoundary n u := hu.locallyModelled h
@@ -121,8 +121,8 @@ instance {n : ℕ} {Γ : {Γ : Subgroup ((Eucl n) ≃ₗ[ℝ] (Eucl n)) | Finite
   sorry
 
 /-- Orbifolds are locally compact. Not an instance because lean can't infer typeclasses that
-  don't depend on `n` from ones that do.
-  TODO: solve by allowing orbifolds of mixed dimension? -/
+don't depend on `n` from ones that do.
+TODO: solve by allowing orbifolds of mixed dimension? -/
 protected theorem IsOrbifold.locallyCompactSpace {X : Type*} [TopologicalSpace X]
     [DiffeologicalSpace X] [DTopCompatible X] {n : ℕ} [hX : IsOrbifold n X] :
     LocallyCompactSpace X := by

@@ -16,10 +16,10 @@ open scoped Manifold ContDiff
 
 open PartialHomeomorph in
 /-- The diffeology defined by a manifold structure on M, with the plots given by the maps
-  that are smooth in the sense of mathlib's `ContMDiff`-API.
-  This can not be an instance because `IsManifold I M` depends on `I` while
-  `DiffeologicalSpace M` does not, and because it would probably lead to instance diamonds on
-  things like products even if some workaround was found. -/
+that are smooth in the sense of mathlib's `ContMDiff`-API.
+This can not be an instance because `IsManifold I M` depends on `I` while
+`DiffeologicalSpace M` does not, and because it would probably lead to instance diamonds on
+things like products even if some workaround was found. -/
 def IsManifold.toDiffeology {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     {H : Type*} [TopologicalSpace H] (I : ModelWithCorners ℝ E H) (M : Type*)
     [TopologicalSpace M] [ChartedSpace H M] [IsManifold I ∞ M] :
@@ -63,7 +63,7 @@ lemma IsManifold.dTop_le {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
   TopologicalSpace.le_def.2 fun _ hu _ _ hp ↦ IsOpen.preimage (hp.continuous) hu
 
 /-- If the subspace topology and D-topology agree on the set `H` that the manifold is modelled on,
-  the topology of the manifold agrees with the D-topology as well.-/
+the topology of the manifold agrees with the D-topology as well.-/
 instance {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimensional ℝ E]
     {H : Type*} [tH : TopologicalSpace H] (I : ModelWithCorners ℝ E H)
     [@DTopCompatible I.target _ <| @instDiffeologicalSpaceSubtype _ euclideanDiffeology _]
@@ -89,13 +89,13 @@ instance {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimension
   exact (contMDiffOn_chart_symm (x := x)).comp_contMDiff hp fun x ↦ (p x).2⟩
 
 /-- In particular, the D-topology agrees with the standard topology on all manifolds
-  modelled on a "boundaryless" model.
-  TODO: It would be nice to have this (and all lemmas depending on it) for all boundaryless
-  manifolds in the sense of `BoundarylessManifold`, such as manifolds with corners whose
-  boundary just happens to be empty, but that would require either redoing the above lemma
-  in slightly greater generality or passing from manifolds with empty boundary to manifolds
-  modelled on a boundaryless model, both of which sound like a lot of work for something that
-  is not a high priority. -/
+modelled on a "boundaryless" model.
+TODO: It would be nice to have this (and all lemmas depending on it) for all boundaryless
+manifolds in the sense of `BoundarylessManifold`, such as manifolds with corners whose
+boundary just happens to be empty, but that would require either redoing the above lemma
+in slightly greater generality or passing from manifolds with empty boundary to manifolds
+modelled on a boundaryless model, both of which sound like a lot of work for something that
+is not a high priority. -/
 instance {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimensional ℝ E]
     {H : Type*} [TopologicalSpace H] (I : ModelWithCorners ℝ E H) [hI : I.Boundaryless]
     (M : Type*) [TopologicalSpace M] [ChartedSpace H M] [m : IsManifold I ∞ M] :
@@ -106,7 +106,7 @@ instance {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimension
   infer_instance
 
 /-- Every smooth map between manifolds is also D-smooth, i.e. this construction defines a
-  functor of concrete categories. -/
+functor of concrete categories. -/
 theorem ContMDiff.dsmooth {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     {H : Type*} [TopologicalSpace H] {I : ModelWithCorners ℝ E H} {M : Type*}
     [TopologicalSpace M] [ChartedSpace H M] [m : IsManifold I ∞ M]
@@ -117,7 +117,7 @@ theorem ContMDiff.dsmooth {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
   fun _ _ ↦ hf.comp
 
 /-- Every map between manifolds that is smooth on a subset is also smooth diffeologically
-  with respect to the subspace diffeology. -/
+with respect to the subspace diffeology. -/
 theorem ContMDiffOn.dsmooth_restrict {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     {H : Type*} [TopologicalSpace H] {I : ModelWithCorners ℝ E H} {M : Type*}
     [TopologicalSpace M] [ChartedSpace H M] [m : IsManifold I ∞ M]
@@ -133,7 +133,7 @@ theorem ContMDiffOn.dsmooth_restrict {E : Type*} [NormedAddCommGroup E] [NormedS
 
 open PartialHomeomorph in
 /-- Every D-smooth map from a boundaryless manifold to another manifold is also smooth.
-  This could probably be proven in quite a lot greater generality. -/
+This could probably be proven in quite a lot greater generality. -/
 theorem IsOpen.dsmooth_iff_smoothOn {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     [FiniteDimensional ℝ E] {H : Type*} [TopologicalSpace H] {I : ModelWithCorners ℝ E H}
     (M : Type*) [TopologicalSpace M] [ChartedSpace H M] [m : IsManifold I ∞ M]
@@ -150,7 +150,7 @@ theorem IsOpen.dsmooth_iff_smoothOn {E : Type*} [NormedAddCommGroup E] [NormedSp
 
 open PartialHomeomorph in
 /-- Every D-smooth map from a boundaryless manifold to another manifold is also smooth.
-  This could probably be proven in quite a lot greater generality. -/
+This could probably be proven in quite a lot greater generality. -/
 theorem DSmooth.smooth {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     [FiniteDimensional ℝ E]
     {H : Type*} [TopologicalSpace H] {I : ModelWithCorners ℝ E H} {M : Type*}
@@ -187,7 +187,7 @@ theorem DSmooth.smooth {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
       (isOpen_extChartAt_source x) Metric.isOpen_ball
 
 /-- A finite-dimensional, boundaryless smooth manifold with corners in the sense of `IsManifold`
-  is also a manifold in the sense of `IsDiffeologicalManifold`. -/
+is also a manifold in the sense of `IsDiffeologicalManifold`. -/
 theorem IsManifold.isDiffeologicalManifold {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     [FiniteDimensional ℝ E] {H : Type*} [TopologicalSpace H] (I : ModelWithCorners ℝ E H)
     (M : Type*) [TopologicalSpace M] [ChartedSpace H M] [m : IsManifold I ∞ M]
@@ -260,7 +260,7 @@ lemma PartialHomeomorph.fromHomeomorphSourceTarget_toPartialEquiv {α β : Type*
     PartialEquiv.fromEquivSourceTarget e.toEquiv a := rfl
 
 /-- Charted space structure of a diffeological manifold, consisting of all local diffeomorphisms
-  between `M` and `Eucl n`. -/
+between `M` and `Eucl n`. -/
 noncomputable def IsDiffeologicalManifold.toChartedSpace {M : Type*} [DiffeologicalSpace M] {n : ℕ}
     [hM : IsDiffeologicalManifold n M] : @ChartedSpace (Eucl n) _ M DTop := by
   let _ := @DTop M _; let _ : DTopCompatible M := ⟨rfl⟩; exact {

@@ -103,7 +103,7 @@ theorem dsmooth_const {y : Y} : DSmooth fun _ : X ↦ y :=
   fun _ _ _ ↦ isPlot_const
 
 /-- Replaces the D-topology of a diffeology with another topology equal to it. Useful
-  to construct diffeologies with better definitional equalities. -/
+to construct diffeologies with better definitional equalities. -/
 def DiffeologicalSpace.withDTopology {X : Type*} (d : DiffeologicalSpace X)
     (t : TopologicalSpace X) (h : DTop[d] = t) : DiffeologicalSpace X where
   dTopology := t
@@ -115,13 +115,13 @@ lemma DiffeologicalSpace.withDTopology_eq {X : Type*} {d : DiffeologicalSpace X}
   ext; rfl
 
 /-- A structure with plots specified on open subsets of ℝⁿ rather than ℝⁿ itself. Useful
-  for constructing diffeologies, as it often makes the locality condition easiert to prove. -/
+for constructing diffeologies, as it often makes the locality condition easiert to prove. -/
 structure DiffeologicalSpace.CorePlotsOn (X : Type*) where
   isPlotOn {n : ℕ} {u : Set (Eucl n)} (hu : IsOpen u) : (Eucl n → X) → Prop
   isPlotOn_congr {n : ℕ} {u : Set (Eucl n)} (hu : IsOpen u) {p q : Eucl n → X}
     (h : Set.EqOn p q u) : isPlotOn hu p ↔ isPlotOn hu q
   /-- The predicate that the diffeology built from this structure will use. Can be overwritten
-    to allow for better definitional equalities. -/
+  to allow for better definitional equalities. -/
   isPlot {n : ℕ} : (Eucl n → X) → Prop := fun p ↦ isPlotOn isOpen_univ p
   isPlotOn_univ {n : ℕ} {p : Eucl n → X} : isPlotOn isOpen_univ p ↔ isPlot p := by simp
   isPlot_const {n : ℕ} (x : X) : isPlot fun (_ : Eucl n) ↦ x
@@ -132,7 +132,7 @@ structure DiffeologicalSpace.CorePlotsOn (X : Type*) where
   locality {n : ℕ} {u : Set (Eucl n)} (hu : IsOpen u) {p : Eucl n → X} :
     (∀ x ∈ u, ∃ (v : Set (Eucl n)) (hv : IsOpen v), x ∈ v ∧ isPlotOn hv p) → isPlotOn hu p
   /-- The D-topology that the diffeology built from this structure will use. Can be overwritten
-    to allow for better definitional equalities. -/
+  to allow for better definitional equalities. -/
   dTopology : TopologicalSpace X := {
     IsOpen := fun u ↦ ∀ {n : ℕ}, ∀ p : Eucl n → X, isPlot p → TopologicalSpace.IsOpen (p ⁻¹' u)
     isOpen_univ := fun _ _ ↦ isOpen_univ
@@ -145,9 +145,9 @@ structure DiffeologicalSpace.CorePlotsOn (X : Type*) where
     ∀ {n : ℕ}, ∀ p : Eucl n → X, isPlot p → TopologicalSpace.IsOpen (p ⁻¹' u) := by rfl
 
 /-- Constructs a diffeology from plots defined on open subsets or ℝⁿ rather than ℝⁿ itself,
-  organised in the form of the auxiliary `CorePlotsOn` structure.
-  This is more involved in most regards, but also often makes it quite a lot easier to prove
-  the locality condition. -/
+organised in the form of the auxiliary `CorePlotsOn` structure.
+This is more involved in most regards, but also often makes it quite a lot easier to prove
+the locality condition. -/
 def DiffeologicalSpace.mkOfPlotsOn {X : Type*} (d : CorePlotsOn X) : DiffeologicalSpace X where
   plots _ := {p | d.isPlot p}
   constant_plots _ := d.isPlot_const _
@@ -330,7 +330,7 @@ lemma generateFrom_le_iff_subset_toPlots {g : Set ((n : ℕ) × (Eucl n → X))}
   ⟨fun h ↦ (self_subset_toPlots_generateFrom g).trans h,fun h ↦ le_def.2 (Set.iInter₂_subset d h)⟩
 
 /-- Version of `generateFrom_le_iff_subset_toPlots` that is stated in terms of `IsPlot` instead
-  of `toPlots`. -/
+of `toPlots`. -/
 lemma generateFrom_le_iff {g : Set ((n : ℕ) × (Eucl n → X))} {d : DiffeologicalSpace X} :
     generateFrom g ≤ d ↔ ∀ n (p : Eucl n → X), ⟨n, p⟩ ∈ g → IsPlot[d] p :=
   generateFrom_le_iff_subset_toPlots.trans ⟨fun h _ _ hp ↦ h hp, fun h _ hp ↦ h _ _ hp⟩
@@ -352,8 +352,8 @@ theorem gc_generateFrom (X : Type*) : GaloisConnection generateFrom (@toPlots X)
   @generateFrom_le_iff_subset_toPlots X
 
 /-- The Galois insertion between `DiffeologicalSpace α` and `Set ((n : ℕ) × (Eucl n → X))` whose
-  lower part sends a collection of plots in `X` to the diffeology they generate, and whose upper
-  part sends a diffeology to its collection of plots. -/
+lower part sends a collection of plots in `X` to the diffeology they generate, and whose upper
+part sends a diffeology to its collection of plots. -/
 def giGenerateFrom (X : Type*) : GaloisInsertion generateFrom (@toPlots X) where
   gc := gc_generateFrom X
   le_l_u := fun _ ↦ le_def.2 (self_subset_toPlots_generateFrom _)

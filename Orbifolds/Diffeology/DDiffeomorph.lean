@@ -194,7 +194,7 @@ theorem coe_toHomeomorph_symm (h : X ᵈ≃ Y) :
   rfl
 
 /-- A diffeomorphism between spaces that are equipped with the D-topologies is also
-  a homeoomorphism. -/
+a homeoomorphism. -/
 def toHomeomorph' [TopologicalSpace X] [TopologicalSpace Y] [DTopCompatible X]
     [DTopCompatible Y] (h : X ᵈ≃ Y) : X ≃ₜ Y := by
   exact ⟨h.toEquiv,h.dsmooth.continuous',h.symm.dsmooth.continuous'⟩
