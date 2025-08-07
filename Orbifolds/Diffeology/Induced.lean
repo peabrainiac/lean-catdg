@@ -1,5 +1,4 @@
 import Orbifolds.Diffeology.Continuous
-import Mathlib.Topology.LocallyConstant.Basic
 
 /-!
 # Induced/coinduced diffeologies and inductions/subductions
@@ -32,7 +31,7 @@ def DiffeologicalSpace.coinduced (f : X → Y) (dX : DiffeologicalSpace X) :
       rw [isOpen_coinduced]; rw [@_root_.isOpen_iff_preimages_plots] at hu ⊢
       exact fun n p hp ↦ hu n (f ∘ p) <| isPlot_sInf_iff.2 <| fun d hf ↦ hf n p hp
     rw [show sInf {d | DSmooth[dX,d] f} = generateFrom {p | ∃ q, IsPlot q ∧ p.2 = f ∘ q} from
-      le_antisymm (sInf_le fun _ p hp ↦ isPlot_generatedFrom_of_mem ⟨p, hp, rfl⟩) <|
+      le_antisymm (sInf_le fun _ p hp ↦ isPlot_generateFrom_of_mem ⟨p, hp, rfl⟩) <|
         le_sInf fun _ hf ↦ generateFrom_le_iff.2 fun _ _ ⟨_, hq, hp⟩ ↦ (hp ▸ hf _ _ hq:)]
     rw [dTop_generateFrom_eq_iSup]
     refine iSup₂_le fun p ⟨q, hq, hp⟩ ↦ ?_
@@ -68,7 +67,7 @@ for plots `p` in `X`.-/
 lemma DiffeologicalSpace.coinduced_eq_generateFrom {X Y : Type*} [dX : DiffeologicalSpace X]
     {f : X → Y} : dX.coinduced f = generateFrom {p | ∃ q, IsPlot q ∧ p.2 = f ∘ q} := by
   rw [coinduced_eq_sInf]
-  exact le_antisymm (DSmooth.coinduced_le fun _ p hp ↦ isPlot_generatedFrom_of_mem ⟨p, hp, rfl⟩)
+  exact le_antisymm (DSmooth.coinduced_le fun _ p hp ↦ isPlot_generateFrom_of_mem ⟨p, hp, rfl⟩)
     <| le_sInf fun _ hf ↦ generateFrom_le_iff.2 fun _ _ ⟨_, hq, hp⟩ ↦ (hp ▸ hf _ _ hq:)
 
 /-- The D-topology of the coinduced diffeology agrees with the coinduced topology. -/

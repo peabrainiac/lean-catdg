@@ -1,6 +1,5 @@
 import Orbifolds.Diffeology.DSmoothMap
 import Orbifolds.Diffeology.Reflexive
-import Mathlib.Analysis.Normed.Module.Convex
 
 /-!
 # Constructions of diffeological spaces
@@ -414,91 +413,19 @@ theorem dsmooth_bot_iff_isLocallyConstant {X Y : Type*} {dX : DiffeologicalSpace
   refine ⟨fun hf _ ↦ ?_,@IsLocallyConstant.dsmooth _ dX Y ⊥ _⟩
   exact @IsOpen.preimage _ Y DTop[dX] ⊥ _ (dTop_bot ▸ @DSmooth.continuous _ Y dX ⊥ _ hf) _ trivial
 
-open PartialHomeomorph in
-/-- A map is a plot in the coinduced diffeology iff it is constant or lifts locally.
-TODO: golf this using `DiffeologicalSpace.mkOfPlotsOn`? -/
+/-- A map is a plot in the coinduced diffeology iff it is constant or lifts locally. -/
 theorem isPlot_coinduced_iff {X Y : Type*} {dX : DiffeologicalSpace X} {f : X → Y}
     {n : ℕ} {p : Eucl n → Y} : IsPlot[dX.coinduced f] p ↔ (∃ y, p = fun _ ↦ y) ∨
     ∀ x : Eucl n, ∃ u, IsOpen u ∧ x ∈ u ∧ ∃ p' : u → X, DSmooth p' ∧ p ∘ (↑) = f ∘ p' := by
   let dY := dX.coinduced f
-  refine ⟨fun hp ↦ ?_,Or.rec (fun ⟨y,hy⟩ ↦ hy ▸ isPlot_const) fun h ↦ ?_⟩
-  · let d : DiffeologicalSpace Y := {
-      plots := fun n ↦ {p | (∃ y, p = fun _ ↦ y) ∨
-        ∀ x : Eucl n, ∃ u , IsOpen u ∧ x ∈ u ∧ ∃ p' : u → X, DSmooth p' ∧ p ∘ (↑) = f ∘ p'}
-      constant_plots := fun x ↦ Or.inl ⟨x,rfl⟩
-      plot_reparam := fun {n m p g} hp hg ↦ Or.rec (fun ⟨y,hy⟩ ↦ Or.inl ⟨y,hy ▸ rfl⟩)
-        (fun h ↦ Or.inr fun x ↦ (by
-          let ⟨u,hu,hxu,p',hp',hp''⟩ := h (g x)
-          refine ⟨g ⁻¹' u,hu.preimage hg.continuous,hxu,p' ∘ u.restrictPreimage g,
-          hp'.comp hg.dsmooth.restrictPreimage,?_⟩
-          simp_rw [←Function.comp_assoc,←hp'',Function.comp_assoc]; rfl)) hp
-      locality := fun {n p} h ↦ by
-        replace h : ∀ x : Eucl n, ∃ u, IsOpen u ∧ x ∈ u ∧
-            (p x ∉ range f → u.restrict p = fun _ ↦ p x) ∧
-            (p x ∈ range f → ∃ p' : u → X, DSmooth p' ∧ p ∘ (↑) = f ∘ p') := fun x ↦ by
-          let ⟨u,hu,hxu,hu'⟩ := h x; let ⟨ε,hε,hε'⟩ := Metric.isOpen_iff.1 hu x hxu
-          have hx := Metric.mem_ball_self hε (x := x)
-          let e : Eucl n ≃ₜ Metric.ball x ε := (Homeomorph.Set.univ _).symm.trans <|
-            univUnitBall.toHomeomorphSourceTarget.trans
-              (unitBallBall x ε hε).toHomeomorphSourceTarget
-          have he : DSmooth (((↑) : _ → Eucl n) ∘ e) :=
-            (contDiff_unitBallBall hε).dsmooth.comp
-              contDiff_univUnitBall.dsmooth
-          have he' : DSmooth e.symm := by
-            have h₁ : DSmooth (univUnitBall (E := Eucl n)).toHomeomorphSourceTarget.symm :=
-              ContDiffOn.dsmooth_restrict (contDiffOn_univUnitBall_symm (n := ⊤) (E := Eucl n))
-            have h₂ : DSmooth (unitBallBall x ε hε).toHomeomorphSourceTarget.symm :=
-              (contDiff_unitBallBall_symm (n := ⊤) (c := x) hε).dsmooth.restrict
-                ((unitBallBall x ε hε).symm_mapsTo)
-            exact (dsmooth_subtype_val.comp (h₁.comp h₂):)
-          specialize hu' (by exact fun x'' ↦ hε' (e x'').2) he.contDiff; dsimp at hu'
-          obtain ⟨x',hx'⟩ | hpx := @or_not (p x ∈ range f)
-          · obtain ⟨y,hy⟩ | hu' := hu'
-            · refine ⟨_,Metric.isOpen_ball,hx,fun h ↦ (h ⟨x',hx'⟩).elim,fun _ ↦ ?_⟩
-              have h := congrFun hy (e.symm ⟨x,hx⟩)
-              simp_rw [Function.comp_apply, Homeomorph.apply_symm_apply] at h
-              refine ⟨fun _ ↦ x',dsmooth_const,?_⟩
-              rw [←Function.comp_id (f := Subtype.val),←Homeomorph.self_comp_symm e,
-                ←Function.comp_assoc _ e,←Function.comp_assoc,hy,←h,←hx']; rfl
-            · let ⟨v,hv,hxv,p',hp'⟩ := hu' (e.symm ⟨x,hx⟩)
-              refine ⟨Subtype.val '' (e.symm ⁻¹' v),Metric.isOpen_ball.isOpenMap_subtype_val _
-                (hv.preimage e.symm.continuous),⟨_,hxv,by simp⟩,fun h ↦ (h ⟨x',hx'⟩).elim,
-                  fun _ ↦ ?_⟩
-              use p' ∘ (v.restrictPreimage e.symm) ∘ (fun x ↦ ⟨⟨x.1,
-                (Subtype.range_val ▸ image_subset_range _ _ x.2 :)⟩,
-                  Subtype.val_injective.mem_set_image.1 x.2⟩)
-              refine ⟨hp'.1.comp <| he'.restrictPreimage.comp <| DSmooth.subtype_mk
-                (DSmooth.subtype_mk dsmooth_subtype_val _) _,?_⟩
-              rw [←Function.comp_assoc,←hp'.2]; ext x; simp
-          · refine ⟨_,Metric.isOpen_ball,hx,fun _ ↦ ?_,fun h ↦ (hpx h).elim⟩
-            let ⟨y,hy⟩ := (or_iff_left (fun h ↦ hpx <| by
-              let ⟨v,_,hxv,p',_,hp'⟩ := h (e.symm ⟨x,hx⟩)
-              have h := congrFun hp' ⟨_,hxv⟩
-              simp_rw [Function.comp_apply, Homeomorph.apply_symm_apply] at h
-              exact ⟨_,h.symm⟩)).1 hu'
-            rw [restrict_eq,←Function.comp_id (f := Subtype.val),←Homeomorph.self_comp_symm e,
-              ←Function.comp_assoc _ e,←Function.comp_assoc,hy]
-            have h := congrFun hy (e.symm ⟨x,hx⟩)
-            simp_rw [Function.comp_apply, Homeomorph.apply_symm_apply] at h
-            rw [h]; rfl
-        have h' : IsClopen (p ⁻¹' (range f)) := by
-          refine ⟨⟨isOpen_iff_mem_nhds.2 fun x hx ↦ ?_⟩,isOpen_iff_mem_nhds.2 fun x hx ↦ ?_⟩
-          all_goals let ⟨u,hu,hxu,hu'⟩ := h x; rw [mem_nhds_iff]; refine ⟨u,?_,hu,hxu⟩
-          · refine fun x' hx' ↦ (?_ : p x' ∉ range f)
-            rw [(by exact congrFun (hu'.1 hx) ⟨x',hx'⟩ : p x' = p x)]; exact hx
-          · let ⟨p',_,(hp' : u.restrict p = _)⟩ := hu'.2 hx
-            rw [←image_subset_iff,←range_restrict,hp']; exact range_comp_subset_range p' f
-        cases' isClopen_iff.1 h' with h' h'
-        · left; have := Nonempty.map p inferInstance
-          refine IsLocallyConstant.exists_eq_const <| (IsLocallyConstant.iff_exists_open p).2 ?_
-          intro x; let ⟨u,hu,hxu,hu',_⟩ := h x
-          exact ⟨u,hu,hxu,fun x' hx' ↦ congrFun (hu' (h'.symm ▸ not_mem_empty x:)) ⟨x',hx'⟩⟩
-        · right; intro x; let ⟨u,hu,hxu,_,hu'⟩ := h x
-          exact ⟨u,hu,hxu,hu' (h'.symm ▸ mem_univ x:)⟩
-    }
-    have hd : dY ≤ d := (dX.coinduced_eq_sInf).trans_le <| sInf_le fun n p hp ↦ Or.inr fun x ↦
-      ⟨_, isOpen_univ, mem_univ x, p ∘ (Equiv.Set.univ _), hp.dsmooth.comp dsmooth_subtype_val, rfl⟩
-    exact DiffeologicalSpace.le_iff'.1 hd n p hp
+  refine ⟨fun hp ↦ ?_, Or.rec (fun ⟨y, hy⟩ ↦ hy ▸ isPlot_const) fun h ↦ ?_⟩
+  · rw [DiffeologicalSpace.coinduced_eq_generateFrom,
+      DiffeologicalSpace.isPlot_generateFrom_iff] at hp
+    refine hp.imp_right <| forall_imp fun x ⟨p', ⟨q, hq, hp'⟩, g, ⟨u, hu, hg⟩, hp⟩ ↦ ?_
+    let ⟨v, hv, hv', hxv⟩ := mem_nhds_iff.1 <| Filter.inter_mem hu hp
+    refine ⟨v, hv', hxv, v.restrict (q ∘ g), ?_, ?_⟩
+    · exact hq.dsmooth.comp (hg.mono <| hv.trans inter_subset_left).dsmooth_restrict
+    · ext x; exact (hp' ▸ (hv x.2).2:)
   · refine isPlot_iff_locally_dsmooth.2 fun x ↦ Exists.imp (fun u ⟨hu,hxu,p',hp'⟩ ↦ ?_) (h x)
     rw [Set.restrict_eq,hp'.2]
     exact ⟨hu,hxu,dsmooth_coinduced_rng.comp hp'.1⟩

@@ -108,7 +108,7 @@ def SmoothSp.concr : SmoothSp.{u} ⥤ DiffSp.{u} where
   obj X := DiffSp.of (Γ.obj X)
   map f := DiffSp.ofHom ⟨Γ.map f, by
     rw [dsmooth_generateFrom_iff]; intro n p ⟨p', hp⟩
-    refine DiffeologicalSpace.isPlot_generatedFrom_of_mem ⟨f.val.app _ p', ?_⟩
+    refine DiffeologicalSpace.isPlot_generateFrom_of_mem ⟨f.val.app _ p', ?_⟩
     rw [hp]; ext x; exact congrFun (f.val.naturality ⟨fun _ : Eucl 0 ↦ x, dsmooth_const⟩) p'⟩
   map_id := fun _ ↦ by rfl
   map_comp := fun _ _ ↦ by rfl
@@ -120,7 +120,7 @@ def DiffSp.reflectorAdjunction : SmoothSp.concr.{u} ⊣ DiffSp.toSmoothSp.{u} :=
     unit := {
       app := fun X ↦ ⟨{
         app := fun _ p ↦ ⟨fun x ↦ X.val.map ⟨fun _ ↦ x, dsmooth_const⟩ p,
-          IsPlot.dsmooth (DiffeologicalSpace.isPlot_generatedFrom_of_mem ⟨p, rfl⟩)⟩
+          IsPlot.dsmooth (DiffeologicalSpace.isPlot_generateFrom_of_mem ⟨p, rfl⟩)⟩
         naturality := fun ⟨n⟩ ⟨m⟩ f ↦ by
           ext p; refine DSmoothMap.ext fun x ↦ ?_
           change X.val.map (Opposite.op ⟨fun _ ↦ x, dsmooth_const⟩) (X.val.map f p) =

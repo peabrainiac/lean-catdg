@@ -3,7 +3,6 @@ import Mathlib.CategoryTheory.Closed.Cartesian
 import Mathlib.Topology.Category.DeltaGenerated
 import Mathlib.Topology.Category.TopCat.Basic
 import Orbifolds.Diffeology.DDiffeomorph
-import Orbifolds.Diffeology.Continuous
 
 /-!
 # Category of diffeological spaces

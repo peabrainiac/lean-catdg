@@ -119,7 +119,7 @@ lemma dTop_generateFrom_eq_iSup {X : Type*} {g : Set ((n : ℕ) × (Eucl n → X
     DTop[generateFrom g] = ⨆ p ∈ g, .coinduced p.2 inferInstance := by
   let _ := generateFrom g
   refine le_antisymm ((dTop_mono ?_).trans dTop_continuousDiffeology_le) <|
-    iSup₂_le fun p hp ↦ (isPlot_generatedFrom_of_mem hp).continuous.coinduced_le
+    iSup₂_le fun p hp ↦ (isPlot_generateFrom_of_mem hp).continuous.coinduced_le
   exact generateFrom_le_iff.2 fun n p hp ↦
     continuous_le_rng (le_iSup₂ _ hp) continuous_coinduced_rng
 

@@ -1,7 +1,6 @@
-import Mathlib.Topology.Sets.Opens
-import Mathlib.Analysis.Calculus.ContDiff.Basic
-import Mathlib.Topology.Algebra.Module.FiniteDimension
 import Mathlib.Analysis.InnerProductSpace.EuclideanDist
+import Mathlib.Analysis.Normed.Module.Convex
+import Mathlib.Topology.LocallyConstant.Basic
 
 open TopologicalSpace
 
@@ -311,7 +310,7 @@ lemma self_subset_toPlots_generateFrom (g : Set ((n : ℕ) × (Eucl n → X))) :
     g ⊆ (generateFrom g).toPlots :=
   Set.subset_iInter₂ fun _ hd ↦ hd
 
-lemma isPlot_generatedFrom_of_mem {g : Set ((n : ℕ) × (Eucl n → X))} {n : ℕ} {p : Eucl n → X}
+lemma isPlot_generateFrom_of_mem {g : Set ((n : ℕ) × (Eucl n → X))} {n : ℕ} {p : Eucl n → X}
     (hp : ⟨n, p⟩ ∈ g) : IsPlot[generateFrom g] p :=
   self_subset_toPlots_generateFrom g hp
 
@@ -433,6 +432,67 @@ theorem isPlot_iInf_iff {ι : Type*} {D : ι → DiffeologicalSpace X} {n : ℕ}
 theorem isPlot_sInf_iff {D : Set (DiffeologicalSpace X)} {n : ℕ} {p : Eucl n → X} :
     IsPlot[sInf D] p ↔ ∀ d ∈ D, IsPlot[d] p :=
   (Set.ext_iff.1 (toPlots_sInf (D := D)) ⟨n,p⟩).trans Set.mem_iInter₂
+
+/-- A map is a plot in the diffeology generated `g` iff it is constant or locally a
+reparametrisation of maps in `g`. -/
+lemma isPlot_generateFrom_iff (g : Set ((n : ℕ) × (Eucl n → X))) {n : ℕ} {p : Eucl n → X} :
+    IsPlot[generateFrom g] p ↔ (∃ y, p = fun _ ↦ y) ∨ ∀ x, ∃ p' ∈ g,
+      ∃ f, (∃ u ∈ 𝓝 x, ContDiffOn ℝ ∞ f u) ∧ p =ᶠ[𝓝 x] p'.2 ∘ f := by
+  refine ⟨fun hp ↦ ?_, Or.rec (fun ⟨y, hy⟩ ↦ hy ▸ @isPlot_const _ (_) _ _) fun h ↦ ?_⟩
+  · let d : DiffeologicalSpace X := mkOfPlotsOn {
+      isPlotOn {n u} hu p := ∀ x ∈ u, p =ᶠ[𝓝 x] (fun _ ↦ p x) ∨
+        ∃ p' ∈ g, ∃ f, (∃ v ∈ 𝓝 x, ContDiffOn ℝ ∞ f v) ∧ p =ᶠ[𝓝 x] p'.2 ∘ f
+      isPlotOn_congr {n u} hu p q h := by
+        refine forall₂_congr fun x hxu ↦ or_congr ?_ ?_
+        · rw [h hxu]
+          exact (h.eventuallyEq_of_mem (hu.mem_nhds hxu)).congr_left
+        · refine exists_congr fun p' ↦ and_congr_right fun hp' ↦
+            exists_congr fun f ↦ and_congr_right fun hf ↦ ?_
+          exact (h.eventuallyEq_of_mem (hu.mem_nhds hxu)).congr_left
+      isPlot {n p} := (∃ y, p = fun _ ↦ y) ∨ ∀ x, ∃ p' ∈ g,
+        ∃ f, (∃ u ∈ 𝓝 x, ContDiffOn ℝ ∞ f u) ∧ p =ᶠ[𝓝 x] p'.2 ∘ f
+      isPlotOn_univ {n p} := by
+        refine ⟨fun h ↦ ?_, fun hp x _ ↦ hp.imp (fun ⟨_, hp⟩ ↦ by rw [hp]) (fun hp ↦ hp x)⟩
+        have h' : IsClopen (p ⁻¹' (⋃ p' ∈ g, Set.range p'.2)) := by
+          refine ⟨⟨isOpen_iff_mem_nhds.2 fun x hx ↦ ?_⟩, isOpen_iff_mem_nhds.2 fun x hx ↦ ?_⟩
+          all_goals specialize h x trivial; rw [← Filter.eventually_mem_set]
+          all_goals simp only [Set.mem_compl_iff, Set.mem_preimage] at hx ⊢
+          · replace h := h.resolve_right fun ⟨p', hp', f, hf, hp⟩ ↦ hx <|
+              Set.mem_iUnion₂_of_mem hp' <| hp.eq_of_nhds ▸ Set.mem_range_self _
+            exact h.mono fun x' hx' ↦ hx' ▸ hx
+          · refine h.rec (fun h ↦ ?_) (fun ⟨p', hp', f, hf, h⟩ ↦ ?_)
+            · exact h.mono fun x' hx' ↦ hx' ▸ hx
+            · exact h.mono fun x' hx' ↦ hx' ▸ Set.mem_iUnion₂_of_mem hp' (Set.mem_range_self _)
+        refine (isClopen_iff.1 h').rec (fun h' ↦ .inl ?_) (fun h' ↦ .inr fun x ↦ ?_)
+        · have := Nonempty.map p inferInstance
+          refine IsLocallyConstant.exists_eq_const <| (IsLocallyConstant.iff_eventually_eq _).2
+            fun x ↦ (h x trivial).rec id (fun ⟨p', hp', f, hf, h⟩ ↦ ?_)
+          refine (Set.eq_empty_iff_forall_not_mem.1 h' x ?_).elim
+          exact Set.mem_iUnion₂_of_mem hp' <| h.eq_of_nhds ▸ Set.mem_range_self _
+        · refine (h x trivial).rec (fun h ↦ ?_) id
+          let ⟨p', hp', x', hx'⟩ := Set.mem_iUnion₂.1 <| (Set.eq_univ_iff_forall.1 h') x
+          exact ⟨p', hp', fun _ ↦ x', ⟨_, Filter.univ_mem, contDiffOn_const⟩, (hx' ▸ h:)⟩
+      isPlot_const {n x} :=  Or.inl ⟨x, rfl⟩
+      isPlotOn_reparam {n m u v hu} hv {p f} h hp hf x hxv := by
+        refine (hp _ (h hxv)).imp (fun hp ↦ ?_) (fun hp ↦ ?_)
+        · exact hp.comp_tendsto <| hf.continuousOn.continuousAt (hv.mem_nhds hxv)
+        · let ⟨p', hp', g, ⟨w, hw, hg⟩, hp⟩ := hp
+          refine ⟨p', hp', g ∘ f, ⟨_, Filter.inter_mem (hv.mem_nhds hxv) <|
+            hf.continuousOn.continuousAt (hv.mem_nhds hxv) hw, hg.comp_inter hf⟩, ?_⟩
+          exact hp.comp_tendsto <| hf.continuousOn.continuousAt (hv.mem_nhds hxv)
+      locality {n u} hu {p} hp x hxu := by
+        obtain ⟨v, hv, hxv, hp⟩ := hp x hxu
+        exact hp x hxv
+    }
+    refine DiffeologicalSpace.le_iff'.1 ?_ n p hp
+    exact generateFrom_le_iff.2 fun n p hp ↦ .inr fun x ↦
+      ⟨_, hp, id, ⟨_, Filter.univ_mem, contDiffOn_id⟩, .rfl⟩
+  · refine (generateFrom g).locality <| forall_imp (fun x ⟨p', hp', f, ⟨u, hu, hf⟩, h⟩ ↦ ?_) h
+    let ⟨v, hv, hv', hxv⟩ := mem_nhds_iff.1 <| Filter.inter_mem hu h
+    refine ⟨v, hv', hxv, fun {m f'} hf' hf'' ↦ ?_⟩
+    rw [show p ∘ f' = p'.2 ∘ f ∘ f' by ext x; exact (hv <| hf' x).2]
+    exact @isPlot_reparam _ (_) _ _ _ _ (isPlot_generateFrom_of_mem hp')
+      (hf.comp_contDiff hf'' (fun x ↦ (hv <| hf' x).1))
 
 end DiffeologicalSpace
 
