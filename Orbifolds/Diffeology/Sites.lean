@@ -253,10 +253,10 @@ instance : openCoverTopology.IsCohesiveSite where
 /-- `CartSp` is a concrete site, in that it is concrete with elements corresponding to morphisms
 from the terminal object and carries a topology consisting entirely of jointly surjective sieves. -/
 noncomputable instance : openCoverTopology.IsConcreteSite where
-  forget_natIso_coyoneda := NatIso.ofComponents fun n ↦
+  forgetNatIsoCoyoneda := NatIso.ofComponents fun n ↦
     (DSmoothMap.equivFnOfUnique (Y := Eucl n)).toIso.symm
-  forget_natIso_coyoneda_apply := rfl
-  sieves_isJointlySurjective hs := by
+  forgetNatIsoCoyoneda_apply := rfl
+  isJointlySurjective_of_mem hs := by
     rw [openCoverTopology.mem_sieves_iff] at hs
     obtain ⟨r, hr⟩ := hs
     exact .mono hr.1 <| Presieve.isJointlySurjective_iff_iUnion_range_eq_univ.2 hr.2.2
@@ -380,10 +380,10 @@ noncomputable instance : Unique (⊤_ EuclOp) := by
 /-- `CartSp` is a concrete site, in that it is concrete with elements corresponding to morphisms
 from the terminal object and carries a topology consisting entirely of jointly surjective sieves. -/
 noncomputable instance : openCoverTopology.IsConcreteSite where
-  forget_natIso_coyoneda := NatIso.ofComponents fun u ↦
+  forgetNatIsoCoyoneda := NatIso.ofComponents fun u ↦
     (DSmoothMap.equivFnOfUnique (Y := u.2)).toIso.symm
-  forget_natIso_coyoneda_apply := rfl
-  sieves_isJointlySurjective hs := by
+  forgetNatIsoCoyoneda_apply := rfl
+  isJointlySurjective_of_mem hs := by
     rw [openCoverTopology.mem_sieves_iff] at hs
     obtain ⟨r, hr⟩ := hs
     exact .mono hr.1 <| Presieve.isJointlySurjective_iff_iUnion_range_eq_univ.2 hr.2.2

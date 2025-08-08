@@ -3,7 +3,29 @@ import Orbifolds.ForMathlib.LocalSite
 /-!
 # Concrete sites
 
-TODO: switch from `HasForget` to the new `ConcreteCategory` API
+Concrete sites are concrete categories whose forgetful functor is corepresented by a terminal
+object, equipped with a Grothendieck topology consisting only of jointly surjective sieves.
+See https://ncatlab.org/nlab/show/concrete+site.
+
+Also see https://arxiv.org/abs/0807.1704; note that while that article requires concrete sites
+to be subcanonical, we don't require that here.
+
+## Main definitions / results:
+* `Presieve.IsJointlySurjective`: property stating that a presieve in a concrete category is
+  jointly surjective
+* `IsConcreteSite`: typeclass giving a site the structure of a concrete site
+* `IsConcreteSite.isLocalSite`: every concrete site is also a local site
+* `IsConcreteSite.isSeparated_of_isRepresentable`: every representable presheaf on a concrete site
+  is separated. In particular, to show that a concrete site is subcanonical it suffices to show
+  the existence part of the sheaf condition for representable sheaves.
+
+There is also some material on concrete sheaves, but they should probably be redefined in terms of
+local sites / biseparated sheaves before being expanded upon.
+
+## TODOs
+* switch from `HasForget` to the new `ConcreteCategory` API
+* maybe split out concrete categories where points correspond to morphisms from a terminal object
+  into a separate definition / file
 -/
 
 universe u v w u₂ v₂ w₂
@@ -46,26 +68,71 @@ class GrothendieckTopology.IsConcreteSite (J : GrothendieckTopology C)
     extends HasTerminal C, HasForget.{v} C where
   /-- The forgetful functor is given by morphisms from the terminal object. Since a forgetful
   functor might already exists, this is encoded here as a natural isomorphism. -/
-  forget_natIso_coyoneda : (CategoryTheory.forget C) ≅ coyoneda.obj (.op (⊤_ C))
+  forgetNatIsoCoyoneda : (CategoryTheory.forget C) ≅ coyoneda.obj (.op (⊤_ C))
   /-- Said isomorphism takes `x : X` to a morphism with underlying map `fun _ ↦ x`. -/
-  forget_natIso_coyoneda_apply {X : C} {x : X} :
-    (DFunLike.coe (F := ⊤_ C ⟶ X) <| forget_natIso_coyoneda.hom.app X x) = fun _ ↦ x
+  forgetNatIsoCoyoneda_apply {X : C} {x : X} :
+    (DFunLike.coe (F := ⊤_ C ⟶ X) <| forgetNatIsoCoyoneda.hom.app X x) = fun _ ↦ x
   /-- All covering sieves are jointly surjective. -/
-  sieves_isJointlySurjective {X : C} {S : Sieve X} :
-    S ∈ J X → S.arrows.IsJointlySurjective
+  isJointlySurjective_of_mem {X : C} {S : Sieve X} (hS : S ∈ J X) : S.arrows.IsJointlySurjective
+
+namespace GrothendieckTopology.IsConcreteSite
+
+lemma coyoneda_obj_terminal_faithful (J : GrothendieckTopology C) [J.IsConcreteSite] :
+    (coyoneda.obj (.op (⊤_ C))).Faithful :=
+  .of_iso (forgetNatIsoCoyoneda (J := J))
 
 /-- The terminal object of a concrete site has exactly one point. -/
-noncomputable instance GrothendieckTopology.IsConcreteSite.instUniqueTerminal
+noncomputable instance instUniqueTerminal
     (J : GrothendieckTopology C) [J.IsConcreteSite] : Unique (⊤_ C) :=
-  (forget_natIso_coyoneda.app (⊤_ C)).toEquiv.unique (β := ⊤_ C ⟶ ⊤_ C)
+  (forgetNatIsoCoyoneda.app (⊤_ C)).toEquiv.unique (β := ⊤_ C ⟶ ⊤_ C)
 
 /-- Every concrete site is also a local site. -/
-instance (J : GrothendieckTopology C) [J.IsConcreteSite] : J.IsLocalSite where
+instance isLocalSite (J : GrothendieckTopology C) [J.IsConcreteSite] : J.IsLocalSite where
   eq_top_of_mem S hS := (S.id_mem_iff_eq_top).1 <| by
-    let ⟨Y, f, hf, y, hfy⟩ := IsConcreteSite.sieves_isJointlySurjective hS default
-    let y' : ⊤_ C ⟶ Y := IsConcreteSite.forget_natIso_coyoneda.hom.app Y  y
+    let ⟨Y, f, hf, y, hfy⟩ := IsConcreteSite.isJointlySurjective_of_mem hS default
+    let y' : ⊤_ C ⟶ Y := IsConcreteSite.forgetNatIsoCoyoneda.hom.app Y  y
     convert S.downward_closed hf y'
     exact Subsingleton.elim _ _
+
+/-- On concrete sites, covering sieves contain all morphisms from the terminal object. -/
+lemma from_terminal_mem_of_mem (J : GrothendieckTopology C) [J.IsConcreteSite] {X : C} {S : Sieve X}
+    (hS : S ∈ J X) (f : ⊤_ C ⟶ X) : S f := by
+  let ⟨Y, f, hf, y, hy⟩ := isJointlySurjective_of_mem hS (f default)
+  convert Sieve.downward_closed S hf (forgetNatIsoCoyoneda.hom.app _ y)
+  apply (forget C).map_injective; ext x
+  rw [Unique.eq_default x, FunctorToTypes.map_comp_apply]
+  exact hy.symm.trans <| congrArg _ <| congrFun forgetNatIsoCoyoneda_apply.symm default
+
+lemma isSeparated_yoneda_obj (J : GrothendieckTopology C) [J.IsConcreteSite] (X : C) :
+    Presieve.IsSeparated J (yoneda.obj X) := by
+  intro Y S hS t (f : Y ⟶ X) (g : Y ⟶ X) hf hg
+  have _ := coyoneda_obj_terminal_faithful J
+  apply (coyoneda.obj (.op (⊤_ C))).map_injective; ext (y : ⊤_ C ⟶ _)
+  exact (hf y (from_terminal_mem_of_mem J hS y)).trans (hg y (from_terminal_mem_of_mem J hS y)).symm
+
+/-- The property of being separated for some presieve is preserved under isomorphisms.
+TODO: upstream to mathlib. -/
+theorem _root_.CategoryTheory.Presieve.isSeparatedFor_iso {C : Type u} [Category.{v} C]
+    {F F' : Cᵒᵖ ⥤ Type w} (i : F ≅ F') {X : C} {R : Presieve X} (hF : R.IsSeparatedFor F) :
+    R.IsSeparatedFor F' := by
+  intro x t₁ t₂ ht₁ ht₂
+  simpa using congrArg (i.hom.app _) <| hF (x.compPresheafMap i.inv) _ _
+    (ht₁.compPresheafMap i.inv) (ht₂.compPresheafMap i.inv)
+
+/-- The property of being separated is preserved under isomorphisms.
+TODO: upstream to mathlib. -/
+theorem _root_.CategoryTheory.Presieve.isSeparated_iso {C : Type u} [Category.{v} C]
+    (J : GrothendieckTopology C) {F F' : Cᵒᵖ ⥤ Type w} (i : F ≅ F')
+    (hF : Presieve.IsSeparated J F) : Presieve.IsSeparated J F' :=
+  fun S hS ↦ Presieve.isSeparatedFor_iso i (hF S hS)
+
+/-- Every representable presheaf on a concrete site is, while not necessarily a sheaf,
+at least separated. -/
+lemma isSeparated_of_isRepresentable (J : GrothendieckTopology C) [J.IsConcreteSite]
+    (F : Cᵒᵖ ⥤ Type v) [F.IsRepresentable] : Presieve.IsSeparated J F :=
+  Presieve.isSeparated_iso J F.reprW <| isSeparated_yoneda_obj J _
+
+end GrothendieckTopology.IsConcreteSite
 
 variable (J : GrothendieckTopology C) [J.IsConcreteSite]
 
