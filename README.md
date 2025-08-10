@@ -6,26 +6,27 @@ This project started out with the goal to formalise some of the basic theory of 
 
 The material currently featured in this repository includes:
 - Diffeology:
-	- [basics & lattice structure on diffeologies](./Orbifolds/Diffeology/Basic.lean)
-	- [induced and coinduced diffeologies, inductions and subductions](./Orbifolds/Diffeology/Induced.lean)
-	- [basic constructions](./Orbifolds/Diffeology/Constructions.lean) (i.e. subspaces, quotient spaces, products, mapping spaces)
-	- D-topology, [continuous diffeology](./Orbifolds/Diffeology/Continuous.lean)
-	- [internal tangent spaces](./Orbifolds/Diffeology/TangentSpace.lean)
-	- [diffeological manifolds](./Orbifolds/Diffeology/Manifolds.lean) & [orbifolds](./Orbifolds/Diffeology/LocallyModelled.lean)
-	- [reflexive diffeological spaces](./Orbifolds/Diffeology/Reflexive.lean) (i.e. Frölicher spaces)
-	- diffeological [monoids](./Orbifolds/Diffeology/Algebra/Monoid.lean), [groups](./Orbifolds/Diffeology/Algebra/Group.lean), rings and [modules / vector spaces](./Orbifolds/Diffeology/Algebra/Module.lean)
-	- [pointwise algebraic structure of mapping spaces](./Orbifolds/Diffeology/Algebra/DSmoothMap.lean)
-	- [category of diffeological spaces](./Orbifolds/Diffeology/DiffSp.lean), limits & colimits in that category, cartesian-closedness and adjunctions to topological spaces & sets
+	- [basics & lattice structure on diffeologies](https://peabrainiac.github.io/lean-orbifolds/docs/Orbifolds/Diffeology/Basic.lean)
+	- [induced and coinduced diffeologies, inductions and subductions](https://peabrainiac.github.io/lean-orbifolds/Orbifolds/Diffeology/Induced.lean)
+	- [basic constructions](https://peabrainiac.github.io/lean-orbifolds/Orbifolds/Diffeology/Constructions.lean) (i.e. subspaces, quotient spaces, products, mapping spaces)
+	- D-topology, [continuous diffeology](https://peabrainiac.github.io/lean-orbifolds/Orbifolds/Diffeology/Continuous.lean)
+	- [internal tangent spaces](https://peabrainiac.github.io/lean-orbifolds/Orbifolds/Diffeology/TangentSpace.lean)
+	- [diffeological manifolds](https://peabrainiac.github.io/lean-orbifolds/Orbifolds/Diffeology/Manifolds.lean) & [orbifolds](https://peabrainiac.github.io/lean-orbifolds/Orbifolds/Diffeology/LocallyModelled.lean)
+	- [reflexive diffeological spaces](https://peabrainiac.github.io/lean-orbifolds/Orbifolds/Diffeology/Reflexive.lean) (i.e. Frölicher spaces)
+	- diffeological [monoids](https://peabrainiac.github.io/lean-orbifolds/Orbifolds/Diffeology/Algebra/Monoid.lean), [groups](https://peabrainiac.github.io/lean-orbifolds/Orbifolds/Diffeology/Algebra/Group.lean), rings and [modules / vector spaces](https://peabrainiac.github.io/lean-orbifolds/Orbifolds/Diffeology/Algebra/Module.lean)
+	- [pointwise algebraic structure of mapping spaces](https://peabrainiac.github.io/lean-orbifolds/Orbifolds/Diffeology/Algebra/DSmoothMap.lean)
+	- [category of diffeological spaces](https://peabrainiac.github.io/lean-orbifolds/Orbifolds/Diffeology/DiffSp.lean), limits & colimits in that category, cartesian-closedness and adjunctions to topological spaces & sets
 - Smooth spaces:
-	- sites [CartSp & EuclOp](./Orbifolds/Diffeology/Sites.lean)
-	- [category of smooth spaces](./Orbifolds/Diffeology/SmoothSp.lean), adjunction to diffeological spaces
+	- sites [CartSp & EuclOp](https://peabrainiac.github.io/lean-orbifolds/Orbifolds/Diffeology/Sites.lean) as concrete subcanonical
+	sites, the former being a cohesive, dense subsite of the latter
+	- [category of smooth spaces](https://peabrainiac.github.io/lean-orbifolds/Orbifolds/Diffeology/SmoothSp.lean), adjunction to diffeological spaces
 - Cohesion:
-	- [local sites](./Orbifolds/ForMathlib/LocalSite.lean), [locally connected sites](./Orbifolds/ForMathlib/LocallyConnectedSite.lean) and [cohesive sites](./Orbifolds/Cohesive/CohesiveSite.lean)
-	- [general cohesion](./Orbifolds/Cohesive/Basic.lean)
+	- [local sites](https://peabrainiac.github.io/lean-orbifolds/Orbifolds/ForMathlib/LocalSite.lean), [locally connected sites](https://peabrainiac.github.io/lean-orbifolds/Orbifolds/ForMathlib/LocallyConnectedSite.lean) and [cohesive sites](https://peabrainiac.github.io/lean-orbifolds/Orbifolds/Cohesive/CohesiveSite.lean); also [concrete sites](https://peabrainiac.github.io/lean-orbifolds/Orbifolds/ForMathlib/ConcreteSite.lean)
+	- [general cohesion](https://peabrainiac.github.io/lean-orbifolds/Orbifolds/Cohesive/Basic.lean)
 
-Other files that started out in this repository have also already made their way into mathlib, for example [delta-generated spaces](https://leanprover-community.github.io/mathlib4_docs/Mathlib/Topology/Compactness/DeltaGeneratedSpace.html) and [global sections of sheaves](https://leanprover-community.github.io/mathlib4_docs/Mathlib/CategoryTheory/Sites/GlobalSections.html).
+Material that has been upstreamed from here to mathlib so far includes [delta-generated spaces](https://leanprover-community.github.io/mathlib4_docs/Mathlib/Topology/Compactness/DeltaGeneratedSpace.html), [global sections of sheaves](https://leanprover-community.github.io/mathlib4_docs/Mathlib/CategoryTheory/Sites/GlobalSections.html) and [adjoint triples](https://leanprover-community.github.io/mathlib4_docs/Mathlib/CategoryTheory/Adjunction/Triple.html#CategoryTheory.Adjunction.Triple). More PRs are on the way / currently waiting for review.
 
 
 ## References
 
-The formalisation of diffeology here is based mostly on Patrick Iglesias-Zemmour's excellent book "Diffeology" and mathlib's formalisation of topology, since there are a lot of parallels to topology in the basic theory. Other files are mostly derived from [the nlab](https://ncatlab.org/nlab/show/HomePage) or various shorter papers; I have made an effort to include proper attribution in the module docstring of each file.
+The formalisation of diffeology here is based mostly on Patrick Iglesias-Zemmour's excellent book "Diffeology" and mathlib's formalisation of topology, since there are a lot of parallels to topology in the basic theory. Other files are mostly derived from [the nlab](https://ncatlab.org/nlab/show/HomePage) and / various papers; I have made an effort to include proper attribution in the module docstring of each file.
