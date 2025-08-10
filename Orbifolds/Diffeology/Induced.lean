@@ -517,10 +517,18 @@ theorem IsOpenInduction.isEmbedding' [TopologicalSpace X] [DTopCompatible X] [To
     [DTopCompatible Y] {f : X → Y} (hf : IsOpenInduction f) : IsEmbedding f :=
   dTop_eq X ▸ dTop_eq Y ▸ hf.isEmbedding
 
+lemma IsOpenInduction.isOpen_range {f : X → Y} (hf : IsOpenInduction f) :
+    IsOpen[DTop] (Set.range f) :=
+  @IsOpenMap.isOpen_range _ _ _ (_) (_) hf.2
+
+lemma IsOpenInduction.isOpen_range' [TopologicalSpace Y] [DTopCompatible Y] {f : X → Y}
+    (hf : IsOpenInduction f) : IsOpen (Set.range f) :=
+  dTop_eq Y ▸ hf.isOpen_range
+
 theorem IsOpenInduction.isOpenEmbedding {f : X → Y} (hf : IsOpenInduction f) :
     @IsOpenEmbedding _ _ DTop DTop f := by
   let _ := @DTop X _; let _ := @DTop Y _
-  exact ⟨hf.isEmbedding, hf.2.isOpen_range⟩
+  exact ⟨hf.isEmbedding, hf.isOpen_range⟩
 
 theorem IsOpenInduction.isOpenEmbedding' [TopologicalSpace X] [DTopCompatible X]
     [TopologicalSpace Y] [DTopCompatible Y] {f : X → Y} (hf : IsOpenInduction f) :
@@ -538,9 +546,8 @@ theorem IsInduction.isOpenInduction_of_isOpen_range' [TopologicalSpace Y] [DTopC
   hf.isOpenInduction_of_isOpen_range (dTop_eq Y ▸ hf')
 
 theorem isOpenInduction_iff_isInduction_and_isOpen_range {f : X → Y} :
-    IsOpenInduction f ↔ IsInduction f ∧ IsOpen[DTop] (Set.range f) := by
-  let _ := @DTop X _; let _ := @DTop Y _
-  exact ⟨fun h ↦ ⟨h.1, h.2.isOpen_range⟩, fun h ↦ h.1.isOpenInduction_of_isOpen_range h.2⟩
+    IsOpenInduction f ↔ IsInduction f ∧ IsOpen[DTop] (Set.range f) :=
+  ⟨fun h ↦ ⟨h.1, h.isOpen_range⟩, fun h ↦ h.1.isOpenInduction_of_isOpen_range h.2⟩
 
 theorem isOpenInduction_iff_isInduction_and_isOpen_range' [TopologicalSpace Y] [DTopCompatible Y]
     {f : X → Y} : IsOpenInduction f ↔ IsInduction f ∧ IsOpen (Set.range f) :=
@@ -576,6 +583,6 @@ theorem IsOpenInduction.of_comp' {f : X → Y} {g : Y → Z} (hg : IsInduction g
   let _ := @DTop X _; let _ := @DTop Y _; let _ := @DTop Z _
   refine (hg.of_comp h.1).isOpenInduction_of_isOpen_range ?_
   rw [hg.eq_induced, ← hg.2.preimage_image (Set.range f), ← Set.range_comp]
-  exact (isOpen_induced h.isOpenMap.isOpen_range).mono dTop_induced_le_induced_dTop
+  exact (isOpen_induced h.isOpen_range).mono dTop_induced_le_induced_dTop
 
 end Inductions

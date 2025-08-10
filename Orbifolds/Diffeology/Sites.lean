@@ -1,4 +1,5 @@
 import Mathlib.Algebra.Category.AlgebraCat.Basic
+import Mathlib.CategoryTheory.Sites.Canonical
 import Mathlib.CategoryTheory.Sites.Coverage
 import Orbifolds.Cohesive.CohesiveSite
 import Orbifolds.Diffeology.Algebra.DSmoothMap
@@ -23,10 +24,10 @@ Main definitions / results:
 * `CartSp`: the category of euclidean spaces and smooth maps between them
 * `CartSp.openCoverCoverage`: the coverage given by jointly surjective open inductions
 * `CartSp` has all finite products
-* `CartSp` is a concrete cohesive site
+* `CartSp` is a concrete, cohesive and subcanonical site
 * `EuclOp`: the category of open subsets of euclidean spaces and smooth maps between them
 * `EuclOp.openCoverCoverage`: the coverage given by jointly surjective open inductions
-* `EuclOp` is a concrete site
+* `EuclOp` is a concrete subcanonical site
 * `CartSp.toEuclOp`: the fully faithful embedding of `CartSp` into `EuclOp`
 * `CartSp.toEuclOp` exhibits `CartSp` as a dense sub-site of `EuclOp`
 
@@ -90,7 +91,7 @@ def openCoverCoverage : Coverage CartSp where
       let ⟨f,hf,hgx⟩ := mem_iUnion₂.1 hk
       refine ⟨m, mem_iUnion₂.2 ?_⟩
       let ⟨ε, hε, hxε⟩ := Metric.isOpen_iff.1
-        ((hs.1 k f hf).2.isOpen_range.preimage g.2.continuous) x hgx
+        ((hs.1 k f hf).isOpen_range.preimage g.2.continuous) x hgx
       let e := (DDiffeomorph.univBall x hε)
       use ⟨_, dsmooth_subtype_val.comp e.dsmooth⟩
       refine ⟨⟨?_, ?_⟩, ?_⟩
@@ -230,7 +231,7 @@ instance : openCoverTopology.IsLocallyConnectedSite where
     have hF' : IsLocallyConstant F' := by
       refine (IsLocallyConstant.iff_exists_open _).2 fun x ↦ ?_
       let ⟨m, f, hf, y, hy⟩ := hs x
-      refine ⟨range f, hf.2.2.isOpen_range, ⟨y, hy⟩, fun x' ⟨y', hy'⟩ ↦ ?_⟩
+      refine ⟨range f, hf.2.isOpen_range, ⟨y, hy⟩, fun x' ⟨y', hy'⟩ ↦ ?_⟩
       rw [← hy, ← hy']
       exact (@hF ⟨.mk (DSmoothMap.const _ (f y')), hs' _⟩ ⟨.mk f, hf.1⟩
         (Over.homMk (DSmoothMap.const _ y'))).trans
@@ -260,6 +261,28 @@ noncomputable instance : openCoverTopology.IsConcreteSite where
     rw [openCoverTopology.mem_sieves_iff] at hs
     obtain ⟨r, hr⟩ := hs
     exact .mono hr.1 <| Presieve.isJointlySurjective_iff_iUnion_range_eq_univ.2 hr.2.2
+
+open GrothendieckTopology.IsConcreteSite in
+/-- `CartSp` is a subcanonical site, i.e. all representable presheaves on it are sheaves. -/
+instance : openCoverTopology.Subcanonical := by
+  refine .of_isSheaf_yoneda_obj _ fun n m s hs ↦
+    (isSeparated_yoneda_obj _ n s hs).isSheafFor fun f hf ↦ ?_
+  let hs' := hs; simp_rw [openCoverTopology.mem_sieves_iff', eq_univ_iff_forall, mem_iUnion] at hs'
+  refine ⟨⟨?_, ?_⟩, ?_⟩
+  · intro x
+    exact (show ⊤_ CartSp ⟶ n from f _ <| from_terminal_mem_of_mem _ hs (.const _ x)) default
+  · refine dsmooth_iff_locally_dsmooth.2 fun x ↦ ?_
+    let ⟨k, g, hg, hx⟩ := hs' x
+    refine ⟨_, hg.2.isOpen_range, hx, ?_⟩
+    rw [← hg.2.dsmooth_comp_iff_dsmooth_restrict]
+    convert (f g hg.1).dsmooth; ext1 x'
+    specialize hf (𝟙 (⊤_ _)) (Y₂ := k) (DSmoothMap.const _ x')
+      (from_terminal_mem_of_mem _ hs (.const _ (g x'))) hg.1 rfl
+    exact congrFun (congrArg DSmoothMap.toFun hf) (default : ⊤_ CartSp)
+  · intro k g hg; dsimp; ext1 x
+    specialize hf (𝟙 (⊤_ _)) (Y₂ := k) (DSmoothMap.const _ x)
+      (from_terminal_mem_of_mem _ hs (.const _ (g x))) hg rfl
+    exact congrFun (congrArg DSmoothMap.toFun hf) (default : ⊤_ CartSp)
 
 end CartSp
 
@@ -304,7 +327,7 @@ def openCoverCoverage : Coverage EuclOp where
       let ⟨w,hw⟩ := iUnion_eq_univ_iff.1 hs.2 (g x)
       let ⟨f,hf,hgx⟩ := mem_iUnion₂.1 hw
       have h := v.2.2.isOpenMap_subtype_val _
-        ((hs.1 _ _ hf).isOpenMap'.isOpen_range.preimage g.2.continuous')
+        ((hs.1 _ _ hf).isOpen_range'.preimage g.2.continuous')
       use ⟨_, _, h⟩
       refine mem_iUnion₂.2 ⟨⟨_, dsmooth_inclusion (Subtype.coe_image_subset _ _)⟩, ?_⟩
       refine ⟨⟨⟨w, f, hf, ?_⟩, ?_⟩, ?_⟩
@@ -377,7 +400,7 @@ noncomputable instance : Unique (⊤_ EuclOp) := by
     uniqueOfSubsingleton (α := (univ (α := Eucl 0))) ⟨0, mem_univ _⟩
   exact ((forget _).mapIso (terminalIsTerminal.uniqueUpToIso isTerminal0Top)).toEquiv.unique
 
-/-- `CartSp` is a concrete site, in that it is concrete with elements corresponding to morphisms
+/-- `EuclOp` is a concrete site, in that it is concrete with elements corresponding to morphisms
 from the terminal object and carries a topology consisting entirely of jointly surjective sieves. -/
 noncomputable instance : openCoverTopology.IsConcreteSite where
   forgetNatIsoCoyoneda := NatIso.ofComponents fun u ↦
@@ -387,6 +410,28 @@ noncomputable instance : openCoverTopology.IsConcreteSite where
     rw [openCoverTopology.mem_sieves_iff] at hs
     obtain ⟨r, hr⟩ := hs
     exact .mono hr.1 <| Presieve.isJointlySurjective_iff_iUnion_range_eq_univ.2 hr.2.2
+
+open GrothendieckTopology.IsConcreteSite in
+/-- `EuclOp` is a subcanonical site, i.e. all representable presheaves on it are sheaves. -/
+instance : openCoverTopology.Subcanonical := by
+  refine .of_isSheaf_yoneda_obj _ fun n m s hs ↦
+    (isSeparated_yoneda_obj _ n s hs).isSheafFor fun f hf ↦ ?_
+  let hs' := hs; simp_rw [openCoverTopology.mem_sieves_iff', eq_univ_iff_forall, mem_iUnion] at hs'
+  refine ⟨⟨?_, ?_⟩, ?_⟩
+  · intro x
+    exact (show ⊤_ EuclOp ⟶ n from f _ <| from_terminal_mem_of_mem _ hs (.const _ x)) default
+  · refine dsmooth_iff_locally_dsmooth.2 fun x ↦ ?_
+    let ⟨k, g, hg, hx⟩ := hs' x
+    refine ⟨_, hg.2.isOpen_range, hx, ?_⟩
+    rw [← hg.2.dsmooth_comp_iff_dsmooth_restrict]
+    convert (f g hg.1).dsmooth; ext1 x'
+    specialize hf (𝟙 (⊤_ _)) (Y₂ := k) (DSmoothMap.const _ x')
+      (from_terminal_mem_of_mem _ hs (.const _ (g x'))) hg.1 rfl
+    exact congrFun (congrArg DSmoothMap.toFun hf) (default : ⊤_ EuclOp)
+  · intro k g hg; dsimp; ext1 x
+    specialize hf (𝟙 (⊤_ _)) (Y₂ := k) (DSmoothMap.const _ x)
+      (from_terminal_mem_of_mem _ hs (.const _ (g x))) hg rfl
+    exact congrFun (congrArg DSmoothMap.toFun hf) (default : ⊤_ EuclOp)
 
 end EuclOp
 

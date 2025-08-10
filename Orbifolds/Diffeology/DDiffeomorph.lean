@@ -233,6 +233,12 @@ theorem dsmooth_ddiffeomorph_comp_iff (h : X ᵈ≃ Y) {f : Z → X} :
   rw [←id_comp f, ←coe_refl, ←self_trans_symm h, coe_trans, comp_assoc]
   exact h.symm.dsmooth.comp h'
 
+/-- For any induction `f`, `g ∘ f` is smooth iff `g` is smooth on `Set.range f`.
+TODO: move to a more fitting location -/
+lemma _root_.IsInduction.dsmooth_comp_iff_dsmooth_restrict {f : X → Y} (hf : IsInduction f)
+    {g : Y → Z} : DSmooth (g ∘ f) ↔ DSmooth ((Set.range f).restrict g) :=
+  (ofIsInduction hf).dsmooth_comp_ddiffeomorph_iff (f := (Set.range f).restrict g)
+
 section DSmoothMap
 
 instance instContinuousMapClass : DSmoothMapClass (X ᵈ≃ Y) X Y where
