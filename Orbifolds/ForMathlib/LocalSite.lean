@@ -1,5 +1,4 @@
-import Mathlib.CategoryTheory.Sites.GlobalSections
-import Mathlib.CategoryTheory.Adjunction.Triple
+import Orbifolds.ForMathlib.CoconstantSheaf
 
 /-!
 # Local sites
@@ -66,7 +65,7 @@ lemma Presheaf.coconst_isSheaf [J.IsLocalSite] (X : Type w) : IsSheaf J (coconst
 
 /-- The right adjoint to the global sections functor that exists over any local site.
 Takes a type `X` to the sheaf that sends each `Y : C` to the type of functions `Y → X`. -/
-noncomputable def coconstantSheaf [J.IsLocalSite] :
+noncomputable def IsLocalSite.coconstantSheaf [J.IsLocalSite] :
     Type w ⥤ Sheaf J (Type (max v w)) where
   obj X := ⟨Presheaf.coconst.obj X, Presheaf.coconst_isSheaf J X⟩
   map f := ⟨Presheaf.coconst.map f⟩
@@ -79,7 +78,8 @@ attribute [local instance] CategoryTheory.Types.instFunLike
 
 /-- On local sites, the global sections functor `Γ` is left-adjoint to the coconstant functor. -/
 @[simps!]
-noncomputable def ΓCoconstantSheafAdj [J.IsLocalSite] : Γ J (Type max u v) ⊣ coconstantSheaf J := by
+noncomputable def IsLocalSite.ΓCoconstantSheafAdj [J.IsLocalSite] :
+    Γ J (Type max u v) ⊣ coconstantSheaf J := by
   refine Adjunction.ofNatIsoLeft ?_ (ΓNatIsoSheafSections J _ terminalIsTerminal).symm
   exact {
     unit := {
@@ -102,39 +102,39 @@ noncomputable def ΓCoconstantSheafAdj [J.IsLocalSite] : Γ J (Type max u v) ⊣
       dsimp; congr; convert Category.id_comp _; exact Subsingleton.elim _ _
   }
 
-instance [J.IsLocalSite] : (Γ J (Type max u v)).IsLeftAdjoint :=
-  ⟨coconstantSheaf J, ⟨ΓCoconstantSheafAdj J⟩⟩
+instance [J.IsLocalSite] : (IsLocalSite.coconstantSheaf.{u,v,max u v} J).IsRightAdjoint :=
+  ⟨Γ J _, ⟨IsLocalSite.ΓCoconstantSheafAdj J⟩⟩
 
-instance [J.IsLocalSite] : (coconstantSheaf.{u,v,max u v} J).IsRightAdjoint :=
-  ⟨Γ J _, ⟨ΓCoconstantSheafAdj J⟩⟩
+instance [J.IsLocalSite] : HasCoconstantSheaf J (Type max u v) :=
+  ⟨_, ⟨IsLocalSite.ΓCoconstantSheafAdj J⟩⟩
 
 /-- The global sections of the coconstant sheaf on a type are naturally isomorphic to that type.-/
 noncomputable def coconstantSheafΓNatIsoId [J.IsLocalSite] :
-    coconstantSheaf J ⋙ Γ J _ ≅ 𝟭 (Type max u v) := by
+    IsLocalSite.coconstantSheaf J ⋙ Γ J _ ≅ 𝟭 (Type max u v) := by
   refine (isoWhiskerLeft _ (ΓNatIsoSheafSections J _ terminalIsTerminal)).trans ?_
   exact (NatIso.ofComponents (fun X ↦ {
     hom x := fun _ ↦ ⟨x⟩
     inv f := (f (default : ULift (⊤_ C ⟶ ⊤_ C))).down
     inv_hom_id := by
-      dsimp [coconstantSheaf, Presheaf.coconst]; ext; dsimp
+      dsimp [IsLocalSite.coconstantSheaf, Presheaf.coconst]; ext; dsimp
       congr; exact Subsingleton.elim _ _
   })).symm
 
 /-- `coconstantSheaf` is fully faithful. -/
 noncomputable def fullyFaithfulCoconstantSheaf [J.IsLocalSite] :
-    (coconstantSheaf.{u,v,max u v} J).FullyFaithful :=
-  (ΓCoconstantSheafAdj J).fullyFaithfulROfCompIsoId (coconstantSheafΓNatIsoId J)
+    (IsLocalSite.coconstantSheaf.{u,v,max u v} J).FullyFaithful :=
+  (IsLocalSite.ΓCoconstantSheafAdj J).fullyFaithfulROfCompIsoId (coconstantSheafΓNatIsoId J)
 
-instance [J.IsLocalSite] : (coconstantSheaf.{u,v,max u v} J).Full :=
+instance [J.IsLocalSite] : (IsLocalSite.coconstantSheaf.{u,v,max u v} J).Full :=
   (fullyFaithfulCoconstantSheaf J).full
 
-instance [J.IsLocalSite] : (coconstantSheaf.{u,v,max u v} J).Faithful :=
+instance [J.IsLocalSite] : (IsLocalSite.coconstantSheaf.{u,v,max u v} J).Faithful :=
   (fullyFaithfulCoconstantSheaf J).faithful
 
 /-- On local sites, the constant sheaf functor is fully faithful. -/
 noncomputable def fullyFaithfulConstantSheaf [HasWeakSheafify J (Type max u v)] [J.IsLocalSite] :
     (constantSheaf J (Type max u v)).FullyFaithful :=
-  ((constantSheafΓAdj J _).fullyFaithfulEquiv (ΓCoconstantSheafAdj J)).symm <|
+  ((constantSheafΓAdj J _).fullyFaithfulEquiv (IsLocalSite.ΓCoconstantSheafAdj J)).symm <|
     fullyFaithfulCoconstantSheaf J
 
 instance [HasWeakSheafify J (Type max u v)] [J.IsLocalSite] :

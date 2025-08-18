@@ -56,14 +56,14 @@ noncomputable instance : CohesiveStructure (Sheaf J (Type max u v)) (Type max u 
   codisc := _
   π₀DiscAdj := π₀ConstantSheafAdj.{u,v,max v} J
   discΓAdj := constantSheafΓAdj J _
-  ΓCodiscAdj := ΓCoconstantSheafAdj J
+  ΓCodiscAdj := IsLocalSite.ΓCoconstantSheafAdj J
   preservesFiniteProducts_π₀ := inferInstance
   fullyFaithfulDisc := fullyFaithfulConstantSheaf J
   fullyFaithfulCodisc := fullyFaithfulCoconstantSheaf J
 
 lemma ΓCoconstantSheafAdj_unit_app {X : Sheaf J (Type max u v)} :
-    (ΓCoconstantSheafAdj.{u,v} J).unit.app X = (by sorry) := by
-  simp [ΓCoconstantSheafAdj, Adjunction.ofNatIsoLeft, Adjunction.homEquiv]
+    (IsLocalSite.ΓCoconstantSheafAdj.{u,v} J).unit.app X = (by sorry) := by
+  simp [IsLocalSite.ΓCoconstantSheafAdj, Adjunction.ofNatIsoLeft, Adjunction.homEquiv]
   simp [Adjunction.equivHomsetLeftOfNatIso]
   simp [ΓNatIsoSheafSections, sheafSectionsNatIsoEvaluation]
   sorry
@@ -76,7 +76,8 @@ lemma Sheaf.discToCodisc_app {X : (Type max u v)} :
   rw [instCategorySheaf_comp_val, Category.assoc, IsIso.eq_inv_comp]
   ext Y x
   dsimp
-  simp [codisc, coconstantSheaf, Presheaf.coconst, discΓAdj, constantSheafΓAdj, ΓCodiscAdj]
+  simp [codisc, IsLocalSite.coconstantSheaf, Presheaf.coconst, discΓAdj, constantSheafΓAdj,
+    ΓCodiscAdj]
   ext y
   simp [disc, Adjunction.equivHomsetLeftOfNatIso]
   simp? [ΓNatIsoSheafSections]

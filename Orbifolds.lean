@@ -20,6 +20,7 @@ import Orbifolds.Diffeology.Reflexive
 import Orbifolds.Diffeology.Sites
 import Orbifolds.Diffeology.SmoothSp
 import Orbifolds.Diffeology.TangentSpace
+import Orbifolds.ForMathlib.CoconstantSheaf
 import Orbifolds.ForMathlib.ConcreteSite
 import Orbifolds.ForMathlib.LocalSite
 import Orbifolds.ForMathlib.LocallyConnectedSite
