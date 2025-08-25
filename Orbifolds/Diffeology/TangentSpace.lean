@@ -147,56 +147,75 @@ lemma internalTangentMap_comp {f : X → Y} {g : Y → Z} (hf : DSmooth f) (hg :
   simp_rw [internalTangentMap, preInternalTangentMap_comp hf hg]
   exact Submodule.mapQ_comp _ _ _ _ _ _ _
 
-/-- The canonical isomorphism between the internal tangent space of a diffeological vector spaces
-and the vector space itself.
+/-- The canonical map from a diffeological vector space to its internal tangent space at a point
+`x`, sending any vector `v` to the internal tangent vector represented by the path
+`t ↦ x + t • v`. -/
+def vectorSpaceToInternalTangentSpace [AddCommGroup X] [Module ℝ X] [DiffeologicalAddGroup X]
+    [DSmoothSMul ℝ X] (x : X) : X →ₗ[ℝ] InternalTangentSpace x where
+  toFun v := by
+    refine InternalTangentSpace.lof ⟨⟨1, fun t ↦ x + (t 0) • v⟩, ?_, by simp⟩ (.single 0 1)
+    -- TODO get fun_prop to handle this
+    refine ((dsmooth_add_left x).comp ?_).isPlot
+    refine dsmooth_smul.comp (DSmooth.prod_mk ?_ dsmooth_const)
+    exact (EuclideanSpace.proj (𝕜 := ℝ) (0 : Fin 1)).dsmooth
+  map_add' v w := by
+    let i₁ : Eucl 1 →L[ℝ] Eucl 2 := ⟨⟨⟨fun t ↦ .single (0 : Fin 2) (t 0), fun _ _ ↦
+      Pi.single_add _ _ _⟩, fun a _ ↦ Pi.single_smul _ a _⟩, (LinearMap.dsmooth _ _).continuous⟩
+    let i₂ : Eucl 1 →L[ℝ] Eucl 2 := ⟨⟨⟨fun t ↦ .single (1 : Fin 2) (t 0), fun _ _ ↦
+      Pi.single_add _ _ _⟩, fun a _ ↦ Pi.single_smul _ a _⟩, (LinearMap.dsmooth _ _).continuous⟩
+    let p : pointedPlots x := ⟨⟨2, fun t ↦ x + t 0 • v + t 1 • w⟩, by
+      -- TODO get fun_prop to handle this
+      simp_rw [add_assoc]
+      refine ((dsmooth_add_left x).comp (DSmooth.add ?_ ?_)).isPlot <;>
+        refine dsmooth_smul.comp (DSmooth.prod_mk ?_ dsmooth_const) <;>
+        exact (EuclideanSpace.proj (𝕜 := ℝ) (_ : Fin 2)).dsmooth, by simp⟩
+    have h₁ := InternalTangentSpace.lof_comp_apply p i₁.contDiff (map_zero i₁) (.single 0 1)
+    have h₂ := InternalTangentSpace.lof_comp_apply p i₂.contDiff (map_zero i₂) (.single 0 1)
+    have h₃ := InternalTangentSpace.lof_comp_apply p (i₁ + i₂).contDiff (by simp) (.single 0 1)
+    refine .trans (by congr; ext; simp [p, i₁, i₂, add_assoc]) <| h₃.trans ?_
+    simp only [Function.comp_apply, ContinuousLinearMap.fderiv, ContinuousLinearMap.add_apply,
+      map_add, p] at h₁ h₂ ⊢
+    refine (((add_left_inj _).2 h₁).trans ((add_right_inj _).2 h₂)).symm.trans ?_
+    congr <;> ext <;> simp [i₁, i₂]
+  map_smul' a v := by
+    let f : Eucl 1 →L[ℝ] Eucl 1 := ⟨⟨⟨fun t ↦ a • t, by simp⟩,
+      by simp [smul_smul, mul_comm a]⟩, (LinearMap.dsmooth _ _).continuous⟩
+    let p : pointedPlots x := ⟨⟨1, fun t ↦ x + (t 0) • v⟩, by
+      -- TODO get fun_prop to handle this
+      refine ((dsmooth_add_left x).comp ?_).isPlot
+      refine dsmooth_smul.comp (DSmooth.prod_mk ?_ dsmooth_const)
+      exact (EuclideanSpace.proj (𝕜 := ℝ) (0 : Fin 1)).dsmooth, by simp⟩
+    have h := InternalTangentSpace.lof_comp_apply p f.contDiff (map_zero f) (.single 0 1)
+    rw [f.fderiv] at h; rw [← map_smul]
+    convert h; dsimp [p, f]; rw [smul_smul, mul_comm a]
 
-TODO: fill in the sorries for injectivity and bijectivity. This probably requires getting a nicer
-form of the equivalence relation that `PreInternalTangentSpace` is quotiented by specifically for
-diffeological vector spaces (or additive groups, if that is enough?). -/
-def InternalTangentSpaceVectorSpaceEquivSelf [AddCommGroup X] [Module ℝ X] [DiffeologicalAddGroup X]
-    [DSmoothSMul ℝ X] {x : X} : InternalTangentSpace x ≃ₗ[ℝ] X := by
-  refine (LinearEquiv.ofBijective ?_ ⟨?_, ?_⟩).symm
-  · exact {
-      toFun v := by
-        refine InternalTangentSpace.lof ⟨⟨1, fun t ↦ x + (t 0) • v⟩, ?_, by simp⟩ (.single 0 1)
-        -- TODO get fun_prop to handle this
-        refine ((dsmooth_add_left x).comp ?_).isPlot
-        refine dsmooth_smul.comp (DSmooth.prod_mk ?_ dsmooth_const)
-        exact (EuclideanSpace.proj (𝕜 := ℝ) (0 : Fin 1)).dsmooth
-      map_add' v w := by
-        let i₁ : Eucl 1 →L[ℝ] Eucl 2 := ⟨⟨⟨fun t ↦ .single (0 : Fin 2) (t 0), fun _ _ ↦
-          Pi.single_add _ _ _⟩, fun a _ ↦ Pi.single_smul _ a _⟩, (LinearMap.dsmooth _ _).continuous⟩
-        let i₂ : Eucl 1 →L[ℝ] Eucl 2 := ⟨⟨⟨fun t ↦ .single (1 : Fin 2) (t 0), fun _ _ ↦
-          Pi.single_add _ _ _⟩, fun a _ ↦ Pi.single_smul _ a _⟩, (LinearMap.dsmooth _ _).continuous⟩
-        let p : pointedPlots x := ⟨⟨2, fun t ↦ x + t 0 • v + t 1 • w⟩, by
-          -- TODO get fun_prop to handle this
-          simp_rw [add_assoc]
-          refine ((dsmooth_add_left x).comp (DSmooth.add ?_ ?_)).isPlot <;>
-            refine dsmooth_smul.comp (DSmooth.prod_mk ?_ dsmooth_const) <;>
-            exact (EuclideanSpace.proj (𝕜 := ℝ) (_ : Fin 2)).dsmooth, by simp⟩
-        have h₁ := InternalTangentSpace.lof_comp_apply p i₁.contDiff (map_zero i₁) (.single 0 1)
-        have h₂ := InternalTangentSpace.lof_comp_apply p i₂.contDiff (map_zero i₂) (.single 0 1)
-        have h₃ := InternalTangentSpace.lof_comp_apply p (i₁ + i₂).contDiff (by simp) (.single 0 1)
-        refine .trans (by congr; ext; simp [p, i₁, i₂, add_assoc]) <| h₃.trans ?_
-        simp only [Function.comp_apply, ContinuousLinearMap.fderiv, ContinuousLinearMap.add_apply,
-          map_add, p] at h₁ h₂ ⊢
-        refine (((add_left_inj _).2 h₁).trans ((add_right_inj _).2 h₂)).symm.trans ?_
-        congr <;> ext <;> simp [i₁, i₂]
-      map_smul' a v := by
-        let f : Eucl 1 →L[ℝ] Eucl 1 := ⟨⟨⟨fun t ↦ a • t, by simp⟩,
-          by simp [smul_smul, mul_comm a]⟩, (LinearMap.dsmooth _ _).continuous⟩
-        let p : pointedPlots x := ⟨⟨1, fun t ↦ x + (t 0) • v⟩, by
-          -- TODO get fun_prop to handle this
-          refine ((dsmooth_add_left x).comp ?_).isPlot
-          refine dsmooth_smul.comp (DSmooth.prod_mk ?_ dsmooth_const)
-          exact (EuclideanSpace.proj (𝕜 := ℝ) (0 : Fin 1)).dsmooth, by simp⟩
-        have h := InternalTangentSpace.lof_comp_apply p f.contDiff (map_zero f) (.single 0 1)
-        rw [f.fderiv] at h; rw [← map_smul]
-        convert h; dsimp [p, f]; rw [smul_smul, mul_comm a]
-    }
-  · intro v w h
-    simp at h
-    sorry
-  · intro v
-    simp
-    sorry
+/-- The canonical map from a fine diffeological vector space to its internal tangent space at a
+point is injective.
+
+Note that this isn't the case for arbitrary diffeological vector spaces, because e.g. any vector
+space becomes a diffeological vector space with the coarse diffeology but internal tangent spaces
+of coarse spaces are all trivial. -/
+lemma vectorSpaceToInternalTangentSpace_injective [AddCommGroup X] [Module ℝ X]
+    [IsFineDiffeology ℝ X] {x : X} : Function.Injective (vectorSpaceToInternalTangentSpace x) := by
+  intro v w h; unfold vectorSpaceToInternalTangentSpace at h
+  simp at h
+  sorry
+
+/-- The canonical map from a fine diffeological vector space to its internal tangent space at a
+point is surjective.
+
+I don't yet know whether this holds more generally for all diffeological vector spaces, but
+wouldn't bet on it. -/
+lemma vectorSpaceToInternalTangentSpace_surjective [AddCommGroup X] [Module ℝ X]
+    [IsFineDiffeology ℝ X] {x : X} : Function.Surjective (vectorSpaceToInternalTangentSpace x) := by
+  intro v; unfold vectorSpaceToInternalTangentSpace
+  simp
+  sorry
+
+/-- The canonical isomorphism between the internal tangent space of a fine diffeological vector
+space and the vector space itself, given in the backwards direction by
+`vectorSpaceToInternalTangentSpace`. -/
+def InternalTangentSpaceVectorSpaceEquivSelf [AddCommGroup X] [Module ℝ X] [IsFineDiffeology ℝ X]
+    (x : X) : InternalTangentSpace x ≃ₗ[ℝ] X :=
+  (LinearEquiv.ofBijective _ ⟨vectorSpaceToInternalTangentSpace_injective,
+    vectorSpaceToInternalTangentSpace_surjective⟩).symm
