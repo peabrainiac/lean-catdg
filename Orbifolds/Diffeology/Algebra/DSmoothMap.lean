@@ -241,7 +241,7 @@ instance  [CommRing A] [DiffeologicalRing A] : CommRing (DSmoothMap X A) :=
 
 /-- Coercion to a function as a `MonoidHom`. Similar to `MonoidHom.coeFn`. -/
 @[to_additive (attr := simps)
-  "Coercion to a function as an `AddMonoidHom`. Similar to `AddMonoidHom.coeFn`." ]
+  /-- Coercion to a function as an `AddMonoidHom`. Similar to `AddMonoidHom.coeFn`. -/]
 def coeFnMonoidHom [Monoid A] [DSmoothMul A] : DSmoothMap X A →* X → A where
   toFun f := f
   map_one' := coe_one
@@ -391,7 +391,7 @@ instance algebra [CommSemiring R] [Ring A] [Algebra R A] [DiffeologicalRing A] [
 
 /-- In particular, for any diffeological space `X` the smooth real-valued functions on `X` form
 an `ℝ`-algebra. -/
-example : Algebra ℝ (DSmoothMap X ℝ) := inferInstance
+noncomputable example : Algebra ℝ (DSmoothMap X ℝ) := inferInstance
 
 /-- Similarly, smooth complex-valued functions form a complex algebra. -/
 noncomputable example : Algebra ℂ (DSmoothMap X ℂ) := inferInstance

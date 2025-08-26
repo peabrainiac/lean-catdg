@@ -98,7 +98,7 @@ end DSmoothInv
 section DSmoothInvolutiveInv
 
 /-- Inversion in a diffeological group as a diffeomorphism. -/
-@[to_additive "Negation in a diffeological group as a diffeomorphism."]
+@[to_additive /-- Negation in a diffeological group as a diffeomorphism. -/]
 protected def Diffeomorph.inv (G : Type*) [DiffeologicalSpace G] [InvolutiveInv G]
     [DSmoothInv G] : G ᵈ≃ G :=
   { Equiv.inv G with
@@ -170,23 +170,20 @@ section Conj
 variable {G : Type*} [DiffeologicalSpace G] [Inv G] [Mul G] [DSmoothMul G]
 
 /-- Conjugation is jointly smooth on `G × G` when both `mul` and `inv` are smooth. -/
-@[to_additive
-  "Conjugation is jointly smooth on `G × G` when both `add` and `neg` are smooth."]
+@[to_additive /-- Conjugation is jointly smooth on `G × G` when both `add` and `neg` are smooth. -/]
 theorem DiffeologicalGroup.dsmooth_conj_prod [DSmoothInv G] :
     DSmooth fun g : G × G ↦ g.fst * g.snd * g.fst⁻¹ :=
   dsmooth_mul.mul (dsmooth_inv.comp dsmooth_fst)
 
 /-- Conjugation by a fixed element is smooth when `mul` is smooth. -/
-@[to_additive
-  "Conjugation by a fixed element is smooth when `add` is smooth."]
+@[to_additive /-- Conjugation by a fixed element is smooth when `add` is smooth. -/]
 theorem DiffeologicalGroup.dsmooth_conj (g : G) : DSmooth fun h : G ↦ g * h * g⁻¹ :=
   (dsmooth_mul_right g⁻¹).comp (dsmooth_mul_left g)
 
 /-- Conjugation acting on fixed element of the group is smooth when both `mul` and
 `inv` are smooth. -/
-@[to_additive (attr := continuity)
-  "Conjugation acting on fixed element of the additive group is smooth when both
-    `add` and `neg` are smooth."]
+@[to_additive (attr := continuity) /-- Conjugation acting on fixed element of the additive
+group is smooth when both `add` and `neg` are smooth. -/]
 theorem DiffeologicalGroup.dsmooth_conj' [DSmoothInv G] (h : G) :
     DSmooth fun g : G ↦ g * h * g⁻¹ :=
   (dsmooth_mul_right h).mul dsmooth_inv
@@ -232,14 +229,14 @@ instance {G : Type*} [DiffeologicalSpace G] [Inv G] [DSmoothInv G] : DSmoothInv 
   by exact opDDiffeomorph.symm.isInduction.dsmoothInv unop_inv
 
 /-- If multiplication is continuous in `α`, then it also is in `αᵐᵒᵖ`. -/
-@[to_additive "If addition is continuous in `α`, then it also is in `αᵃᵒᵖ`."]
+@[to_additive /-- If addition is continuous in `α`, then it also is in `αᵃᵒᵖ`. -/]
 instance {G : Type*} [DiffeologicalSpace G] [Group G] [DiffeologicalGroup G] :
   DiffeologicalGroup Gᵐᵒᵖ where
 
 variable (G)
 
 /-- The map `(x, y) ↦ (x, x * y)` as a diffeomorphism. This is a shear mapping. -/
-@[to_additive "The map `(x, y) ↦ (x, x + y)` as a homeomorphism. This is a shear mapping."]
+@[to_additive /-- The map `(x, y) ↦ (x, x + y)` as a homeomorphism. This is a shear mapping. -/]
 protected def DDiffeomorph.shearMulRight : G × G ᵈ≃ G × G :=
   { Equiv.prodShear (Equiv.refl _) Equiv.mulLeft with
     dsmooth_toFun := dsmooth_fst.prod_mk dsmooth_mul
@@ -260,8 +257,8 @@ variable {G}
 omit [DiffeologicalSpace H] [Group H] [DiffeologicalGroup H] in
 /-- For any group homomorphism to a diffeological group, the induced diffeology makes the
 domain a diffeological group too. -/
-@[to_additive "For any group homomorphism to a diffeological group, the induced diffeology makes
-  the domain a diffeological group too."]
+@[to_additive /-- For any group homomorphism to a diffeological group, the induced diffeology makes
+  the domain a diffeological group too. -/]
 protected theorem IsDInducing.diffeologicalGroup {F : Type*} [Group H] [DiffeologicalSpace H]
     [FunLike F H G] [MonoidHomClass F H G] (f : F) (hf : IsDInducing f) : DiffeologicalGroup H :=
   { toDSmoothMul := hf.dsmoothMul _
@@ -354,16 +351,16 @@ section DivInvDiffeologicalGroup
 variable {G : Type*} [DiffeologicalSpace G] [Group G] [DiffeologicalGroup G]
 
 /-- A version of `DDiffeomorph.mulLeft a b⁻¹` that is defeq to `a / b`. -/
-@[to_additive (attr := simps! (config := { simpRhs := true }))
-  " A version of `DDiffeomorph.addLeft a (-b)` that is defeq to `a - b`. "]
+@[to_additive (attr := simps! (config := { simpRhs := true })) /-- A version of
+`DDiffeomorph.addLeft a (-b)` that is defeq to `a - b`. -/]
 def DDiffeomorph.divLeft (g : G) : G ᵈ≃ G :=
   { Equiv.divLeft g with
     dsmooth_toFun := dsmooth_div_left' g
     dsmooth_invFun := dsmooth_inv.mul dsmooth_const }
 
 /-- A version of `DDiffeomorph.mulRight a⁻¹ b` that is defeq to `b / a`. -/
-@[to_additive (attr := simps! (config := { simpRhs := true }))
-  "A version of `DDiffeomorph.addRight (-a) b` that is defeq to `b - a`. "]
+@[to_additive (attr := simps! (config := { simpRhs := true })) /-- A version of
+`DDiffeomorph.addRight (-a) b` that is defeq to `b - a`. -/]
 def DDiffeomorph.divRight (g : G) : G ᵈ≃ G :=
   { Equiv.divRight g with
     dsmooth_toFun := dsmooth_div_right' g
@@ -380,8 +377,8 @@ instance {G : Type*} [DiffeologicalSpace G] [AddGroup G] [DiffeologicalAddGroup 
 -- TODO: adapt `QuotientGroup.continuousConstSMul`
 
 /-- A group with smooth inversion is diffeomorphic to its units. -/
-@[to_additive "An additive group with smooth negation is homeomorphic to its
-  additive units."]
+@[to_additive /-- An additive group with smooth negation is homeomorphic to its
+  additive units.-/]
 def toUnits_ddiffeomorph {G : Type*} [Group G] [DiffeologicalSpace G] [DSmoothInv G] :
     G ᵈ≃ Gˣ where
   toEquiv := toUnits.toEquiv
@@ -400,9 +397,8 @@ instance [DSmoothMul M] : DiffeologicalGroup Mˣ where
 
 /-- The diffeological group isomorphism between the units of a product of two monoids,
 and the product of the units of each monoid. -/
-@[to_additive
-  "The diffeological group isomorphism between the additive units of a product of two
-  additive monoids, and the product of the additive units of each additive monoid."]
+@[to_additive /-- The diffeological group isomorphism between the additive units of a product of two
+  additive monoids, and the product of the additive units of each additive monoid. -/]
 def DDiffeomorph.prodUnits : (M × N)ˣ ᵈ≃ Mˣ × Nˣ where
   toEquiv := MulEquiv.prodUnits.toEquiv
   dsmooth_toFun := (dsmooth_fst.units_map (MonoidHom.fst M N)).prod_mk
@@ -462,7 +458,7 @@ namespace GroupDiffeology
 variable {G : Type*} [Group G]
 
 /-- A version of the global `dsmooth_mul` suitable for dot notation. -/
-@[to_additive "A version of the global `dsmooth_add` suitable for dot notation."]
+@[to_additive /-- A version of the global `dsmooth_add` suitable for dot notation. -/]
 theorem dsmooth_mul' (d : GroupDiffeology G) :
     haveI := d.toDiffeologicalSpace
     DSmooth fun p : G × G ↦ p.1 * p.2 := by
@@ -471,7 +467,7 @@ theorem dsmooth_mul' (d : GroupDiffeology G) :
   exact dsmooth_mul
 
 /-- A version of the global `dsmooth_inv` suitable for dot notation. -/
-@[to_additive "A version of the global `dsmooth_neg` suitable for dot notation."]
+@[to_additive /-- A version of the global `dsmooth_neg` suitable for dot notation. -/]
 theorem dsmooth_inv' (d : GroupDiffeology G) :
     haveI := d.toDiffeologicalSpace
     DSmooth (Inv.inv : G → G) := by
@@ -540,7 +536,7 @@ instance : SemilatticeInf (GroupDiffeology G) :=
 instance : Inhabited (GroupDiffeology G) := ⟨⊤⟩
 
 /-- Infimum of a collection of group diffeologies. -/
-@[to_additive "Infimum of a collection of additive group diffeologies"]
+@[to_additive /-- Infimum of a collection of additive group diffeologies -/]
 instance : InfSet (GroupDiffeology G) where
   sInf D := ⟨sInf (toDiffeologicalSpace '' D),
     diffeologicalGroup_sInf <| Set.forall_mem_image.2 fun d _ ↦ d.2⟩
@@ -593,11 +589,11 @@ topological group. Local compactness is needed here because multiplication is a 
 continuous with respect to the D-topology on `G × G`, not the product topology - when `G` is
 locally compact the topologies agree, but otherwise the product topology could be
 fine enough for multiplication to not be continuous. -/
-@[to_additive "If a diffeological group `G` is locally compact under the D-topology, then it is
+@[to_additive /-- If a diffeological group `G` is locally compact under the D-topology, then it is
   also a topological group. Local compactness is needed here because addition is a priori only
   continuous with respect to the D-topology on `G × G`, not the product topology - when `G` is
   locally compact the topologies agree, but otherwise the product topology could be
-  fine enough for addition to not be continuous."]
+  fine enough for addition to not be continuous. -/]
 lemma DiffeologicalGroup.topologicalGroup {G : Type*} [DiffeologicalSpace G] [Group G]
     [DiffeologicalGroup G] [@LocallyCompactSpace G DTop] : @IsTopologicalGroup G DTop _ := by
   letI := @DTop G _
@@ -606,8 +602,8 @@ lemma DiffeologicalGroup.topologicalGroup {G : Type*} [DiffeologicalSpace G] [Gr
 
 /-- Variant of `DiffeologicalGroup.topologicalGroup` phrased in terms of spaces equipped with
 `DTopCompatible` topologies. -/
-@[to_additive "Variant of `DiffeologicalAddGroup.topologicalAddGroup` phrased in terms of
-  spaces equipped with `DTopCompatible` topologies."]
+@[to_additive /-- Variant of `DiffeologicalAddGroup.topologicalAddGroup` phrased in terms of
+  spaces equipped with `DTopCompatible` topologies. -/]
 instance {G : Type*} [Group G] [DiffeologicalSpace G] [TopologicalSpace G] [DTopCompatible G]
     [DiffeologicalGroup G] [LocallyCompactSpace G] : IsTopologicalGroup G where
 

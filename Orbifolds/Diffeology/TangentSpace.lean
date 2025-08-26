@@ -124,14 +124,14 @@ lemma pointedPlots_map_comp {f : X → Y} {g : Y → Z} (hf : DSmooth f) (hg : D
 
 @[simp]
 lemma preInternalTangentMap_id (x : X) : preInternalTangentMap id x = LinearMap.id := by
-  simp_rw [preInternalTangentMap, dsmooth_id, dite_true, pointedPlots_map_id, id_eq]
+  simp_rw [preInternalTangentMap, dsmooth_id, dite_true]
   apply linearMap_ext; intro p; ext x
-  simp
+  simp; rfl -- rfl used to not be necessary because one could rewrite with `pointedPlots_map_id`
 
 lemma preInternalTangentMap_comp {f : X → Y} {g : Y → Z} (hf : DSmooth f) (hg : DSmooth g) (x : X) :
     preInternalTangentMap (g ∘ f) x =
       preInternalTangentMap g (f x) ∘ₗ preInternalTangentMap f x := by
-  simp_rw [preInternalTangentMap, hf, hg, hg.comp hf, dite_true, pointedPlots_map_comp hf hg]
+  simp_rw [preInternalTangentMap, hf, hg, hg.comp hf, dite_true]--pointedPlots_map_comp hf hg]
   apply linearMap_ext; intro p; ext x'
   simp_rw [LinearMap.comp_assoc, LinearMap.comp_apply, Function.comp_apply, toModule_lof]
   -- again necessary because rewriting with `toModule_lof` directly doesn't work somehow
@@ -173,8 +173,7 @@ def vectorSpaceToInternalTangentSpace [AddCommGroup X] [Module ℝ X] [Diffeolog
     have h₂ := InternalTangentSpace.lof_comp_apply p i₂.contDiff (map_zero i₂) (.single 0 1)
     have h₃ := InternalTangentSpace.lof_comp_apply p (i₁ + i₂).contDiff (by simp) (.single 0 1)
     refine .trans (by congr; ext; simp [p, i₁, i₂, add_assoc]) <| h₃.trans ?_
-    simp only [Function.comp_apply, ContinuousLinearMap.fderiv, ContinuousLinearMap.add_apply,
-      map_add, p] at h₁ h₂ ⊢
+    simp only [ContinuousLinearMap.fderiv, ContinuousLinearMap.add_apply, map_add, p] at h₁ h₂ ⊢
     refine (((add_left_inj _).2 h₁).trans ((add_right_inj _).2 h₂)).symm.trans ?_
     congr <;> ext <;> simp [i₁, i₂]
   map_smul' a v := by

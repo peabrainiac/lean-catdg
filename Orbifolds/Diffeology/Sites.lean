@@ -1,4 +1,4 @@
-import Mathlib.Algebra.Category.AlgebraCat.Basic
+import Mathlib.Algebra.Category.CommAlgCat.Basic
 import Mathlib.CategoryTheory.Sites.Canonical
 import Mathlib.CategoryTheory.Sites.Coverage
 import Orbifolds.Cohesive.CohesiveSite
@@ -56,7 +56,7 @@ instance : CoeSort CartSp Type where
 instance (n : ℕ) : OfNat CartSp n where
   ofNat := n
 
-instance : SmallCategory CartSp where
+noncomputable instance : SmallCategory CartSp where
   Hom := fun n m ↦ DSmoothMap n m
   id := fun n ↦ DSmoothMap.id _
   comp := fun f g ↦ g.comp f
@@ -149,26 +149,9 @@ lemma openCoverTopology.mem_sieves_iff' {n : CartSp} {s : Sieve n} :
   · exact ⟨fun m f ↦ s f ∧ IsOpenInduction f, fun _ _ h ↦ h.1, fun _ _ h ↦ h.2, h⟩
 
 /-- The `0`-dimensional cartesian space is terminal in `CartSp`. -/
-def isTerminal0 : IsTerminal (0 : CartSp) where
+noncomputable def isTerminal0 : IsTerminal (0 : CartSp) where
   lift s := DSmoothMap.const _ 0
   uniq c f h := by ext x; exact Subsingleton.elim (α := EuclideanSpace ℝ (Fin 0)) (f x) 0
-
-/-- The canonical linear homeomorphism between `EuclideanSpace 𝕜 (ι ⊕ κ)` and
-`EuclideanSpace 𝕜 ι × EuclideanSpace 𝕜 κ`. Note that this is not an isometry because
-product spaces are equipped with the supremum norm.
-TODO: remove next time mathlib is bumped -/
-def _root_.EuclideanSpace.sumEquivProd {𝕜 : Type*} [RCLike 𝕜] {ι κ : Type*} [Fintype ι]
-    [Fintype κ] : EuclideanSpace 𝕜 (ι ⊕ κ) ≃L[𝕜] EuclideanSpace 𝕜 ι × EuclideanSpace 𝕜 κ :=
-  (PiLp.sumPiLpEquivProdLpPiLp 2 _).toContinuousLinearEquiv.trans <|
-    WithLp.prodContinuousLinearEquiv _ _ _ _
-
-/-- The canonical linear homeomorphism between `EuclideanSpace 𝕜 (Fin (n + m))` and
-`EuclideanSpace 𝕜 (Fin n) × EuclideanSpace 𝕜 (Fin m)`.
-TODO: remove next time mathlib is bumped -/
-def _root_.EuclideanSpace.finAddEquivProd {𝕜 : Type*} [RCLike 𝕜] {n m : ℕ} :
-    EuclideanSpace 𝕜 (Fin (n + m)) ≃L[𝕜] EuclideanSpace 𝕜 (Fin n) × EuclideanSpace 𝕜 (Fin m) :=
-  (LinearIsometryEquiv.piLpCongrLeft 2 𝕜 𝕜 finSumFinEquiv.symm).toContinuousLinearEquiv.trans
-    _root_.EuclideanSpace.sumEquivProd
 
 /-- The first projection realising `EuclideanSpace ℝ (Fin (n + m))` as the product of
 `EuclideanSpace ℝ n` and `EuclideanSpace ℝ m`. -/
@@ -293,7 +276,7 @@ namespace EuclOp
 instance : CoeSort EuclOp Type where
   coe u := u.2
 
-instance : SmallCategory EuclOp where
+noncomputable instance : SmallCategory EuclOp where
   Hom := fun u v ↦ DSmoothMap u v
   id := fun n ↦ DSmoothMap.id _
   comp := fun f g ↦ g.comp f
@@ -386,7 +369,7 @@ lemma openCoverTopology.mem_sieves_iff' {n : EuclOp} {s : Sieve n} :
   · exact ⟨fun m f ↦ s f ∧ IsOpenInduction f, fun _ _ h ↦ h.1, fun _ _ h ↦ h.2, h⟩
 
 /-- `univ : Set (Eucl 0)` is terminal in `EuclOp`. -/
-def isTerminal0Top : IsTerminal (C := EuclOp) ⟨0, ⊤⟩ where
+noncomputable def isTerminal0Top : IsTerminal (C := EuclOp) ⟨0, ⊤⟩ where
   lift s := DSmoothMap.const _ ⟨0, mem_univ _⟩
   uniq c f h := by
     ext x; exact Subsingleton.elim (α := univ (α := Eucl 0)) (f x) ⟨0, mem_univ _⟩
@@ -516,14 +499,13 @@ TODO: split this off into some other file, to reduce the imports of this file
 section Embeddings
 
 /-- The embedding of `CartSp` into the opposite category of `ℝ`-algebras, sending each space `X`
-to the algebra of smooth maps `X → ℝ`.
-TODO: change this to the category of commutative algebras next time mathlib is bumped -/
+to the algebra of smooth maps `X → ℝ`. -/
 @[simps!]
-noncomputable def CartSp.toAlgebraCatOp : CartSp ⥤ (AlgebraCat ℝ)ᵒᵖ where
+noncomputable def CartSp.toCommAlgCatOp : CartSp ⥤ (CommAlgCat ℝ)ᵒᵖ where
   obj X := .op (.of ℝ (DSmoothMap X ℝ))
-  map {n m} f := .op <| AlgebraCat.ofHom f.compRightAlgHom
+  map {n m} f := .op <| CommAlgCat.ofHom f.compRightAlgHom
 
-noncomputable def CartSp.toAlgebraCatOpFullyFaithful : CartSp.toAlgebraCatOp.FullyFaithful where
+noncomputable def CartSp.toCommAlgCatOpFullyFaithful : CartSp.toCommAlgCatOp.FullyFaithful where
   preimage {n m} f := by
     let f' (k : Fin m) : DSmoothMap _ _ := f.unop ⟨_, (EuclideanSpace.proj (𝕜 := ℝ) k).dsmooth⟩
     exact (∑ k, f' k • DSmoothMap.const (X := Eucl n) (EuclideanSpace.single k (1 : ℝ)):)
@@ -543,8 +525,8 @@ noncomputable def CartSp.toAlgebraCatOpFullyFaithful : CartSp.toAlgebraCatOp.Ful
     refine DSmoothMap.ext fun x ↦ ?_
     simpa using (EuclideanSpace.basisFun _ ℝ).sum_repr (f x)
 
-instance : CartSp.toAlgebraCatOp.Full := CartSp.toAlgebraCatOpFullyFaithful.full
+instance : CartSp.toCommAlgCatOp.Full := CartSp.toCommAlgCatOpFullyFaithful.full
 
-instance : CartSp.toAlgebraCatOp.Faithful := CartSp.toAlgebraCatOpFullyFaithful.faithful
+instance : CartSp.toCommAlgCatOp.Faithful := CartSp.toCommAlgCatOpFullyFaithful.faithful
 
 end Embeddings

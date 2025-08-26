@@ -23,7 +23,7 @@ def continuousDiffeology (X : Type u) [TopologicalSpace X] : DiffeologicalSpace 
     isPlotOn := fun {_ u} _ p ↦ ContinuousOn p u
     isPlotOn_congr := fun _ _ _ h ↦ continuousOn_congr h
     isPlot := fun p ↦ Continuous p
-    isPlotOn_univ := continuous_iff_continuousOn_univ.symm
+    isPlotOn_univ := continuousOn_univ
     isPlot_const := fun _ ↦ continuous_const
     isPlotOn_reparam := fun _ _ _ h hp hf ↦ hp.comp hf.continuousOn h.subset_preimage
     locality := fun _ _ h ↦ fun x hxu ↦ by

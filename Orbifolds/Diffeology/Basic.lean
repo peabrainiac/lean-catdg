@@ -230,7 +230,7 @@ instance {X : Type*} [NormedAddCommGroup X] [NormedSpace ℝ X]
     [FiniteDimensional ℝ X] : @DTopCompatible X _ euclideanDiffeology :=
   let _ := euclideanDiffeology (X := X); ⟨rfl⟩
 
-instance : DiffeologicalSpace ℝ := euclideanDiffeology
+noncomputable instance : DiffeologicalSpace ℝ := euclideanDiffeology
 
 example : ContDiffCompatible ℝ := inferInstance
 
@@ -467,7 +467,7 @@ lemma isPlot_generateFrom_iff (g : Set ((n : ℕ) × (Eucl n → X))) {n : ℕ} 
         · have := Nonempty.map p inferInstance
           refine IsLocallyConstant.exists_eq_const <| (IsLocallyConstant.iff_eventually_eq _).2
             fun x ↦ (h x trivial).rec id (fun ⟨p', hp', f, hf, h⟩ ↦ ?_)
-          refine (Set.eq_empty_iff_forall_not_mem.1 h' x ?_).elim
+          refine (Set.eq_empty_iff_forall_notMem.1 h' x ?_).elim
           exact Set.mem_iUnion₂_of_mem hp' <| h.eq_of_nhds ▸ Set.mem_range_self _
         · refine (h x trivial).rec (fun h ↦ ?_) id
           let ⟨p', hp', x', hx'⟩ := Set.mem_iUnion₂.1 <| (Set.eq_univ_iff_forall.1 h') x

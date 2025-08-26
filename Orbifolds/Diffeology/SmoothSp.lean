@@ -31,10 +31,10 @@ open CategoryTheory Sheaf
 def SmoothSp := Sheaf CartSp.openCoverTopology (Type u)
 
 /-- Morphisms of smooth spaces are simply morphisms of sheaves. -/
-instance : Category.{u,u+1} SmoothSp.{u} := by unfold SmoothSp; infer_instance
+noncomputable instance : Category.{u,u+1} SmoothSp.{u} := by unfold SmoothSp; infer_instance
 
 /-- The embedding of diffeological spaces into smooth spaces. -/
-def DiffSp.toSmoothSp : DiffSp.{u} ⥤ SmoothSp.{u} where
+noncomputable def DiffSp.toSmoothSp : DiffSp.{u} ⥤ SmoothSp.{u} where
   obj X := ⟨{
     obj := fun n ↦ DSmoothMap n.unop X
     map := fun f g ↦ g.comp f.unop
@@ -115,7 +115,7 @@ def SmoothSp.concr : SmoothSp.{u} ⥤ DiffSp.{u} where
 
 /-- The adjunction between the concretisation functor `SmoothSp ⥤ DiffSp` and the
 embedding `DiffSp ⥤ SmoothSp`. -/
-def DiffSp.reflectorAdjunction : SmoothSp.concr.{u} ⊣ DiffSp.toSmoothSp.{u} :=
+noncomputable def DiffSp.reflectorAdjunction : SmoothSp.concr.{u} ⊣ DiffSp.toSmoothSp.{u} :=
   Adjunction.mkOfUnitCounit {
     unit := {
       app := fun X ↦ ⟨{
@@ -153,7 +153,7 @@ instance : Functor.IsLeftAdjoint SmoothSp.concr :=
   ⟨DiffSp.toSmoothSp, ⟨DiffSp.reflectorAdjunction⟩⟩
 
 /-- Diffeological spaces form a reflective subcategory of the category of smooth spaces. -/
-instance DiffSp.toSmoothSp.reflective : Reflective toSmoothSp where
+noncomputable instance DiffSp.toSmoothSp.reflective : Reflective toSmoothSp where
   L := SmoothSp.concr
   adj := DiffSp.reflectorAdjunction
 
@@ -164,7 +164,7 @@ section DifferentialForms
 
 --#check Module.Finite.multilinearMap
 
-local instance (M N : Type*) [AddCommGroup M] [Module ℝ M] [DiffeologicalSpace M]
+noncomputable local instance (M N : Type*) [AddCommGroup M] [Module ℝ M] [DiffeologicalSpace M]
     [AddCommGroup N] [Module ℝ N] [DiffeologicalSpace N]
     (ι : Type*) : DiffeologicalSpace (M [⋀^ι]→ₗ[ℝ] N) :=
   fineDiffeology ℝ _

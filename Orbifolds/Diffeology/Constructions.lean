@@ -402,7 +402,7 @@ theorem dsmooth_top_iff_indiscrete_range {X Y : Type*} {dY : DiffeologicalSpace 
   refine ⟨fun hf ↦ ?_,fun h ↦ ?_⟩
   · refine DiffeologicalSpace.eq_top_iff.2 fun n p ↦ ?_
     have hf' : DSmooth (Set.rangeFactorization f) := hf.codRestrict mem_range_self
-    let ⟨g,hg⟩ := (Set.surjective_onto_range (f := f)).hasRightInverse
+    let ⟨g,hg⟩ := (Set.rangeFactorization_surjective (f := f)).hasRightInverse
     have h := hf' n (g ∘ p) trivial
     rw [←Function.comp_assoc,hg.id,Function.id_comp] at h; exact h
   · exact dsmooth_subtype_val.comp (h ▸ dsmooth_top : DSmooth (Set.rangeFactorization f))

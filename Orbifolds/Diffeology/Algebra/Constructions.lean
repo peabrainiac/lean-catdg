@@ -13,7 +13,7 @@ variable {M X : Type*} [dM : DiffeologicalSpace M]
 namespace MulOpposite
 
 /-- The opposite monoid is equipped with the same diffeology as the original. -/
-@[to_additive "The opposite monoid is equipped with the same diffeology as the original."]
+@[to_additive /-- The opposite monoid is equipped with the same diffeology as the original." -/]
 instance instDiffeologicalSpaceMulOpposite : DiffeologicalSpace Mᵐᵒᵖ :=
   dM.induced (unop : Mᵐᵒᵖ → M)
 
@@ -26,7 +26,7 @@ theorem dsmooth_op : DSmooth (op : M → Mᵐᵒᵖ) :=
   dsmooth_induced_rng.2 dsmooth_id
 
 /-- `MulOpposite.op` as a diffeomorphism. -/
-@[to_additive (attr := simps!) "`AddOpposite.op` as a diffeomorphism."]
+@[to_additive (attr := simps!) /-- `AddOpposite.op` as a diffeomorphism. -/]
 def opDDiffeomorph : M ᵈ≃ Mᵐᵒᵖ where
   toEquiv := opEquiv
   dsmooth_toFun := dsmooth_op
@@ -42,8 +42,8 @@ variable [Monoid M] [DiffeologicalSpace X]
 
 /-- The units of a monoid are equipped with the diffeology induced by the embedding
 into `M × M`. -/
-@[to_additive "The units of a monoid are equipped with the diffeology induced by the embedding
-into `M × M`."]
+@[to_additive /-- The units of a monoid are equipped with the diffeology induced by the embedding
+into `M × M`. -/]
 instance instDiffeologicalSpaceUnits : DiffeologicalSpace Mˣ :=
   DiffeologicalSpace.induced (embedProduct M) inferInstance
 

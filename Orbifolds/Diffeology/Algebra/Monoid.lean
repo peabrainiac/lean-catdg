@@ -72,8 +72,8 @@ instance Pi.dsmoothMul {ι : Type*} {M : ι → Type*} [∀ i, DiffeologicalSpac
 
 /-- For any monoid homomorphism to a diffeological monoid, the induced diffeology makes
 the domain a diffeological monoid too. -/
-@[to_additive "For any monoid homomorphism to a diffeological monoid, the induced diffeology makes
-  the domain a diffeological monoid too."]
+@[to_additive /-- For any monoid homomorphism to a diffeological monoid, the induced
+diffeology makes the domain a diffeological monoid too. -/]
 theorem IsDInducing.dsmoothMul {M N F : Type*} [Mul M] [Mul N] [FunLike F M N] [MulHomClass F M N]
     [DiffeologicalSpace M] [DiffeologicalSpace N] [DSmoothMul N] (f : F) (hf : IsDInducing f) :
     DSmoothMul M :=
@@ -130,7 +130,7 @@ end Monoid
 namespace MulOpposite
 
 /-- If multiplication is smooth in `α`, then it also is in `αᵐᵒᵖ`. -/
-@[to_additive "If addition is smooth in `α`, then it also is in `αᵃᵒᵖ`."]
+@[to_additive /-- If addition is smooth in `α`, then it also is in `αᵃᵒᵖ`. -/]
 instance {M : Type*} [DiffeologicalSpace M] [Mul M] [DSmoothMul M] : DSmoothMul Mᵐᵒᵖ :=
   ⟨dsmooth_op.comp (dsmooth_unop.snd'.mul dsmooth_unop.fst')⟩
 
@@ -142,8 +142,8 @@ open MulOpposite
 
 /-- If multiplication on a monoid is smooth, then multiplication on the units of the monoid,
 with respect to the induced diffeology, is also smooth. -/
-@[to_additive "If addition on an additive monoid is smooth, then addition on the additive units
-of the monoid, with respect to the induced diffeology, is also smooth."]
+@[to_additive /-- If addition on an additive monoid is smooth, then addition on the additive units
+of the monoid, with respect to the induced diffeology, is also smooth. -/]
 instance {M : Type*} [DiffeologicalSpace M] [Monoid M] [DSmoothMul M] : DSmoothMul Mˣ :=
   isInduction_embedProduct.dsmoothMul (embedProduct M)
 
@@ -203,11 +203,11 @@ continuous. Local compactness is needed here because multiplication is a priori 
 continuous with respect to the D-topology on `M × M`, not the product topology - when `M` is
 locally compact the topologies agree, but otherwise the product topology could be
 fine enough for multiplication to not be continuous. -/
-@[to_additive "If the D-topology makes `M` locally compact, then any smooth addition on `X`
-  is also continuous. Local compactness is needed here because addition is a priori only
-  continuous with respect to the D-topology on `M × M`, not the product topology - when `M` is
-  locally compact the topologies agree, but otherwise the product topology could be
-  fine enough for addition to not be continuous."]
+@[to_additive /-- If the D-topology makes `M` locally compact, then any smooth addition on `X`
+is also continuous. Local compactness is needed here because addition is a priori only
+continuous with respect to the D-topology on `M × M`, not the product topology - when `M` is
+locally compact the topologies agree, but otherwise the product topology could be
+fine enough for addition to not be continuous. -/]
 lemma DSmoothMul.continuousMul {M : Type*} [DiffeologicalSpace M] [Monoid M] [DSmoothMul M]
     [@LocallyCompactSpace M DTop] : @ContinuousMul M DTop _ := by
   letI := @DTop M _
@@ -217,8 +217,8 @@ lemma DSmoothMul.continuousMul {M : Type*} [DiffeologicalSpace M] [Monoid M] [DS
 
 /-- Variant of `DSmoothMul.continuousMul` phrased in terms of spaces equipped with
 `DTopCompatible` topologies. -/
-@[to_additive "Variant of `DSmoothAdd.continuousAdd` phrased in terms of spaces equipped with
-  `DTopCompatible` topologies."]
+@[to_additive /-- Variant of `DSmoothAdd.continuousAdd` phrased in terms of spaces equipped with
+`DTopCompatible` topologies. -/]
 instance {M : Type*} [Monoid M] [DiffeologicalSpace M] [TopologicalSpace M] [DTopCompatible M]
     [DSmoothMul M] [LocallyCompactSpace M] : ContinuousMul M := by
   rw [← dTop_eq M]

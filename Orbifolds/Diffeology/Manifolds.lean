@@ -44,7 +44,7 @@ lemma isPlot_iff_contMDiff {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E
 
 lemma IsManifold.toDiffeology_eq_euclideanDiffeology {E : Type*}
     [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimensional ℝ E] :
-    (intIsManifoldModelSpace (I := 𝓘(ℝ,E))).toDiffeology = euclideanDiffeology := by
+    (instIsManifoldModelSpace (I := 𝓘(ℝ,E))).toDiffeology = euclideanDiffeology := by
   ext n p; exact contMDiff_iff_contDiff
 
 def ModelWithCorners.toHomeomorphTarget {𝕜 : Type*} [NontriviallyNormedField 𝕜] {E : Type*}
@@ -54,6 +54,8 @@ def ModelWithCorners.toHomeomorphTarget {𝕜 : Type*} [NontriviallyNormedField 
   invFun y := I.invFun y
   left_inv := I.left_inv
   right_inv := fun x ↦ Subtype.ext <| I.right_inv (I.target_eq ▸ x.2)
+  continuous_toFun := by have := I.continuous_toFun; fun_prop
+  continuous_invFun := by have := I.continuous_invFun; fun_prop
 
 /-- The D-topology on a manifold is always at least as fine as the usual topology. -/
 lemma IsManifold.dTop_le {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]

@@ -310,30 +310,47 @@ noncomputable instance forgetPreservesLimitsOfSize :
 noncomputable instance forgetPreservesLimits : PreservesLimits (forget : DiffSp.{u} ⥤ _) :=
   forgetPreservesLimitsOfSize.{u,u}
 
-/-- A specific choice of colimit cocone for any `F : J ⥤ DiffSp`. -/
-noncomputable def colimitCocone (F : J ⥤ DiffSp.{max v u}) : Cocone F where
-  pt := @of (Types.TypeMax.colimitCocone.{v,u} (F ⋙ forget)).pt <|
-          ⨆ j, (F.obj j).str.coinduced ((Types.TypeMax.colimitCocone (F ⋙ forget)).ι.app j)
-  ι :=
-    { app := fun j ↦
-        ⟨(Types.TypeMax.colimitCocone (F ⋙ forget)).ι.app j, dsmooth_iff_coinduced_le.mpr <|
-          le_iSup (fun j ↦ DiffeologicalSpace.coinduced
-            ((Types.TypeMax.colimitCocone (F ⋙ forget)).ι.app j) (F.obj j).str) j⟩
-      naturality := fun _ _ f ↦ hom_ext <|
-        DSmoothMap.coe_injective ((Types.TypeMax.colimitCocone (F ⋙ forget)).ι.naturality f) }
+variable {F : J ⥤ DiffSp.{u}} (c : Cocone (F ⋙ forget))
 
-/-- `DiffSp.colimitCocone F` is actually a colimit cocone for the given `F : J ⥤ DiffSp`. -/
-noncomputable def colimitCoconeIsColimit (F : J ⥤ DiffSp.{max v u}) :
-    IsColimit (colimitCocone F) := by
-  refine IsColimit.ofFaithful forget (Types.TypeMax.colimitCoconeIsColimit.{v,u} _) (fun s ↦
-      ⟨Quot.lift (fun p ↦ (Functor.mapCocone forget s).ι.app p.fst p.snd) ?_, ?_⟩) fun s ↦ rfl
-  · intro _ _ ⟨_, h⟩; simp [h,←ConcreteCategory.comp_apply,s.ι.naturality]
-  · exact dsmooth_iff_le_induced.mpr
-      (iSup_le fun j ↦ DiffeologicalSpace.coinduced_le_iff_le_induced.mp <|
-        DiffeologicalSpace.coinduced_compose.symm ▸ (s.ι.app j).hom.dsmooth.coinduced_le)
+/-- Given a functor `F : J ⥤ DiffSp` and a cocone `c : Cocone (F ⋙ forget)`
+of the underlying cocone of types, this is the type `c.pt`
+with the infimum of the diffeologies that are coinduced by the maps `c.ι.app j`. -/
+def coconePtOfCoconeForget : Type _ := c.pt
+
+instance diffeologicalSpaceCoconePtOfCoconeForget : DiffeologicalSpace (coconePtOfCoconeForget c) :=
+  (⨆ j, (F.obj j).str.coinduced (c.ι.app j))
+
+/-- Given a functor `F : J ⥤ DiffSp` and a cocone `c : Cocone (F ⋙ forget)`
+of the underlying cocone of types, this is a cocone for `F` whose point is
+`c.pt` with the infimum of the coinduced diffeologies by the maps `c.ι.app j`. -/
+@[simps pt ι_app]
+def coconeOfCoconeForget : Cocone F where
+  pt := of (coconePtOfCoconeForget c)
+  ι :=
+    { app j := ofHom (DSmoothMap.mk (c.ι.app j) (by
+        rw [dsmooth_iff_coinduced_le]
+        exact le_iSup (fun j ↦ (F.obj j).str.coinduced (c.ι.app j)) j))
+      naturality j j' φ := by
+        ext; apply congr_fun (c.ι.naturality φ) }
+
+/-- Given a functor `F : J ⥤ DiffSp` and a cocone `c : Cocone (F ⋙ forget)`
+of the underlying cocone of types, the colimit of `F` is `c.pt` equipped
+with the supremum of the coinduced diffeologies by the maps `c.ι.app j`. -/
+def isColimitCoconeOfForget (c : Cocone (F ⋙ forget)) (hc : IsColimit c) :
+    IsColimit (coconeOfCoconeForget c) := by
+  refine IsColimit.ofFaithful forget (ht := hc)
+    (fun s ↦ ofHom (DSmoothMap.mk (hc.desc ((forget).mapCocone s)) ?_)) (fun _ ↦ rfl)
+  rw [dsmooth_iff_le_induced]
+  dsimp [diffeologicalSpaceCoconePtOfCoconeForget]
+  rw [iSup_le_iff]
+  intro j
+  rw [DiffeologicalSpace.coinduced_le_iff_le_induced, DiffeologicalSpace.induced_compose]
+  convert dsmooth_iff_le_induced.1 (s.ι.app j).hom.dsmooth
+  exact hc.fac ((forget).mapCocone s) j
 
 instance hasColimitsOfSize : HasColimitsOfSize.{v,v} DiffSp.{max v u} where
-  has_colimits_of_shape _ := ⟨fun F ↦ HasColimit.mk ⟨colimitCocone F,colimitCoconeIsColimit F⟩⟩
+  has_colimits_of_shape _ := ⟨fun _ ↦ HasColimit.mk
+    ⟨_, isColimitCoconeOfForget _ (colimit.isColimit _)⟩⟩
 
 /-- `DiffSp` has all colimits, i.e. it is cocomplete. -/
 instance hasColimits : HasColimits DiffSp.{u} :=
@@ -341,8 +358,8 @@ instance hasColimits : HasColimits DiffSp.{u} :=
 
 noncomputable instance forgetPreservesColimitsOfSize :
     PreservesColimitsOfSize.{v,v} (forget : DiffSp.{max v u} ⥤ _) :=
-  ⟨⟨fun {F} ↦ preservesColimit_of_preserves_colimit_cocone (colimitCoconeIsColimit.{u,v} F)
-    (Types.TypeMax.colimitCoconeIsColimit.{v,u} (F ⋙ forget))⟩⟩
+  ⟨⟨fun {_} ↦ preservesColimit_of_preserves_colimit_cocone
+    (isColimitCoconeOfForget _ (colimit.isColimit _)) (colimit.isColimit _)⟩⟩
 
 /-- The forgetful functor `DiffSp ⥤ Type` preserves all colimits. -/
 noncomputable instance forgetPreservesColimits : PreservesColimits (forget : DiffSp.{u} ⥤ _) :=
@@ -406,9 +423,9 @@ end BinaryProducts
 
 section Cartesian
 
-instance : ChosenFiniteProducts DiffSp where
-  product X Y := ⟨binaryProductCone X Y, binaryProductLimit X Y⟩
-  terminal := ⟨terminalCone, terminalCodeIsLimit⟩
+instance : CartesianMonoidalCategory DiffSp :=
+  .ofChosenFiniteProducts ⟨terminalCone, terminalCodeIsLimit⟩
+    fun X Y ↦ ⟨binaryProductCone X Y, binaryProductLimit X Y⟩
 
 /-- `DiffSp` is cartesian-closed. -/
 noncomputable instance cartesianClosed : CartesianClosed DiffSp.{u} where

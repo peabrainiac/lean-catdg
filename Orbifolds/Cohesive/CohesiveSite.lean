@@ -65,7 +65,7 @@ lemma ΓCoconstantSheafAdj_unit_app {X : Sheaf J (Type max u v)} :
     (IsLocalSite.ΓCoconstantSheafAdj.{u,v} J).unit.app X = (by sorry) := by
   simp [IsLocalSite.ΓCoconstantSheafAdj, Adjunction.ofNatIsoLeft, Adjunction.homEquiv]
   simp [Adjunction.equivHomsetLeftOfNatIso]
-  simp [ΓNatIsoSheafSections, sheafSectionsNatIsoEvaluation]
+  simp [ΓNatIsoSheafSections]
   sorry
 
 lemma Sheaf.discToCodisc_app {X : (Type max u v)} :
@@ -73,14 +73,12 @@ lemma Sheaf.discToCodisc_app {X : (Type max u v)} :
       ⟨inv (toSheafify J ((Functor.const _).obj X)) ≫ { app Y x y := ⟨x⟩ }⟩ := by
   rw [Cohesive.discToCodisc_app, IsIso.comp_inv_eq]
   apply Sheaf.hom_ext
-  rw [instCategorySheaf_comp_val, Category.assoc, IsIso.eq_inv_comp]
+  rw [comp_val, Category.assoc, IsIso.eq_inv_comp]
   ext Y x
   dsimp
-  simp [codisc, IsLocalSite.coconstantSheaf, Presheaf.coconst, discΓAdj, constantSheafΓAdj,
-    ΓCodiscAdj]
+  simp [codisc, IsLocalSite.coconstantSheaf, Presheaf.coconst]
   ext y
-  simp [disc, Adjunction.equivHomsetLeftOfNatIso]
-  simp? [ΓNatIsoSheafSections]
+  simp [disc]
   sorry
 
 /-- In sheaf topoi on cohesive sites, pieces have points in the sense that the components of

@@ -94,7 +94,7 @@ noncomputable def π₀ConstantSheafAdj [HasWeakSheafify J (Type max u w)] :
   · exact (Functor.rightUnitor _).symm
   · refine ((Functor.leftUnitor _).trans ((Functor.rightUnitor _).symm.trans ?_)).trans
       (Functor.associator _ _ _).symm
-    refine @asIso _ _ _ _ (whiskerLeft _ (toSheafification _ _)) ?_
+    refine @asIso _ _ _ _ (Functor.whiskerLeft _ (toSheafification _ _)) ?_
     rw [NatTrans.isIso_iff_isIso_app]
     exact fun X ↦ isIso_toSheafify J <| isSheaf_const_obj J
 
@@ -174,7 +174,7 @@ noncomputable def unique_colimit_representable {C : Type u} [Category.{v} C]
       refine x.out_eq.symm.trans (Quot.eq.2 (.symm _ _ <| .rel _ _ ⟨?_, ?_⟩))
       · exact (F.representableBy.homEquiv.symm x.out.2).op
       · exact .trans (by simp) (F.representableBy.homEquiv_comp _ _)
-  } (Types.colimitEquivQuot F)
+  } (Types.colimitEquivColimitType F)
 
 end TerminalSheaf
 

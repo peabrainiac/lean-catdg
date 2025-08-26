@@ -9,7 +9,7 @@ global sections functor `Γ : Sheaf J A ⥤ A` when one exists.
 
 universe u v w u₂ v₂
 
-open CategoryTheory Limits Sheaf Opposite GrothendieckTopology
+open CategoryTheory Limits Sheaf Opposite GrothendieckTopology Adjunction
 
 namespace CategoryTheory
 
@@ -34,11 +34,15 @@ noncomputable def ΓCoconstantSheafAdj [HasCoconstantSheaf J A] :
 instance [HasCoconstantSheaf J A] : (coconstantSheaf J A).IsRightAdjoint := by
   unfold coconstantSheaf; infer_instance
 
+noncomputable def Sheaf.constΓCoconstTriple [HasCoconstantSheaf J A] :
+    Triple (constantSheaf J A) (Γ J A) (coconstantSheaf J A) where
+  adj₁ := constantSheafΓAdj J A
+  adj₂ := ΓCoconstantSheafAdj J A
+
 instance [HasCoconstantSheaf J A] [(constantSheaf J A).Full] [(constantSheaf J A).Faithful] :
     (coconstantSheaf J A).Full :=
-  ((constantSheafΓAdj J A).fullyFaithfulEquiv (ΓCoconstantSheafAdj J A) (.ofFullyFaithful _)).full
+  ((Sheaf.constΓCoconstTriple J A).fullyFaithfulEquiv (.ofFullyFaithful _)).full
 
 instance [HasCoconstantSheaf J A] [(constantSheaf J A).Full] [(constantSheaf J A).Faithful] :
     (coconstantSheaf J A).Faithful :=
-  ((constantSheafΓAdj J A).fullyFaithfulEquiv
-    (ΓCoconstantSheafAdj J A) (.ofFullyFaithful _)).faithful
+  ((Sheaf.constΓCoconstTriple J A).fullyFaithfulEquiv (.ofFullyFaithful _)).faithful

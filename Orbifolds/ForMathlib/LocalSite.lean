@@ -49,7 +49,7 @@ to the set of all functions `A → (⊤_ C ⟶ X)`. This can be defined on any s
 object, but has values in sheaves in the case of local sites. -/
 noncomputable def Presheaf.coconst {C : Type u} [Category.{v} C] [HasTerminal C] :
     Type w ⥤ (Cᵒᵖ ⥤ Type max v w) :=
-  uliftFunctor ⋙ yoneda ⋙ (whiskeringLeft _ _ _).obj
+  uliftFunctor ⋙ yoneda ⋙ (Functor.whiskeringLeft _ _ _).obj
     (coyoneda.obj (op (⊤_ C)) ⋙ uliftFunctor).op
 
 /-- On local sites, `Presheaf.coconst` actually takes values in sheaves. -/
@@ -111,7 +111,7 @@ instance [J.IsLocalSite] : HasCoconstantSheaf J (Type max u v) :=
 /-- The global sections of the coconstant sheaf on a type are naturally isomorphic to that type.-/
 noncomputable def coconstantSheafΓNatIsoId [J.IsLocalSite] :
     IsLocalSite.coconstantSheaf J ⋙ Γ J _ ≅ 𝟭 (Type max u v) := by
-  refine (isoWhiskerLeft _ (ΓNatIsoSheafSections J _ terminalIsTerminal)).trans ?_
+  refine (Functor.isoWhiskerLeft _ (ΓNatIsoSheafSections J _ terminalIsTerminal)).trans ?_
   exact (NatIso.ofComponents (fun X ↦ {
     hom x := fun _ ↦ ⟨x⟩
     inv f := (f (default : ULift (⊤_ C ⟶ ⊤_ C))).down
@@ -134,8 +134,8 @@ instance [J.IsLocalSite] : (IsLocalSite.coconstantSheaf.{u,v,max u v} J).Faithfu
 /-- On local sites, the constant sheaf functor is fully faithful. -/
 noncomputable def fullyFaithfulConstantSheaf [HasWeakSheafify J (Type max u v)] [J.IsLocalSite] :
     (constantSheaf J (Type max u v)).FullyFaithful :=
-  ((constantSheafΓAdj J _).fullyFaithfulEquiv (IsLocalSite.ΓCoconstantSheafAdj J)).symm <|
-    fullyFaithfulCoconstantSheaf J
+  (Adjunction.Triple.mk (constantSheafΓAdj J _)
+    (IsLocalSite.ΓCoconstantSheafAdj J)).fullyFaithfulEquiv.symm <| fullyFaithfulCoconstantSheaf J
 
 instance [HasWeakSheafify J (Type max u v)] [J.IsLocalSite] :
     (constantSheaf J (Type max u v)).Full :=
