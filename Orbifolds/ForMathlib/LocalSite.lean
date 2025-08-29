@@ -44,8 +44,8 @@ lemma LocalSite.from_terminal_mem_of_mem [J.IsLocalSite] {X : C} (f : ⊤_ C ⟶
 instance {C : Type u} [Category.{v} C] [HasTerminal C] : (trivial C).IsLocalSite where
   eq_top_of_mem _ := trivial_covering.1
 
-/-- The functor that sends any set `A` to the functor `Cᵒᵖ → Type _` that sends any `X : C`
-to the set of all functions `A → (⊤_ C ⟶ X)`. This can be defined on any site with a terminal
+/-- The functor that sends any type `A` to the functor `Cᵒᵖ → Type _` that sends any `X : C`
+to the type of all functions `(⊤_ C ⟶ X) → A`. This can be defined on any site with a terminal
 object, but has values in sheaves in the case of local sites. -/
 noncomputable def Presheaf.coconst {C : Type u} [Category.{v} C] [HasTerminal C] :
     Type w ⥤ (Cᵒᵖ ⥤ Type max v w) :=
@@ -144,5 +144,45 @@ instance [HasWeakSheafify J (Type max u v)] [J.IsLocalSite] :
 instance [HasWeakSheafify J (Type max u v)] [J.IsLocalSite] :
     (constantSheaf J (Type max u v)).Faithful :=
   (fullyFaithfulConstantSheaf J).faithful
+
+open List in
+/-- For any site with a terminal object, the following are equivalent:
+* the site is local, i.e. the only covering sieve of the terminal object is the trivial one
+* every covering sieve contains all morphisms from the terminal object
+* the coconstant presheaf on the empty type is a sheaf
+* every coconstant presheaf is a sheaf.
+
+I don't yet know how exactly `HasCoconstantSheaf J (Type max u v)` fits into this - every
+local site has a coconstant sheaf functor, and every *subcanonical* site with a coconstant sheaf
+functor is local, but it's not clear to me what can be said in the non-subcanonical case. Maybe
+having a fully faithful coconstant sheaf functor could be strong enough?
+TODO: figure this out -/
+protected theorem GrothendieckTopology.IsLocalSite.tfae [HasTerminal C] :
+    TFAE [J.IsLocalSite,
+      ∀ X : C, ∀ S ∈ J X, ∀ x : ⊤_ C ⟶ X, S x,
+      Presieve.IsSheaf J (Presheaf.coconst.{u,v,max u v}.obj PEmpty),
+      ∀ X : Type max u v, Presieve.IsSheaf J (Presheaf.coconst.obj X)] := by
+  tfae_have 2 → 1 := fun h ↦ ⟨fun S hS ↦ S.id_mem_iff_eq_top.1 <| h _ S hS _⟩
+  tfae_have 1 → 2 := fun h X S hS f ↦ by
+    simpa using Sieve.id_mem_iff_eq_top.2 <| h.eq_top_of_mem _ <| J.pullback_stable f hS
+  tfae_have 3 → 1 := fun h ↦ ⟨fun S hS ↦ by
+    replace h : IsEmpty (Presieve.FamilyOfElements
+        (Presheaf.coconst.{u,v,max u v}.obj PEmpty) S.arrows) := by
+      have : IsEmpty ((Presheaf.coconst.{u,v,max u v}.obj PEmpty).obj (op (⊤_ C))) := by
+        dsimp [Presheaf.coconst]; exact isEmpty_fun.2 ⟨⟨⟨𝟙 _⟩⟩, inferInstance⟩
+      have {X : C} : Subsingleton ((Presheaf.coconst.{u,v,max u v}.obj PEmpty).obj (op X)) := by
+        dsimp [Presheaf.coconst]; exact Pi.instSubsingleton
+      refine not_nonempty_iff.1 fun ⟨x⟩ ↦ IsEmpty.false (h S hS x ?_).choose
+      exact fun _ _ _ _ _ _ _ _ _ _ ↦ Subsingleton.elim _ _
+    replace ⟨X, f, hf, h⟩ : ∃ X, ∃ f : X ⟶ ⊤_ C, S f ∧
+        IsEmpty ((Presheaf.coconst.{u,v,max u v}.obj PEmpty).obj (op X)) := by
+      by_contra! h'; exact h.false fun X f hf ↦ Classical.choice <| not_isEmpty_iff.1 <| h' X f hf
+    let ⟨⟨(g : _ ⟶ _)⟩⟩ := (isEmpty_fun.1 h).1
+    refine S.id_mem_iff_eq_top.1 ?_
+    convert S.downward_closed hf g
+    exact Subsingleton.elim _ _⟩
+  tfae_have 4 → 3 := fun h ↦ h _
+  tfae_have 1 → 4 := fun _ _ ↦ (isSheaf_iff_isSheaf_of_type _ _).1 <| Presheaf.coconst_isSheaf J _
+  tfae_finish
 
 end CategoryTheory
