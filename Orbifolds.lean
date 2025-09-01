@@ -24,5 +24,6 @@ import Orbifolds.ForMathlib.CoconstantSheaf
 import Orbifolds.ForMathlib.ConcreteSite
 import Orbifolds.ForMathlib.LocalSite
 import Orbifolds.ForMathlib.LocallyConnectedSite
+import Orbifolds.ForMathlib.MorphismProperty
 import Orbifolds.ForMathlib.Quadruple
 import Orbifolds.ForMathlib.Triple
