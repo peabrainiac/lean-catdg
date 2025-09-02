@@ -39,7 +39,7 @@ lemma toSieveOn_le_iff {P : MorphismProperty C} {X : C} (S : Sieve X) :
 /-- Typeclass asserting that every morphism in `P` can be factored as a morphism in `Q` followed by
 a morphism in `Q'`. -/
 class HasFactorizationInto (P Q Q' : MorphismProperty C) : Prop where
-  nonempty_mapFactorizationData {X Y : C} {f : X ⟶ Y} (hf : P f) :
+  nonempty_mapFactorizationData ⦃X Y : C⦄ ⦃f : X ⟶ Y⦄ (hf : P f) :
     Nonempty (MapFactorizationData Q Q' f)
 
 /-- For every morphism property `P` that is closed under composition with arbitrary morphisms from
@@ -65,5 +65,19 @@ lemma le_generatedTopology_iff {P : MorphismProperty C} [P.RespectsRight ⊤]
     [P.HasFactorizationInto P P] (J : GrothendieckTopology C) :
     J ≤ P.generatedTopology ↔ ∀ X, ∀ S ∈ J X, ∀ Y (f : Y ⟶ X), P f → S f := by
   simp_rw [← toSieveOn_le_iff]; rfl
+
+/-- The class of all morphisms that factor through `X`, as a `MorphismProperty`. -/
+def morphismsThrough (X : C) : MorphismProperty C :=
+  fun _ _ f ↦ ∃ (g : _ ⟶ X) (g' : X ⟶ _), g ≫ g' = f
+
+instance {X : C} : (morphismsThrough X).RespectsLeft ⊤ :=
+  ⟨fun f _ g ⟨h, h', hg⟩ ↦ ⟨f ≫ h, h', by simp [hg]⟩⟩
+
+instance {X : C} : (morphismsThrough X).RespectsRight ⊤ :=
+  ⟨fun f _ g ⟨h, h', hg⟩ ↦ ⟨h, h' ≫ f, by simp [← hg]⟩⟩
+
+instance {X : C} :
+    (morphismsThrough X).HasFactorizationInto (morphismsThrough X) (morphismsThrough X) :=
+  ⟨fun _ _ f ⟨g, g', hf⟩ ↦ ⟨X, _, _, hf, ⟨g, 𝟙 _, by simp⟩, ⟨𝟙 _, g', by simp⟩⟩⟩
 
 end CategoryTheory.MorphismProperty

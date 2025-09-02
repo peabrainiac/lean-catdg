@@ -1,4 +1,5 @@
 import Orbifolds.ForMathlib.CoconstantSheaf
+import Orbifolds.ForMathlib.MorphismProperty
 
 /-!
 # Local sites
@@ -18,6 +19,9 @@ See https://ncatlab.org/nlab/show/local+site.
 * `fullyFaithfulConstantSheaf`: on local sites, the constant sheaf functor is fully faithful.
 All together this shows that for local sites `Sheaf J (Type max u v w)` forms a local topos, but
 since we don't yet have local topoi this can't be stated yet.
+
+We also define a Grothendieck topology `localTopology C` on any category `C` with a terminal object,
+and show that it is the largest topology making `C` into a local site.
 
 TODO: generalise universe levels from `max u v` to `max u v w` again once that is possible.
 -/
@@ -145,6 +149,16 @@ instance [HasWeakSheafify J (Type max u v)] [J.IsLocalSite] :
     (constantSheaf J (Type max u v)).Faithful :=
   (fullyFaithfulConstantSheaf J).faithful
 
+/-- The largest topology making a category with a terminal object a local site.
+Lacking an established name, we call it the local topology. -/
+def localTopology (C : Type*) [Category C] [HasTerminal C] : GrothendieckTopology C :=
+  (MorphismProperty.morphismsThrough (⊤_ C)).generatedTopology
+
+lemma localTopology.mem_sieves_iff [HasTerminal C] {X : C} {S : Sieve X} :
+    S ∈ localTopology C X ↔ ∀ x : ⊤_ C ⟶ X, S x :=
+  ⟨fun hS x ↦ (MorphismProperty.toSieveOn_le_iff _).1 hS _ x ⟨𝟙 _, x, by simp⟩, fun hS ↦
+    (MorphismProperty.toSieveOn_le_iff _).2 fun Y f ⟨g, g', hf⟩ ↦ hf ▸ S.downward_closed (hS _) _⟩
+
 open List in
 /-- For any site with a terminal object, the following are equivalent:
 * the site is local, i.e. the only covering sieve of the terminal object is the trivial one
@@ -160,12 +174,14 @@ TODO: figure this out -/
 protected theorem GrothendieckTopology.IsLocalSite.tfae [HasTerminal C] :
     TFAE [J.IsLocalSite,
       ∀ X : C, ∀ S ∈ J X, ∀ x : ⊤_ C ⟶ X, S x,
+      J ≤ localTopology C,
       Presieve.IsSheaf J (Presheaf.coconst.{u,v,max u v}.obj PEmpty),
       ∀ X : Type max u v, Presieve.IsSheaf J (Presheaf.coconst.obj X)] := by
   tfae_have 2 → 1 := fun h ↦ ⟨fun S hS ↦ S.id_mem_iff_eq_top.1 <| h _ S hS _⟩
   tfae_have 1 → 2 := fun h X S hS f ↦ by
     simpa using Sieve.id_mem_iff_eq_top.2 <| h.eq_top_of_mem _ <| J.pullback_stable f hS
-  tfae_have 3 → 1 := fun h ↦ ⟨fun S hS ↦ by
+  tfae_have 3 ↔ 2 := by simp_rw [← localTopology.mem_sieves_iff]; rfl
+  tfae_have 4 → 1 := fun h ↦ ⟨fun S hS ↦ by
     replace h : IsEmpty (Presieve.FamilyOfElements
         (Presheaf.coconst.{u,v,max u v}.obj PEmpty) S.arrows) := by
       have : IsEmpty ((Presheaf.coconst.{u,v,max u v}.obj PEmpty).obj (op (⊤_ C))) := by
@@ -181,8 +197,11 @@ protected theorem GrothendieckTopology.IsLocalSite.tfae [HasTerminal C] :
     refine S.id_mem_iff_eq_top.1 ?_
     convert S.downward_closed hf g
     exact Subsingleton.elim _ _⟩
-  tfae_have 4 → 3 := fun h ↦ h _
-  tfae_have 1 → 4 := fun _ _ ↦ (isSheaf_iff_isSheaf_of_type _ _).1 <| Presheaf.coconst_isSheaf J _
+  tfae_have 5 → 4 := fun h ↦ h _
+  tfae_have 1 → 5 := fun _ _ ↦ (isSheaf_iff_isSheaf_of_type _ _).1 <| Presheaf.coconst_isSheaf J _
   tfae_finish
+
+instance [HasTerminal C] : (localTopology C).IsLocalSite :=
+  ((GrothendieckTopology.IsLocalSite.tfae _).out 0 2).2 le_rfl
 
 end CategoryTheory
