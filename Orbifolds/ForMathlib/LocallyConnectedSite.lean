@@ -1,6 +1,7 @@
 import Mathlib.CategoryTheory.Limits.FullSubcategory
 import Mathlib.CategoryTheory.Limits.Sifted
 import Mathlib.CategoryTheory.Sites.GlobalSections
+import Orbifolds.ForMathlib.Classifier
 
 /-!
 # Locally connected sites
@@ -104,44 +105,6 @@ section TerminalSheaf
 
 attribute [local instance] HasForget.hasCoeToSort
 attribute [local instance] HasForget.instFunLike
-
-/-- Evaluating a terminal functor yields terminal objects.
-TODO: move somewhere else -/
-noncomputable def Limits.IsTerminal.isTerminalObj_functor {C : Type u} [Category.{v} C]
-    {D : Type u₂} [Category.{v₂} D] [HasLimits D] {F : C ⥤ D} (hF : IsTerminal F) (X : C) :
-    IsTerminal (F.obj X) :=
-  hF.isTerminalObj ((evaluation C D).obj X)
-
-/-- A terminal sheaf is also terminal as a presheaf. -/
-noncomputable def Limits.IsTerminal.isTerminalSheafVal {C : Type u} [Category.{v} C]
-    {J : GrothendieckTopology C} {A : Type u₂} [Category.{v₂} A] [HasLimits A]
-    {X : Sheaf J A} (hX : IsTerminal X) : IsTerminal X.val :=
-  hX.isTerminalObj (sheafToPresheaf J A)
-
-/-- Sections of a terminal sheaf are terminal objects. -/
-noncomputable def Limits.IsTerminal.isTerminalSheafValObj {C : Type u} [Category.{v} C]
-    {J : GrothendieckTopology C} {A : Type u₂} [Category.{v₂} A] [HasLimits A]
-    {X : Sheaf J A} (hX : IsTerminal X) (Y : Cᵒᵖ) : IsTerminal (X.val.obj Y) :=
-  hX.isTerminalSheafVal.isTerminalObj_functor Y
-
-/-- For sheaves valued in a concrete category whose terminal object is a point,
-sections of the terminal sheaf are unique. -/
-noncomputable instance Sheaf.instUniqueTerminalValObjForget {C : Type u} [Category.{v} C]
-    {J : GrothendieckTopology C} {A : Type u₂} [Category.{v₂} A] [HasLimits A]
-    [HasForget.{w} A] [PreservesLimit (Functor.empty _) (forget A)] (Y : Cᵒᵖ) :
-    Unique ((⊤_ Sheaf J A).val.obj Y) :=
-  (Types.isTerminalEquivUnique _).1 <|
-    (terminalIsTerminal.isTerminalSheafValObj Y).isTerminalObj (forget _) _
-
-/-- Terminal types are singletons. -/
-noncomputable def Limits.IsTerminal.unique {X : Type u} (h : IsTerminal X) : Unique X :=
-  Types.isTerminalEquivUnique _ h
-
-/-- Sections of the terminal sheaf are unique. -/
-noncomputable instance Sheaf.instUniqueTerminalValObj {C : Type u} [Category.{v} C]
-    {J : GrothendieckTopology C}  (Y : Cᵒᵖ) :
-    Unique ((⊤_ Sheaf J (Type w)).val.obj Y) :=
-  (terminalIsTerminal.isTerminalSheafValObj Y).unique
 
 /-- Morphisms to a terminal object are unique. -/
 noncomputable def Limits.IsTerminal.uniqueHom {C : Type u} [Category.{v} C]
