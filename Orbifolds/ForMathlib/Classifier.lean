@@ -234,18 +234,15 @@ noncomputable def GrothendieckTopology.classifier : Classifier (Sheaf J (Type ma
         @Subsingleton.elim _ (by dsimp; infer_instance) _ _)
     (fun {F G} i _ χ hχ ↦ by
       ext X x; dsimp; ext Y f
-      replace hχ Y (y : G.val.obj Y) :
-          χ.val.app Y y = (⊤ : ClosedSieve _ _) ↔ y ∈ Set.range (i.val.app Y) := by
-        replace hχ := hχ.map (sheafToPresheaf J _ ⋙ (evaluation _ _).obj Y)
-        dsimp at hχ
+      replace hχ := hχ.map (sheafToPresheaf J _ ⋙ (evaluation _ _).obj (op Y))
+      dsimp at hχ
+      replace hχ : χ.val.app (op Y) (G.val.map f.op x) = (⊤ : ClosedSieve _ _) ↔
+          G.val.map f.op x ∈ Set.range (i.val.app (op Y)) := by
         refine ⟨fun hy ↦ ?_, fun hy ↦ by simpa [hy.choose_spec] using congrFun hχ.w hy.choose⟩
-        use (PullbackCone.IsLimit.equivPullbackObj hχ.isLimit).symm ⟨(y, default), hy⟩
-        exact PullbackCone.IsLimit.equivPullbackObj_symm_apply_fst hχ.isLimit ⟨(y, default), hy⟩
-      refine ⟨fun hf ↦ ?_, fun hf ↦ ?_⟩
-      · exact (hχ _ _).1 <| (congrFun (χ.val.naturality f.op) x).trans <| ClosedSieve.ext _ _ <|
-          (Sieve.mem_iff_pullback_eq_top _).1 hf
-      · exact (Sieve.mem_iff_pullback_eq_top _).2 <| congrArg ClosedSieve.toSieve <|
-          (congrFun (χ.val.naturality f.op) x).symm.trans <| (hχ _ _).2 hf)
+        exact ⟨_, PullbackCone.IsLimit.equivPullbackObj_symm_apply_fst hχ.isLimit
+          ⟨((G.val.map f.op x), default), hy⟩⟩
+      refine ((Sieve.mem_iff_pullback_eq_top _).trans ?_).trans hχ
+      rw [show χ.val.app _ _ = _ from congrFun (χ.val.naturality f.op) x, ClosedSieve.ext_iff]; rfl)
 
 instance GrothendieckTopology.hasClassifier : HasClassifier (Sheaf J (Type max u v)) :=
   ⟨⟨J.classifier⟩⟩
