@@ -21,6 +21,7 @@ import Orbifolds.Diffeology.Sites
 import Orbifolds.Diffeology.SmoothSp
 import Orbifolds.Diffeology.TangentSpace
 import Orbifolds.ForMathlib.BiseparatedPresheaf
+import Orbifolds.ForMathlib.Classifier
 import Orbifolds.ForMathlib.CoconstantSheaf
 import Orbifolds.ForMathlib.ConcreteSite
 import Orbifolds.ForMathlib.LocalSite
