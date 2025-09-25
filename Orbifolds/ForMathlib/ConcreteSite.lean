@@ -1,4 +1,5 @@
 import Orbifolds.ForMathlib.LocalSite
+import Orbifolds.ForMathlib.BiseparatedPresheaf
 
 /-!
 # Concrete sites
@@ -109,22 +110,6 @@ lemma isSeparated_yoneda_obj (J : GrothendieckTopology C) [J.IsConcreteSite] (X 
   have _ := coyoneda_obj_terminal_faithful J
   apply (coyoneda.obj (.op (⊤_ C))).map_injective; ext (y : ⊤_ C ⟶ _)
   exact (hf y (from_terminal_mem_of_mem J hS y)).trans (hg y (from_terminal_mem_of_mem J hS y)).symm
-
-/-- The property of being separated for some presieve is preserved under isomorphisms.
-TODO: upstream to mathlib. -/
-theorem _root_.CategoryTheory.Presieve.isSeparatedFor_iso {C : Type u} [Category.{v} C]
-    {F F' : Cᵒᵖ ⥤ Type w} (i : F ≅ F') {X : C} {R : Presieve X} (hF : R.IsSeparatedFor F) :
-    R.IsSeparatedFor F' := by
-  intro x t₁ t₂ ht₁ ht₂
-  simpa using congrArg (i.hom.app _) <| hF (x.compPresheafMap i.inv) _ _
-    (ht₁.compPresheafMap i.inv) (ht₂.compPresheafMap i.inv)
-
-/-- The property of being separated is preserved under isomorphisms.
-TODO: upstream to mathlib. -/
-theorem _root_.CategoryTheory.Presieve.isSeparated_iso {C : Type u} [Category.{v} C]
-    (J : GrothendieckTopology C) {F F' : Cᵒᵖ ⥤ Type w} (i : F ≅ F')
-    (hF : Presieve.IsSeparated J F) : Presieve.IsSeparated J F' :=
-  fun S hS ↦ Presieve.isSeparatedFor_iso i (hF S hS)
 
 /-- Every representable presheaf on a concrete site is, while not necessarily a sheaf,
 at least separated. -/
