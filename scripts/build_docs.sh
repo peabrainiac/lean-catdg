@@ -1,4 +1,4 @@
-# Build HTML documentation for lean-orbifolds
+# Build HTML documentation for lean-catdg
 # The output will be located in docs/build
 # script taken from https://github.com/YaelDillies/LeanCamCombi
 
@@ -13,7 +13,7 @@ version = "0.1.0"
 packagesDir = "../.lake/packages"
 
 [[require]]
-name = "Orbifolds"
+name = "CatDG"
 path = "../"
 
 [[require]]
@@ -30,11 +30,11 @@ mv website/docs/* docbuild/.lake/build/doc
 # Initialise docbuild as a Lean project
 cd docbuild
 MATHLIB_NO_CACHE_ON_UPDATE=1 # Disable an error message due to a non-blocking bug. See Zulip
-~/.elan/bin/lake update Orbifolds
+~/.elan/bin/lake update CatDG
 ~/.elan/bin/lake exe cache get
 
 # Build the docs
-~/.elan/bin/lake build Orbifolds:docs
+~/.elan/bin/lake build CatDG:docs
 
 # Move them out of docbuild
 cd ../

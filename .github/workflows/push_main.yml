@@ -24,15 +24,15 @@ jobs:
       - name: Don't 'import Mathlib', use precise imports
         if: always()
         run: |
-          ! (find Orbifolds -name "*.lean" -type f -print0 | xargs -0 grep -E -n '^import Mathlib$')
+          ! (find CatDG -name "*.lean" -type f -print0 | xargs -0 grep -E -n '^import Mathlib$')
 
-      - name: Files in Orbifolds.ForMathlib can't import Orbifolds files outside Orbifolds.ForMathlib
+      - name: Files in CatDG.ForMathlib can't import CatDG files outside CatDG.ForMathlib
         run: |
-          ! (find Orbifolds/ForMathlib -name "*.lean" -type f -print0 | xargs -0 grep -E -n '^import Orbifolds.(?!ForMathlib)')
+          ! (find CatDG/ForMathlib -name "*.lean" -type f -print0 | xargs -0 grep -E -n '^import CatDG.(?!ForMathlib)')
 
       - name: Don't indent the line following the start of a comment more than that first line
         run: |
-          ! (find Orbifolds -name "*.lean" -type f -print0 | xargs -0 grep -Pzon "\n( *)/-[^\n]*\n\1 ")
+          ! (find CatDG -name "*.lean" -type f -print0 | xargs -0 grep -Pzon "\n( *)/-[^\n]*\n\1 ")
 
   build_project:
     runs-on: ubuntu-latest
@@ -53,7 +53,7 @@ jobs:
         run: ~/.elan/bin/lake exe cache get || true
 
       - name: Build project
-        run: ~/.elan/bin/lake build Orbifolds
+        run: ~/.elan/bin/lake build CatDG
 
       - name: Cache documentation
         uses: actions/cache@v4

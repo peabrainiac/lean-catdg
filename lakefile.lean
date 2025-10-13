@@ -1,7 +1,7 @@
 import Lake
 open Lake DSL
 
-package «Orbifolds» where
+package «CatDG» where
   -- Settings applied to both builds and interactive editing
   leanOptions := #[
     ⟨`pp.unicode.fun, true⟩, -- pretty-prints `fun a ↦ b`
@@ -15,5 +15,5 @@ require mathlib from git
   "https://github.com/leanprover-community/mathlib4.git"
 
 @[default_target]
-lean_lib «Orbifolds» where
+lean_lib «CatDG» where
   -- add any library configuration options here
