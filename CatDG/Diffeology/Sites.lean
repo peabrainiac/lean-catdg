@@ -80,7 +80,7 @@ theorem comp_app {n m k : CartSp} (f : n ⟶ m) (g : m ⟶ k) (x : n) :
 Since mathlib apparently doesn't have smooth embeddings yet, diffeological inductions are
 used instead. -/
 def openCoverCoverage : Coverage CartSp where
-  covering n := {s | (∀ (m : _) (f : m ⟶ n), s f → IsOpenInduction f) ∧
+  coverings n := {s | (∀ (m : _) (f : m ⟶ n), s f → IsOpenInduction f) ∧
     ⋃ (m : CartSp) (f ∈ s (Y := m)), range f.1 = univ}
   pullback n m g s hs := by
     use fun k ↦ {f | (∃ (k : _) (f' : k ⟶ n), s f' ∧ range (g.1 ∘ f.1) ⊆ range f'.1)
@@ -300,7 +300,7 @@ theorem comp_app {u v w : EuclOp} (f : u ⟶ v) (g : v ⟶ w) (x : u) :
 Since mathlib apparently doesn't have smooth embeddings yet, diffeological inductions are
 used instead. -/
 def openCoverCoverage : Coverage EuclOp where
-  covering u := {s | (∀ (v : _) (f : v ⟶ u), s f → IsOpenInduction f.1) ∧
+  coverings u := {s | (∀ (v : _) (f : v ⟶ u), s f → IsOpenInduction f.1) ∧
     ⋃ (v : EuclOp) (f ∈ s (Y := v)), range f.1 = univ}
   pullback u v g s hs := by
     use fun k ↦ {f | (∃ (k : _) (f' : k ⟶ u), s f' ∧ range (g.1 ∘ f.1) ⊆ range f'.1)

@@ -27,5 +27,4 @@ import CatDG.ForMathlib.ConcreteSite
 import CatDG.ForMathlib.LocalSite
 import CatDG.ForMathlib.LocallyConnectedSite
 import CatDG.ForMathlib.MorphismProperty
-import CatDG.ForMathlib.Quadruple
 import CatDG.ForMathlib.Triple

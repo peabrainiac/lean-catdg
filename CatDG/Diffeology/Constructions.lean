@@ -253,30 +253,6 @@ theorem IsOpen.dsmooth_iff_contDiffOn [NormedAddCommGroup X] [InnerProductSpace 
   · exact contDiffOn_univUnitBall_symm.comp (contDiff_unitBallBall_symm hε).contDiffOn
       (fun _ ↦ (unitBallBall x ε hε).symm.map_source)
 
--- TODO: move to Mathlib.Topology.Constructions
-theorem IsOpenMap.subtype_mk {X Y : Type*} [TopologicalSpace X] [TopologicalSpace Y]
-    {s : Set X} {f : Y → X} (hf : IsOpenMap f) (hfs : ∀ x, f x ∈ s) :
-    IsOpenMap fun x ↦ (⟨f x, hfs x⟩ : Subtype s) := fun u hu ↦ by
-  convert (hf u hu).preimage continuous_subtype_val
-  exact Set.ext fun x ↦ exists_congr fun x' ↦ and_congr_right' Subtype.ext_iff
-
--- TODO: move to Mathlib.Topology.Constructions
-theorem IsOpen.isOpenMap_subtype_map {X Y : Type*} [TopologicalSpace X] [TopologicalSpace Y]
-    {s : Set X} {t : Set Y} {f : X → Y} (hs : IsOpen s) (hf : IsOpenMap f)
-    (hst : ∀ x, s x → t (f x)) : IsOpenMap (Subtype.map f hst) :=
-  (hf.comp hs.isOpenMap_subtype_val).subtype_mk _
-
--- TODO: move to Mathlib.Topology.Constructions
-theorem IsOpen.isOpenMap_inclusion {X : Type*} [TopologicalSpace X] {s t : Set X}
-    (hs : IsOpen s) (h : s ⊆ t) : IsOpenMap (inclusion h) :=
-  hs.isOpenMap_subtype_map IsOpenMap.id h
-
--- TODO: move to Mathlib.Topology.Constructions
-theorem IsOpenMap.codRestrict {X Y : Type*} [TopologicalSpace X] [TopologicalSpace Y]
-    {f : X → Y} {s : Set Y} (hf : IsOpenMap f) (hs : ∀ a, f a ∈ s) :
-    IsOpenMap (s.codRestrict f hs) :=
-  hf.subtype_mk hs
-
 /-- The D-topology is also characterised by the smooth maps `u → X` for open `u`. -/
 lemma isOpen_iff_preimages_plots' {s : Set X} : IsOpen[DTop] s ↔
     ∀ (n : ℕ) (u : Set (Eucl n)) (p : u → X), IsOpen u → DSmooth p → IsOpen (p ⁻¹' s) := by

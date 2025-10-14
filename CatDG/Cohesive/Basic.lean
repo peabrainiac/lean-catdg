@@ -1,8 +1,7 @@
+import CatDG.ForMathlib.Triple
 import Mathlib.CategoryTheory.Adjunction.Limits
-import Mathlib.CategoryTheory.Limits.Constructions.EpiMono
+import Mathlib.CategoryTheory.Adjunction.Quadruple
 import Mathlib.CategoryTheory.Limits.Preserves.Finite
-import Mathlib.CategoryTheory.Monad.Adjunction
-import CatDG.ForMathlib.Quadruple
 
 /-!
 # Cohesive categories

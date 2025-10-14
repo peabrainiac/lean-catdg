@@ -12,12 +12,6 @@ namespace CategoryTheory.Adjunction.Triple
 
 variable {C D : Type*} [Category C] [Category D] {F H : C ⥤ D} {G : D ⥤ C} (t : Triple F G H)
 
-/-- The adjoint triple `H.op ⊣ G.op ⊣ F.op` dual to an adjoint triple `F ⊣ G ⊣ H`. -/
-@[simps]
-protected def op : Triple H.op G.op F.op where
-  adj₁ := t.adj₂.op
-  adj₂ := t.adj₁.op
-
 section InnerFullyFaithful
 
 variable [G.Full] [G.Faithful]
@@ -49,13 +43,6 @@ lemma counit_unit_app_eq_map_HToF {X : C} :
   rw [Adjunction.homEquiv_symm_apply, ← Adjunction.inv_map_unit, ← G.map_inv,
     ← G.map_comp, t.rightToLeft_eq_units]
   simp
-
-/-- For an adjoint triple `F ⊣ G ⊣ H` where `G` is fully faithful, the natural transformation
-`F.op ⟶ H.op` obtained from the dual adjoint triple `H.op ⊣ G.op ⊣ F.op` is dual to the natural
-transformation `H ⟶ F`. -/
-@[simp]
-lemma op_rightToLeft : t.op.rightToLeft = NatTrans.op t.rightToLeft  := by
-  ext; rw [rightToLeft_eq_units, rightToLeft_eq_counits]; simp
 
 /-- For an adjoint triple `F ⊣ G ⊣ H` where `G` is fully faithful and its codomain has
 all pushouts, the natural transformation `H ⟶ F` is epic iff the unit of the adjunction `F ⊣ G`
@@ -107,13 +94,6 @@ lemma counit_unit_app_eq_FToH_app {X : D} :
     ← H.map_inv]
   congr
   exact IsIso.eq_inv_of_hom_inv_id (t.adj₁.right_triangle_components _)
-
-/-- For an adjoint triple `F ⊣ G ⊣ H` where `F` and `H` are fully faithful, the natural
-transformation `H.op ⟶ F.op` obtained from the dual adjoint triple `H.op ⊣ G.op ⊣ F.op` is
-dual to the natural transformation `F ⟶ H`. -/
-@[simp]
-lemma leftToRight_op [H.Full] [H.Faithful] : t.op.leftToRight = NatTrans.op t.leftToRight := by
-  ext; rw [leftToRight, leftToRight_eq_counits]; simp
 
 /-- For an adjoint triple `F ⊣ G ⊣ H` where `F` and `H` are fully faithful and their codomain has
 all pullbacks, the natural transformation `F ⟶ H` is monic iff `F` whiskered with the unit of the

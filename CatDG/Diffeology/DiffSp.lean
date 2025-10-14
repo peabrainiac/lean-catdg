@@ -383,7 +383,7 @@ def binaryProductCone (X Y : DiffSp.{u}) : BinaryFan X Y :=
 /-- `DiffSp.binaryProductCone X Y` is actually a limiting cone. -/
 def binaryProductLimit (X Y : DiffSp.{u}) : IsLimit (binaryProductCone X Y) where
   lift (s : BinaryFan X Y) := ⟨_,s.fst.hom.dsmooth.prod_mk s.snd.hom.dsmooth⟩
-  fac _ j := Discrete.recOn j fun j ↦ by cases' j <;> rfl
+  fac _ j := Discrete.recOn j fun j ↦ by cases j <;> rfl
   uniq s f w := hom_ext <| DSmoothMap.ext fun x ↦ Prod.ext
     (congrFun (congrArg DSmoothMap.toFun <| congrArg Hom.hom (w ⟨left⟩)) x)
     (congrFun (congrArg DSmoothMap.toFun <| congrArg Hom.hom (w ⟨right⟩)) x)

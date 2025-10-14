@@ -181,7 +181,7 @@ noncomputable def sheafToBisep : Sheaf J (Type max u v) ⥤ Bisep J K where
     isSheaf := cond <| image <| X.toExpΩ' (le_sup_left (b := K))
     isSeparated := Subpresheaf.isSeparated_toPresheaf _ <| by
       have h : Presieve.IsSeparated K (X.1 ⟹ (J.Ω' (le_sup_left (b := K))).1) := by
-        refine Presieve.IsSeparated.exp (Presieve.isSeparated_of_isSheaf _ _ ?_) _
+        refine Presieve.IsSeparated.exp (Presieve.IsSheaf.isSeparated ?_) _
         exact (isSheaf_iff_isSheaf_of_type _ _).1 <| Presheaf.isSheaf_of_le le_sup_right (J ⊔ K).Ω.2
       exact fun {_} ↦ Presieve.isSeparated_iso K
         (isoSheafify _ <| Presheaf.IsSheaf.exp (Sheaf.cond _) _) h

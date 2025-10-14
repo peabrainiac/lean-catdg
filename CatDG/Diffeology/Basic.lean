@@ -58,7 +58,7 @@ omit [DiffeologicalSpace X] in
 @[ext]
 protected theorem DiffeologicalSpace.ext {d₁ d₂ : DiffeologicalSpace X}
     (h : IsPlot[d₁] = IsPlot[d₂]) : d₁ = d₂ := by
-  cases' d₁ with p₁ _ _ _ t₁ h₁; cases' d₂ with p₂ _ _ _ t₂ h₂
+  cases d₁ with | mk p₁ _ _ _ t₁ h₁; cases d₂ with | mk p₂ _ _ _ t₁ h₂
   congr 1; ext s
   exact ((show p₁ = p₂ by exact h) ▸ @h₁ s).trans (@h₂ s).symm
 
