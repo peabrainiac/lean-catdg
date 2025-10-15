@@ -14,7 +14,7 @@ open Set
 
 open scoped Manifold ContDiff
 
-open PartialHomeomorph in
+open OpenPartialHomeomorph in
 /-- The diffeology defined by a manifold structure on M, with the plots given by the maps
 that are smooth in the sense of mathlib's `ContMDiff`-API.
 This can not be an instance because `IsManifold I M` depends on `I` while
@@ -133,7 +133,7 @@ theorem ContMDiffOn.dsmooth_restrict {E : Type*} [NormedAddCommGroup E] [NormedS
   rw [restrict_eq,Function.comp_assoc]
   exact hf.comp_contMDiff hp fun x ↦ (p x).2
 
-open PartialHomeomorph in
+open OpenPartialHomeomorph in
 /-- Every D-smooth map from a boundaryless manifold to another manifold is also smooth.
 This could probably be proven in quite a lot greater generality. -/
 theorem IsOpen.dsmooth_iff_smoothOn {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
@@ -150,7 +150,7 @@ theorem IsOpen.dsmooth_iff_smoothOn {E : Type*} [NormedAddCommGroup E] [NormedSp
   -- TODO
   sorry
 
-open PartialHomeomorph in
+open OpenPartialHomeomorph in
 /-- Every D-smooth map from a boundaryless manifold to another manifold is also smooth.
 This could probably be proven in quite a lot greater generality. -/
 theorem DSmooth.smooth {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
@@ -246,9 +246,9 @@ lemma PartialEquiv.fromEquivSourceTarget_toEquiv {α β : Type*} {s : Set α} {t
     Subtype.coe_prop]; rfl
 
 @[simps!]
-noncomputable def PartialHomeomorph.fromHomeomorphSourceTarget {α β : Type*} [TopologicalSpace α]
-    [TopologicalSpace β] {s : Set α} {t : Set β} (e : s ≃ₜ t) (hs : IsOpen s) (ht : IsOpen t)
-    (a : s) : PartialHomeomorph α β where
+noncomputable def OpenPartialHomeomorph.fromHomeomorphSourceTarget {α β : Type*}
+    [TopologicalSpace α] [TopologicalSpace β] {s : Set α} {t : Set β} (e : s ≃ₜ t) (hs : IsOpen s)
+    (ht : IsOpen t) (a : s) : OpenPartialHomeomorph α β where
   toPartialEquiv := PartialEquiv.fromEquivSourceTarget e.toEquiv a
   open_source := hs
   open_target := ht
@@ -256,7 +256,7 @@ noncomputable def PartialHomeomorph.fromHomeomorphSourceTarget {α β : Type*} [
   continuousOn_invFun := by simp [continuousOn_iff_continuous_restrict,continuous_subtype_val]
 
 @[simp]
-lemma PartialHomeomorph.fromHomeomorphSourceTarget_toPartialEquiv {α β : Type*}
+lemma OpenPartialHomeomorph.fromHomeomorphSourceTarget_toPartialEquiv {α β : Type*}
     [TopologicalSpace α] [TopologicalSpace β] {s : Set α} {t : Set β} (e : s ≃ₜ t) (hs : IsOpen s)
     (ht : IsOpen t) (a : s) : (fromHomeomorphSourceTarget e hs ht a).toPartialEquiv =
     PartialEquiv.fromEquivSourceTarget e.toEquiv a := rfl
@@ -272,7 +272,7 @@ noncomputable def IsDiffeologicalManifold.toChartedSpace {M : Type*} [Diffeologi
       have hu := h.choose_spec.1; have hxu := h.choose_spec.2.1
       have hv := h.choose_spec.2.2.choose_spec.choose_spec.1
       have _ := hu.dTopCompatible; have _ := hv.dTopCompatible
-      exact PartialHomeomorph.fromHomeomorphSourceTarget
+      exact OpenPartialHomeomorph.fromHomeomorphSourceTarget
         (h.choose_spec.2.2.choose_spec.choose_spec.2.some.toHomeomorph') hu hv ⟨x,hxu⟩
     mem_chart_source := fun x ↦ by exact (hM.locally_modelled x).choose_spec.2.1
     chart_mem_atlas := fun x ↦ by

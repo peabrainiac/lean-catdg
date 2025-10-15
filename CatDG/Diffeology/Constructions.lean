@@ -230,7 +230,7 @@ theorem ContDiffOn.dsmooth_restrict [NormedAddCommGroup X] [NormedSpace ℝ X] [
   exact hf.comp_contDiff (isPlot_iff_contDiff.1 hp) fun x ↦ (p x).2
 
 -- TODO: relax dimensionality hypothesis?
-open PartialHomeomorph in
+open OpenPartialHomeomorph in
 /-- On an open subset, a function is smooth in the usual sense iff it is smooth diffeologically. -/
 theorem IsOpen.dsmooth_iff_contDiffOn [NormedAddCommGroup X] [InnerProductSpace ℝ X]
     [ContDiffCompatible X] [FiniteDimensional ℝ X]
@@ -319,7 +319,7 @@ theorem DiffeologicalSpace.eq_top_iff {X : Type*} {dX : DiffeologicalSpace X} :
     dX = ⊤ ↔ ∀ n (p : Eucl n → X), IsPlot p :=
   ⟨fun h _ _ ↦ h ▸ trivial,fun h ↦ IsTop.eq_top fun _ ↦ le_iff'.2 fun n p _ ↦ h n p⟩
 
-open PartialHomeomorph in
+open OpenPartialHomeomorph in
 /-- The discrete diffeology is the one with only the constant maps as plots. -/
 theorem DiffeologicalSpace.eq_bot_iff {X : Type*} {dX : DiffeologicalSpace X} :
     dX = ⊥ ↔ ∀ n (p : Eucl n → X), IsPlot p → ∃ x, p = fun _ ↦ x := by

@@ -271,7 +271,7 @@ end DSmoothMap
 
 section Constructions
 
-open PartialHomeomorph in
+open OpenPartialHomeomorph in
 /-- Inner product spaces are diffeomorphic to open balls in them. -/
 noncomputable def univBall {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
     [DiffeologicalSpace E] [ContDiffCompatible E] (x : E) {r : ℝ} (hr : r > 0) :
@@ -290,7 +290,7 @@ noncomputable def univBall {E : Type*} [NormedAddCommGroup E] [InnerProductSpace
       (contDiff_unitBallBall_symm hr).dsmooth.restrict (unitBallBall x r hr).symm_mapsTo
     exact dsmooth_subtype_val.comp (h₁.comp h₂)
 
-open PartialHomeomorph in
+open OpenPartialHomeomorph in
 lemma coe_univBall_zero {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
     [DiffeologicalSpace E] [ContDiffCompatible E] (x : E) {r : ℝ} (hr : r > 0) :
     univBall x hr 0 = x := by

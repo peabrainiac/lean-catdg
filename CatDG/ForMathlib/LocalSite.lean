@@ -192,7 +192,7 @@ protected theorem GrothendieckTopology.IsLocalSite.tfae [HasTerminal C] :
       exact fun _ _ _ _ _ _ _ _ _ _ ↦ Subsingleton.elim _ _
     replace ⟨X, f, hf, h⟩ : ∃ X, ∃ f : X ⟶ ⊤_ C, S f ∧
         IsEmpty ((Presheaf.coconst.{u,v,max u v}.obj PEmpty).obj (op X)) := by
-      by_contra! h'; exact h.false fun X f hf ↦ Classical.choice <| not_isEmpty_iff.1 <| h' X f hf
+      by_contra! h'; exact h.false fun X f hf ↦ (h' X f hf).some
     let ⟨⟨(g : _ ⟶ _)⟩⟩ := (isEmpty_fun.1 h).1
     refine S.id_mem_iff_eq_top.1 ?_
     convert S.downward_closed hf g

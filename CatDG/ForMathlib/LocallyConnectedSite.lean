@@ -49,11 +49,6 @@ class GrothendieckTopology.IsLocallyConnectedSite where
 TODO: add a similar instance for `HasInitial` and move both to another file. -/
 instance [HasTerminal C] : Nonempty C := ⟨⊤_ C⟩
 
-/-- Every category with a terminal object is connected.
-TODO: add a similar instance for `HasInitial` and move both to another file. -/
-instance isConnected_of_hasTerminal [HasTerminal C] : IsConnected C :=
-  zigzag_isConnected fun X Y ↦ .of_hom_inv (terminal.from X) (terminal.from Y)
-
 /-- Every category becomes a locally connected site with the trivial topology. -/
 instance {C : Type u} [Category.{v} C] : (trivial C).IsLocallyConnectedSite where
   isConnected_of_mem S hS := by
@@ -153,7 +148,8 @@ instance [HasTerminal C] : PreservesLimit (Functor.empty.{0} _) (π₀.{u,v,w} J
 
 /-- If `C` is sifted, the `colim` functor `(C ⥤ Type) ⥤ Type` preserves finite products.
 Taken from mathlib PR #17781.
-TODO: remove once #17781 or a similar result has landed in mathlib. -/
+TODO: generalise the universe levels of `IsSifted.colim_preservesFiniteProducts_of_isSifted` so it
+can replace this. -/
 instance colimPreservesFiniteProductsOfIsSifted {C : Type u} [Category.{v} C] :
     PreservesFiniteProducts (colim : (C ⥤ _) ⥤ Type max u w) := by
   sorry

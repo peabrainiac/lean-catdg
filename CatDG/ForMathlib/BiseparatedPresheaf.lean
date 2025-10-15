@@ -82,13 +82,6 @@ noncomputable def Sheaf.toExpΩ' (h : J ≤ K) (X : Sheaf J (Type max u v)) : X 
   CartesianClosed.curry (J.classifier.χ <| CartesianMonoidalCategory.lift (𝟙 X) (𝟙 X)) ≫
     (exp X).map (J.ΩProjectionOfLE h)
 
-/-- Subpresheaves of separated presheaves are themselves separated. -/
-lemma Subpresheaf.isSeparated_toPresheaf {C : Type u} [Category.{v, u} C]
-    {J : GrothendieckTopology C} {F : Functor Cᵒᵖ (Type w)} (G : Subpresheaf F)
-    (h : Presieve.IsSeparated J F) : Presieve.IsSeparated J G.toPresheaf := by
-  intro X S hS x _ _ hx₁ hx₂
-  exact Subtype.ext <| h S hS _ _ _ (hx₁.compPresheafMap G.ι) (hx₂.compPresheafMap G.ι)
-
 open MonoidalCategory in
 /-- A more concrete choice of exponential object in presheaf categories. -/
 @[simps]
@@ -112,22 +105,6 @@ noncomputable def Functor.expObjIsoChosenExp {C : Type u} [Category.{v} C]
     inv f := uliftYonedaEquiv <| CartesianClosed.curry f
   }) fun f ↦ funext fun x ↦ (congrArg CartesianClosed.uncurry <|
     uliftYonedaEquiv_naturality_symm x f).trans <| CartesianClosed.uncurry_natural_left _ _
-
-/-- The property of being separated for some presieve is preserved under isomorphisms.
-TODO: upstream to mathlib. -/
-theorem Presieve.isSeparatedFor_iso {C : Type u} [Category.{v} C]
-    {F F' : Cᵒᵖ ⥤ Type w} (i : F ≅ F') {X : C} {R : Presieve X} (hF : R.IsSeparatedFor F) :
-    R.IsSeparatedFor F' := by
-  intro x t₁ t₂ ht₁ ht₂
-  simpa using congrArg (i.hom.app _) <| hF (x.compPresheafMap i.inv) _ _
-    (ht₁.compPresheafMap i.inv) (ht₂.compPresheafMap i.inv)
-
-/-- The property of being separated is preserved under isomorphisms.
-TODO: upstream to mathlib. -/
-theorem Presieve.isSeparated_iso {C : Type u} [Category.{v} C]
-    (J : GrothendieckTopology C) {F F' : Cᵒᵖ ⥤ Type w} (i : F ≅ F')
-    (hF : Presieve.IsSeparated J F) : Presieve.IsSeparated J F' :=
-  fun S hS ↦ Presieve.isSeparatedFor_iso i (hF S hS)
 
 open MonoidalCategory in
 example {C : Type u} [Category.{v} C] {F G : Cᵒᵖ ⥤ Type max w v} (f : F ⟶ G)
@@ -168,23 +145,14 @@ lemma Presheaf.IsSheaf.exp {C : Type u} [Category.{v} C] {J : GrothendieckTopolo
   (Presheaf.isSheaf_of_iso_iff <| Classical.choice (ExponentialIdeal.exp_closed
     (i := sheafToPresheaf J A) ⟨⟨F, hF⟩, ⟨Iso.refl _⟩⟩ G).choose_spec).1 (Sheaf.cond _)
 
--- TODO: move to `Mathlib.CategoryTheory.Sites.Sheaf`
-lemma Presieve.isSeparated_of_le {C : Type u} [Category.{v} C] {P : Cᵒᵖ ⥤ Type w}
-    {J K : GrothendieckTopology C} (h : J ≤ K) (hP : Presieve.IsSeparated K P) :
-    Presieve.IsSeparated J P :=
-  fun S hS ↦ hP S <| h _ hS
-
 variable (J K) in
 noncomputable def sheafToBisep : Sheaf J (Type max u v) ⥤ Bisep J K where
   obj X := {
     val := _
     isSheaf := cond <| image <| X.toExpΩ' (le_sup_left (b := K))
-    isSeparated := Subpresheaf.isSeparated_toPresheaf _ <| by
-      have h : Presieve.IsSeparated K (X.1 ⟹ (J.Ω' (le_sup_left (b := K))).1) := by
-        refine Presieve.IsSeparated.exp (Presieve.IsSheaf.isSeparated ?_) _
-        exact (isSheaf_iff_isSheaf_of_type _ _).1 <| Presheaf.isSheaf_of_le le_sup_right (J ⊔ K).Ω.2
-      exact fun {_} ↦ Presieve.isSeparated_iso K
-        (isoSheafify _ <| Presheaf.IsSheaf.exp (Sheaf.cond _) _) h
+    isSeparated := Subpresheaf.isSeparated _ <| by
+      refine (Presieve.IsSheaf.isSeparated ?_).exp _
+      exact (isSheaf_iff_isSheaf_of_type _ _).1 <| Presheaf.isSheaf_of_le le_sup_right (J ⊔ K).Ω.2
   }
   map {X Y} f := ⟨{
     app Z := by

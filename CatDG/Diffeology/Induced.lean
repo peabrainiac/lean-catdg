@@ -260,7 +260,7 @@ theorem dTop_induced_le_induced_dTop : DTop[dY.induced f] ≤ DTop[dY].induced f
   refine continuous_iff_le_induced.1 <| @DSmooth.continuous _ _ (dY.induced f) dY f ?_
   rw [dsmooth_iff_le_induced]
 
-open Topology PartialHomeomorph Classical in
+open Topology OpenPartialHomeomorph Classical in
 /-- For functions whose range is D-open, the D-topology of the induced diffeology agrees with
 the induced topology. -/
 theorem dTop_induced_comm {X Y : Type*} {dY : DiffeologicalSpace Y} {f : X → Y}
