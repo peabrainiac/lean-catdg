@@ -24,6 +24,7 @@ import CatDG.ForMathlib.BiseparatedPresheaf
 import CatDG.ForMathlib.Classifier
 import CatDG.ForMathlib.CoconstantSheaf
 import CatDG.ForMathlib.ConcreteSite
+import CatDG.ForMathlib.Hadamard
 import CatDG.ForMathlib.LocalSite
 import CatDG.ForMathlib.LocallyConnectedSite
 import CatDG.ForMathlib.MorphismProperty
