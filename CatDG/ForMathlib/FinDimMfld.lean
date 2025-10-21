@@ -1,8 +1,7 @@
 import Mathlib.CategoryTheory.ConcreteCategory.EpiMono
-import Mathlib.Geometry.Manifold.ContMDiff.NormedSpace
-import Mathlib.Geometry.Manifold.ContMDiff.Atlas
-import Mathlib.Geometry.Manifold.IsManifold.InteriorBoundary
+import Mathlib.CategoryTheory.Limits.Constructions.FiniteProductsOfBinaryProducts
 import Mathlib.Geometry.Manifold.ContMDiffMap
+import Mathlib.Geometry.Manifold.IsManifold.InteriorBoundary
 import Mathlib.Topology.Category.TopCat.Basic
 
 /-!
@@ -16,7 +15,7 @@ in the category of finite-dimensional manifolds are precisely the injective func
 
 universe u
 
-open CategoryTheory ConcreteCategory Manifold Function
+open CategoryTheory ConcreteCategory Manifold Function Limits
 
 /-- The category of all finite-dimensional manifolds for a fixed ground field `𝕜` and
 smoothness degree `n : WithTop ℕ∞`. Objects are the finite-dimensional sigma-compact Hausdorff
@@ -61,14 +60,47 @@ instance : ConcreteCategory.{u} (FinDimMfld 𝕜 n)
   hom f := f
   ofHom f := f
 
-/-- The forgetful functor from manifolds to topological spaces. -/
-def toTopCat : FinDimMfld 𝕜 n ⥤ TopCat where
-  obj M := .of M
-  map (f : ContMDiffMap _ _ _ _ _) := TopCat.ofHom f
+@[simps]
+instance : HasForget₂ (FinDimMfld 𝕜 n) TopCat where
+  forget₂ := { obj M := .of M, map (f : ContMDiffMap _ _ _ _ _) := TopCat.ofHom f }
+
+/-- A choice of terminal object in the category of manifolds, given by `PUnit`. -/
+abbrev pt : FinDimMfld 𝕜 n := .mk PUnit 𝓘(𝕜, PUnit)
+
+/-- The choice `FinDimMfld.pt` of terminal object is indeed terminal. -/
+def isTerminalPt : IsTerminal (pt : FinDimMfld 𝕜 n) where
+  lift s := ofHom (.const (default : PUnit))
+
+/-- An explicit choice of product in the category of manifolds, given by the product of the
+underlying types and models with corners. -/
+protected abbrev prod (M N : FinDimMfld.{u} 𝕜 n) : FinDimMfld.{u} 𝕜 n :=
+  ⟨M × N, M.modelWithCorners.prod N.modelWithCorners⟩
+
+/-- The first projection realising `M.prod N` as the product of `M` and `N`. -/
+def prodFst {M N : FinDimMfld 𝕜 n} : M.prod N ⟶ M := ofHom .fst
+
+/-- The second projection realising `M.prod N` as the product of `M` and `N`. -/
+def prodSnd {M N : FinDimMfld 𝕜 n} : M.prod N ⟶ N := ofHom .snd
+
+/-- An explicit binary fan of `M` and `N` given by `M.prod N`. -/
+def prodBinaryFan (M N : FinDimMfld 𝕜 n) : BinaryFan N M :=
+  BinaryFan.mk prodFst prodSnd
+
+/-- The constructed binary fan is indeed a limit. -/
+def prodBinaryFanIsLimit (M N : FinDimMfld 𝕜 n) : IsLimit (prodBinaryFan N M) where
+  lift c := ofHom <| .prodMk (BinaryFan.fst c) (BinaryFan.snd c)
+  fac := by rintro c (_ | _) <;> dsimp [prodBinaryFan, prodFst] <;> ext <;> rfl
+  uniq c f h := by
+    ext x; refine Prod.ext ?_ ?_
+    · exact CategoryTheory.congr_fun (h ⟨WalkingPair.left⟩) x
+    · exact CategoryTheory.congr_fun (h ⟨WalkingPair.right⟩) x
+
+instance : HasFiniteProducts (FinDimMfld 𝕜 n) := by
+  refine @hasFiniteProducts_of_has_binary_and_terminal _ _ ?_ isTerminalPt.hasTerminal
+  exact @hasBinaryProducts_of_hasLimit_pair _ _ ⟨⟨_, prodBinaryFanIsLimit _ _⟩⟩
 
 lemma mono_iff_injective {M N : FinDimMfld.{u} 𝕜 n} (f : M ⟶ N) : Mono f ↔ Injective f := by
   refine ⟨fun hf x y h ↦ ?_, ConcreteCategory.mono_of_injective _⟩
-  let pt : FinDimMfld.{u} 𝕜 n := .mk PUnit 𝓘(𝕜, PUnit)
   let x' : pt ⟶ M := ofHom (.const x)
   let y' : pt ⟶ M := ofHom (.const y)
   exact CategoryTheory.congr_fun (hf.right_cancellation x' y' <| by ext; exact h) default
