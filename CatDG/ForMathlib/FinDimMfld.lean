@@ -1,7 +1,7 @@
 import Mathlib.CategoryTheory.ConcreteCategory.EpiMono
 import Mathlib.CategoryTheory.Limits.Constructions.FiniteProductsOfBinaryProducts
-import Mathlib.Geometry.Manifold.ContMDiffMap
 import Mathlib.Geometry.Manifold.IsManifold.InteriorBoundary
+import Mathlib.Geometry.Manifold.PartitionOfUnity
 import Mathlib.Topology.Category.TopCat.Basic
 
 /-!
@@ -11,11 +11,25 @@ for any given smoothness degree `n : WithTop ℕ∞` and nontrivially normed gro
 
 So far, the only result we prove to test that the API is set up correctly is that the monomorphisms
 in the category of finite-dimensional manifolds are precisely the injective functions.
+
+## Main definitions / results
+* `FinDimMfld 𝕜 n`: the category of all finite-dimensional Hausdorff σ-compact Cⁿ manifolds without
+  boundary over a fixed ground field `𝕜`.
+* `FinDimMfld 𝕜 n` has all finite products.
+* `FinDimMfld.mono_iff_injective`: morphisms in `FinDimMfld 𝕜 n` are monomorphisms iff they are
+  injective
+* `FinDimMfld.epi_iff_denseRange`: morphisms in `FinDimMfld ℝ ∞` are epimorphisms iff their range is
+  dense
+
+## TODOs
+* show that `FinDimMfld 𝕜 n` is essentially small
+* generalise `epi_iff_denseRange` to smoothness degrees in `ℕ∞`
+* can anything interesting be said about extremal monomorphisms / epimorphisms?
 -/
 
 universe u
 
-open CategoryTheory ConcreteCategory Manifold Function Limits
+open CategoryTheory ConcreteCategory Manifold ContDiff Function Limits
 
 /-- The category of all finite-dimensional manifolds for a fixed ground field `𝕜` and
 smoothness degree `n : WithTop ℕ∞`. Objects are the finite-dimensional sigma-compact Hausdorff
@@ -104,5 +118,22 @@ lemma mono_iff_injective {M N : FinDimMfld.{u} 𝕜 n} (f : M ⟶ N) : Mono f �
   let x' : pt ⟶ M := ofHom (.const x)
   let y' : pt ⟶ M := ofHom (.const y)
   exact CategoryTheory.congr_fun (hf.right_cancellation x' y' <| by ext; exact h) default
+
+lemma epi_iff_denseRange {M N : FinDimMfld.{0} ℝ ∞} (f : M ⟶ N) :
+    Epi f ↔ DenseRange f := by
+  refine ⟨not_imp_not.1 fun hf hf' ↦ ?_, fun hf ↦ ⟨fun g g' hg ↦ ?_⟩⟩
+  · rw [DenseRange, ← compl_compl (Set.range _), ← interior_eq_empty_iff_dense_compl] at hf
+    replace hf := Set.nonempty_iff_ne_empty.2 hf
+    obtain ⟨x, hx⟩ := hf
+    let ℝ' : FinDimMfld.{0} ℝ ∞:= mk ℝ 𝓘(ℝ, ℝ)
+    let ⟨g, hg⟩ := exists_smooth_zero_one_of_isClosed N.modelWithCorners
+      (isClosed_closure (s := Set.range (hom f))) (isClosed_singleton (x := x)) (by simpa using hx)
+    have hg' := hf'.left_cancellation (Z := ℝ') (ofHom g) (ofHom (.const 0))
+      (by ext y; exact congrFun (Set.eqOn_range.1 <| hg.1.mono subset_closure) y)
+    exact zero_ne_one ((CategoryTheory.congr_fun hg' x).symm.trans <| hg.2.1 (Set.mem_singleton _))
+  · apply ConcreteCategory.coe_ext
+    rw [← Set.eqOn_univ, ← hf.closure_range]
+    refine Set.EqOn.closure ?_ (map_continuous _) (map_continuous _)
+    exact Set.eqOn_range.2 <| congrArg (fun (f : M ⟶ _) ↦ ⇑(hom f)) hg
 
 end FinDimMfld
