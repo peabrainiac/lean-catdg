@@ -1,5 +1,6 @@
 import Mathlib.Analysis.Calculus.ContDiff.Operations
 import Mathlib.Analysis.Calculus.LineDeriv.Basic
+import Mathlib.Analysis.Calculus.ParametricIntervalIntegral
 import Mathlib.MeasureTheory.Integral.IntervalIntegral.FundThmCalculus
 
 /-!
@@ -37,19 +38,170 @@ lemma ContinuousOn.intervalIntegral {X : Type*} [TopologicalSpace X] {μ : Measu
     fun x ↦ intervalIntegral.integral_congr fun t ht ↦ ?_
   simp [Set.projIcc_of_mem h <| Set.uIcc_of_le h ▸ ht]
 
-open TopologicalSpace MeasureTheory Filter Topology Filter Interval in
+section
+
+open Filter Topology Set
+
+variable {X Y : Type*} [TopologicalSpace X] [TopologicalSpace Y]
+
+/-- The "neighbourhood within" filter for sets. Elements of `𝓝[t] s` are sets containing the
+intersection of `t` and a neighbourhood of `s`. -/
+def nhdsSetWithin (s t : Set X) : Filter X := 𝓝ˢ s ⊓ 𝓟 t
+
+@[inherit_doc]
+scoped[Topology] notation "𝓝ˢ[" t "] " s:100 => nhdsSetWithin s t
+
+@[gcongr, mono]
+lemma nhdsSetWithin_mono_left {s s' t : Set X} (h : s ⊆ s') : 𝓝ˢ[t] s ≤ 𝓝ˢ[t] s' :=
+  inf_le_inf_right _ <| nhdsSet_mono h
+
+@[gcongr, mono]
+lemma nhdsSetWithin_mono_right {s t t' : Set X} (h : t ⊆ t') : 𝓝ˢ[t] s ≤ 𝓝ˢ[t'] s :=
+  inf_le_inf_left _ <| principal_mono.2 h
+
+lemma nhdsSetWithin_hasBasis {ι : Sort*} {p : ι → Prop} {s' : ι → Set X} {s : Set X}
+    (h : (𝓝ˢ s).HasBasis p s') (t : Set X) : (𝓝ˢ[t] s).HasBasis p fun i => s' i ∩ t :=
+  h.inf_principal t
+
+lemma nhdsSetWithin_basis_open (s t : Set X) :
+    (𝓝ˢ[t] s).HasBasis (fun u => IsOpen u ∧ s ⊆ u) fun u => u ∩ t :=
+  nhdsSetWithin_hasBasis (hasBasis_nhdsSet s) t
+
+lemma mem_nhdsSetWithin {s t u : Set X} : u ∈ 𝓝ˢ[t] s ↔ ∃ v, IsOpen v ∧ s ⊆ v ∧ v ∩ t ⊆ u := by
+  simpa [and_assoc] using (nhdsSetWithin_basis_open s t).mem_iff
+
+@[simp]
+lemma nhdsSetWithin_singleton {x : X} {s : Set X} : 𝓝ˢ[s] {x} = 𝓝[s] x := by
+  simp [nhdsSetWithin, nhdsWithin]
+
+@[simp]
+lemma nhdsSetWithin_univ {s : Set X} : 𝓝ˢ[univ] s = 𝓝ˢ s := by
+  simp [nhdsSetWithin]
+
+@[simp]
+lemma nhdsSetWithin_self {s : Set X} : 𝓝ˢ[s] s = 𝓟 s := by
+  simp [nhdsSetWithin, principal_le_nhdsSet]
+
+lemma ContinuousOn.preimage_mem_nhdsSetWithin {f : X → Y} {s : Set X}
+    (hf : ContinuousOn f s) {t u t' : Set Y} (h : u ∈ 𝓝ˢ[t'] t) :
+    f ⁻¹' u ∈ 𝓝ˢ[s ∩ f ⁻¹' t'] (s ∩ f ⁻¹' t) := by
+  have ⟨v, hv⟩ := mem_nhdsSetWithin.1 h
+  have ⟨w, hw⟩ := continuousOn_iff'.1 hf v hv.1
+  refine mem_nhdsSetWithin.2 ⟨w, hw.1, ?_, ?_⟩
+  · exact (inter_comm _ _).trans_subset <| (inter_subset_inter_left _ <| preimage_mono hv.2.1).trans
+      (hw.2.trans_subset inter_subset_left)
+  · rw [← inter_assoc, ← hw.2, inter_comm _ s, inter_assoc, ← preimage_inter]
+    exact inter_subset_right.trans <| preimage_mono hv.2.2
+
+/-- If `f` is continuous on `s` and `u` is a neighbourhood of `t`, then `f ⁻¹' u` is a neighbourhood
+of `s ∩ f ⁻¹' t` within `s`. -/
+lemma ContinuousOn.preimage_mem_nhdsSetWithin_of_mem_nhdsSet {f : X → Y} {s : Set X}
+    (hf : ContinuousOn f s) {t u : Set Y} (h : u ∈ 𝓝ˢ t) : f ⁻¹' u ∈ 𝓝ˢ[s] (s ∩ f ⁻¹' t) := by
+  simpa [h] using ContinuousOn.preimage_mem_nhdsSetWithin hf (t := t) (u := u) (t' := univ)
+
+lemma nhdsSetWithin_prod_le {s s' : Set X} {t t' : Set Y} :
+    𝓝ˢ[s' ×ˢ t'] (s ×ˢ t) ≤ 𝓝ˢ[s'] s ×ˢ 𝓝ˢ[t'] t := by
+  simpa [nhdsSetWithin, ← prod_inf_prod] using inf_le_of_left_le <| nhdsSet_prod_le _ _
+
+lemma IsCompact.nhdsSetWithin_prod_eq {s s' : Set X} {t t' : Set Y} (hs : IsCompact s)
+    (ht : IsCompact t) : 𝓝ˢ[s' ×ˢ t'] (s ×ˢ t) = 𝓝ˢ[s'] s ×ˢ 𝓝ˢ[t'] t := by
+  simp [nhdsSetWithin, ← prod_inf_prod, hs.nhdsSet_prod_eq ht]
+
+end
+
+open Topology Set in
+/-- Variant of `generalized_tube_lemma` in terms of `nhdsSetWithin`. -/
+lemma generalized_tube_lemma' {X Y : Type*} [TopologicalSpace X] [TopologicalSpace Y]
+    {s s' : Set X} (hs : IsCompact s) {t t' : Set Y} (ht : IsCompact t) {n : Set (X × Y)}
+    (hn : n ∈ 𝓝ˢ[s' ×ˢ t'] (s ×ˢ t)) :
+    ∃ u ∈ 𝓝ˢ[s'] s, ∃ v ∈ 𝓝ˢ[t'] t, u ×ˢ v ⊆ n := by
+  rwa [hs.nhdsSetWithin_prod_eq ht, Filter.mem_prod_iff] at hn
+
+open Topology Set in
+/-- Variant of `generalized_tube_lemma` that only replaces the set in one direction. -/
+lemma generalized_tube_lemma_left {X Y : Type*} [TopologicalSpace X] [TopologicalSpace Y]
+    {s s' : Set X} (hs : IsCompact s) {t : Set Y} (ht : IsCompact t) {n : Set (X × Y)}
+    (hn : n ∈ 𝓝ˢ[s' ×ˢ t] (s ×ˢ t)) :
+    ∃ u ∈ 𝓝ˢ[s'] s, u ×ˢ t ⊆ n := by
+  rw [hs.nhdsSetWithin_prod_eq ht, nhdsSetWithin_self, Filter.mem_prod_principal] at hn
+  exact ⟨_, hn, fun x hx ↦ hx.1 _ hx.2⟩
+
+open Topology Set in
+/-- Variant of `generalized_tube_lemma` that only replaces the set in one direction. -/
+lemma generalized_tube_lemma_right {X Y : Type*} [TopologicalSpace X] [TopologicalSpace Y]
+    {s : Set X} (hs : IsCompact s) {t t' : Set Y} (ht : IsCompact t) {n : Set (X × Y)}
+    (hn : n ∈ 𝓝ˢ[s ×ˢ t'] (s ×ˢ t)) :
+    ∃ u ∈ 𝓝ˢ[t'] t, s ×ˢ u ⊆ n := by
+  rw [hs.nhdsSetWithin_prod_eq ht, nhdsSetWithin_self, Filter.mem_prod_iff] at hn
+  obtain ⟨s', hs', u, hu, h⟩ := hn
+  exact ⟨u, hu, (prod_mono_left hs').trans h⟩
+
+open TopologicalSpace MeasureTheory Filter Topology Filter Interval Set in
 /-- A convenient special case of `intervalIntegral.hasFDerivAt_integral_of_dominated_of_fderiv_le`:
 if `f : H × ℝ → E` is continuously differentiable on `u ×ˢ Ι a b` for a neighbourhood `u` of `x₀`,
 then a derivative of `fun x => ∫ t in a..b, f (x, t) ∂μ` in `x₀` can be computed as
 `∫ t in a..b, fderiv ℝ (fun x ↦ f (x, t)) x₀ ∂μ`. -/
 nonrec theorem intervalIntegral.hasFDerivAt_integral_of_contDiffOn
-    {μ : Measure ℝ} {E : Type*} [NormedAddCommGroup E]
+    {μ : Measure ℝ} [MeasureTheory.IsLocallyFiniteMeasure μ] {E : Type*} [NormedAddCommGroup E]
     [NormedSpace ℝ E] [NormedSpace ℝ E] {H : Type*} [NormedAddCommGroup H]
-    [NormedSpace ℝ H] {a b : ℝ} {f : H × ℝ → E} {x₀ : H} {u : Set H} (hu : u ∈ 𝓝 x₀)
-    (hF : ContDiffOn ℝ 1 f (u ×ˢ Set.Icc a b)) :
+    [NormedSpace ℝ H] {f : H × ℝ → E} {x₀ : H} {u : Set H} (hu : u ∈ 𝓝 x₀) {a b : ℝ} (hab : a < b)
+    (hF : ContDiffOn ℝ 1 f (u ×ˢ Icc a b)) :
     HasFDerivAt (fun x => ∫ t in a..b, f (x, t) ∂μ)
       (∫ t in a..b, fderiv ℝ (fun x ↦ f (x, t)) x₀ ∂μ) x₀ := by
-  sorry
+  replace ⟨u, hu, hxu, hF⟩ : ∃ u, IsOpen u ∧ x₀ ∈ u ∧ ContDiffOn ℝ 1 f (u ×ˢ Icc a b) := by
+    have ⟨u', hu'⟩ := mem_nhds_iff.1 hu
+    exact ⟨u', hu'.2.1, hu'.2.2, hF.mono <| prod_mono_left hu'.1⟩
+  let F' := fun x : H × ℝ ↦ fderiv ℝ (fun y ↦ f (y, x.2)) x.1
+  have hF' : ContinuousOn F' (u ×ˢ Icc a b) := by
+    refine .congr (f := fun x ↦ (fderivWithin ℝ f (u ×ˢ Set.Icc a b) x).comp (.inl ℝ H ℝ))
+      ?_ fun x hx ↦ ?_
+    · refine ((ContinuousLinearMap.compL ℝ H (H × ℝ) E).flip
+        (.inl ℝ H ℝ)).continuous.comp_continuousOn ?_
+      refine (hF.continuousOn_fderivWithin ?_ le_rfl)
+      exact hu.uniqueDiffOn.prod <| uniqueDiffOn_Icc hab
+    · dsimp [F']; rw [show (fun y ↦ f (y, x.2)) = (f ∘ fun y ↦ (y, x.2)) by rfl]
+      rw [← fderivWithin_eq_fderiv (s := u) (hu.uniqueDiffWithinAt hx.1) <| by
+        refine DifferentiableOn.differentiableAt (s := u) ?_ (hu.mem_nhds hx.1)
+        exact ((hF.differentiableOn le_rfl).comp (by fun_prop) (fun y hy ↦ ⟨hy, hx.2⟩))]
+      rw [fderivWithin_comp _ (t := u ×ˢ Set.Icc a b) (hF.differentiableOn (by simp) _ ⟨hx.1, hx.2⟩)
+        (by fun_prop) (by exact fun y hy ↦ ⟨hy, hx.2⟩) (hu.uniqueDiffWithinAt hx.1)]
+      congr
+      exact (hasFDerivAt_prodMk_left _ x.2).hasFDerivWithinAt.fderivWithin
+        (hu.uniqueDiffWithinAt hx.1)
+  let F'' := fun x ↦ ‖F' x‖
+  have hF'' : ContinuousOn F'' _ := continuous_norm.comp_continuousOn hF'
+  let ⟨ε, hε, hε', B, hB⟩ :
+      ∃ ε > 0, Metric.ball x₀ ε ⊆ u ∧ ∃ B, ∀ x ∈ Metric.ball x₀ ε ×ˢ Icc a b, F'' x < B := by
+    let ⟨B, hB⟩ := (isCompact_singleton.prod isCompact_Icc).bddAbove_image <|
+      hF''.mono <| prod_mono_left <| singleton_subset_iff.2 hxu
+    have ⟨v, hv, hv'⟩ := generalized_tube_lemma_left (s := {x₀}) isCompact_singleton
+      (t := Icc a b) isCompact_Icc (s' := u) (n := F'' ⁻¹' (Iio (B + 1))) (by
+        refine nhdsSetWithin_mono_left ?_ <| hF''.preimage_mem_nhdsSetWithin_of_mem_nhdsSet
+          (t := Iic B) (u := Iio (B + 1)) <| isOpen_Iio.mem_nhdsSet.2 (by simp)
+        intro x hx
+        exact ⟨prod_mono_left (by simp [hxu]) hx, mem_upperBounds.1 hB _ <| mem_image_of_mem _ hx⟩)
+    rw [nhdsSetWithin_singleton, hu.nhdsWithin_eq hxu] at hv
+    have ⟨ε, hε, hε'⟩ := Metric.mem_nhds_iff.1 (Filter.inter_mem hv (hu.mem_nhds hxu))
+    exact ⟨ε, hε, hε'.trans inter_subset_right, B + 1,
+      fun x hx ↦ hv' <| prod_mono_left (hε'.trans inter_subset_left) hx⟩
+  refine intervalIntegral.hasFDerivAt_integral_of_dominated_of_fderiv_le (bound := fun _ ↦ B)
+    (F' := fun x t ↦ fderiv ℝ (fun x ↦ f (x, t)) x) hε ?_ ?_ ?_ ?_ ?_ ?_
+  · refine eventually_nhds_iff.2 ⟨u, fun x hx ↦ ?_, hu, hxu⟩
+    refine ContinuousOn.aestronglyMeasurable ?_ measurableSet_uIoc
+    refine .mono ?_ <| (uIoc_of_le hab.le).trans_le Ioc_subset_Icc_self
+    exact hF.continuousOn.comp (by fun_prop) fun t ht ↦ ⟨hx, ht⟩
+  · apply ContinuousOn.intervalIntegrable
+    exact hF.continuousOn.comp (by fun_prop) fun t ht ↦ ⟨hxu, uIcc_of_le hab.le ▸ ht⟩
+  · refine ContinuousOn.aestronglyMeasurable ?_ measurableSet_uIoc
+    refine .mono ?_ <| (uIoc_of_le hab.le).trans_le Ioc_subset_Icc_self
+    exact hF'.comp (f := fun t ↦ (x₀, t)) (by fun_prop) fun t ht ↦ ⟨hxu, ht⟩
+  · refine .of_forall fun t ht x hx ↦ ?_
+    exact (hB (x, t) ⟨hx, Ioc_subset_Icc_self <| uIoc_of_le hab.le ▸ ht⟩).le
+  · exact intervalIntegrable_const
+  · refine .of_forall fun t ht x hx ↦ ?_
+    refine (DifferentiableOn.differentiableAt ?_ (hu.mem_nhds <| hε' hx)).hasFDerivAt
+    exact hF.differentiableOn_one.comp (by fun_prop) fun x hx ↦
+      ⟨hx, Ioc_subset_Icc_self <| uIoc_of_le hab.le ▸ ht⟩
 
 lemma ContDiffOn.intervalIntegral {f : E × ℝ → F} {u : Set E} (hu : IsOpen u) {n : ℕ∞}
     (hf : ContDiffOn ℝ n f (u ×ˢ Set.Icc 0 1)) :
@@ -63,14 +215,14 @@ lemma ContDiffOn.intervalIntegral {f : E × ℝ → F} {u : Set E} (hu : IsOpen 
     refine (contDiffOn_succ_iff_fderiv_of_isOpen (𝕜 := ℝ) (n := k) hu).2 ⟨?_, by simp, ?_⟩
     · intro x hx
       have h := intervalIntegral.hasFDerivAt_integral_of_contDiffOn (μ := MeasureTheory.volume)
-        (hu.mem_nhds hx) (hf.of_le <| by simp)
+        (hu.mem_nhds hx) zero_lt_one (hf.of_le <| by simp)
       exact h.differentiableAt.differentiableWithinAt
     · have := hf.fderivWithin (hu.uniqueDiffOn.prod <| uniqueDiffOn_Icc zero_lt_one) (m := k) le_rfl
       refine (h _ (f := fun x ↦ (fderivWithin ℝ f (u ×ˢ Set.Icc 0 1) x).comp (.inl ℝ E ℝ))
         (by fun_prop)).congr ?_
       intro x hx
       have h := intervalIntegral.hasFDerivAt_integral_of_contDiffOn (μ := MeasureTheory.volume)
-        (hu.mem_nhds hx) (hf.of_le <| by simp)
+        (hu.mem_nhds hx) zero_lt_one (hf.of_le <| by simp)
       rw [h.fderiv]
       refine intervalIntegral.integral_congr fun t ht ↦ ?_
       rw [Set.uIcc_of_le zero_le_one] at ht
