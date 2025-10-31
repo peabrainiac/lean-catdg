@@ -22,21 +22,27 @@ universe u
 
 open ContDiff
 
-variable {E F : Type u} [NormedAddCommGroup E] [NormedAddCommGroup F] [NormedSpace ℝ E]
-  [NormedSpace ℝ F] [CompleteSpace F]
+open scoped Interval
+
+variable {E F : Type u} [NormedAddCommGroup E] [NormedAddCommGroup F]
+  [NormedSpace ℝ E] [NormedSpace ℝ F]
 
 lemma ContinuousOn.intervalIntegral {X : Type*} [TopologicalSpace X] {μ : MeasureTheory.Measure ℝ}
     [MeasureTheory.NoAtoms μ] [MeasureTheory.IsLocallyFiniteMeasure μ] {f : X × ℝ → E} {u : Set X}
-    {a₀ b₀ : ℝ} (h : a₀ ≤ b₀) (hf : ContinuousOn f (u ×ˢ Set.Icc a₀ b₀)) :
+    {a₀ b₀ : ℝ} (hf : ContinuousOn f (u ×ˢ [[a₀, b₀]])) :
     ContinuousOn (fun x ↦ ∫ t in a₀..b₀, f (x, t) ∂μ) u := by
-  rw [continuousOn_iff_continuous_restrict] at hf ⊢
-  replace hf :
-      Continuous (Function.uncurry fun (x : u) (t : ℝ) ↦ f (x, Set.projIcc _ _ h t)) :=
-    (hf.comp (f := (Homeomorph.Set.prod u _).symm ∘ Prod.map id (Set.projIcc _ _ h))
-      (by fun_prop)).congr fun (x, t) ↦ by simp
-  refine (intervalIntegral.continuous_parametric_intervalIntegral_of_continuous' hf a₀ b₀).congr
-    fun x ↦ intervalIntegral.integral_congr fun t ht ↦ ?_
-  simp [Set.projIcc_of_mem h <| Set.uIcc_of_le h ▸ ht]
+  wlog hab : a₀ ≤ b₀ with h
+  · simp_rw [intervalIntegral.integral_symm b₀ a₀]
+    exact (h (Set.uIcc_comm a₀ b₀ ▸ hf) (le_of_not_ge hab)).neg
+  · rw [Set.uIcc_of_le hab] at hf
+    rw [continuousOn_iff_continuous_restrict] at hf ⊢
+    replace hf :
+        Continuous (Function.uncurry fun (x : u) (t : ℝ) ↦ f (x, Set.projIcc _ _ hab t)) :=
+      (hf.comp (f := (Homeomorph.Set.prod u _).symm ∘ Prod.map id (Set.projIcc _ _ hab))
+        (by fun_prop)).congr fun (x, t) ↦ by simp
+    refine (intervalIntegral.continuous_parametric_intervalIntegral_of_continuous' hf a₀ b₀).congr
+      fun x ↦ intervalIntegral.integral_congr fun t ht ↦ ?_
+    simp [Set.projIcc_of_mem hab <| Set.uIcc_of_le hab ▸ ht]
 
 section
 
@@ -136,18 +142,24 @@ lemma generalized_tube_lemma_right {X Y : Type*} [TopologicalSpace X] [Topologic
   obtain ⟨s', hs', u, hu, h⟩ := hn
   exact ⟨u, hu, (prod_mono_left hs').trans h⟩
 
-open TopologicalSpace MeasureTheory Filter Topology Filter Interval Set in
+open TopologicalSpace MeasureTheory Filter Topology Interval Set in
 /-- A convenient special case of `intervalIntegral.hasFDerivAt_integral_of_dominated_of_fderiv_le`:
-if `f : H × ℝ → E` is continuously differentiable on `u ×ˢ Ι a b` for a neighbourhood `u` of `x₀`,
-then a derivative of `fun x => ∫ t in a..b, f (x, t) ∂μ` in `x₀` can be computed as
+if `f : H × ℝ → E` is continuously differentiable on `u ×ˢ [[a, b]]` for a neighbourhood `u`
+of `x₀`, then a derivative of `fun x => ∫ t in a..b, f (x, t) ∂μ` in `x₀` can be computed as
 `∫ t in a..b, fderiv ℝ (fun x ↦ f (x, t)) x₀ ∂μ`. -/
 nonrec theorem intervalIntegral.hasFDerivAt_integral_of_contDiffOn
-    {μ : Measure ℝ} [MeasureTheory.IsLocallyFiniteMeasure μ] {E : Type*} [NormedAddCommGroup E]
+    {μ : Measure ℝ} [IsLocallyFiniteMeasure μ] {E : Type*} [NormedAddCommGroup E]
     [NormedSpace ℝ E] [NormedSpace ℝ E] {H : Type*} [NormedAddCommGroup H]
-    [NormedSpace ℝ H] {f : H × ℝ → E} {x₀ : H} {u : Set H} (hu : u ∈ 𝓝 x₀) {a b : ℝ} (hab : a < b)
-    (hF : ContDiffOn ℝ 1 f (u ×ˢ Icc a b)) :
+    [NormedSpace ℝ H] {f : H × ℝ → E} {x₀ : H} {u : Set H} (hu : u ∈ 𝓝 x₀) {a b : ℝ}
+    (hF : ContDiffOn ℝ 1 f (u ×ˢ [[a, b]])) :
     HasFDerivAt (fun x => ∫ t in a..b, f (x, t) ∂μ)
       (∫ t in a..b, fderiv ℝ (fun x ↦ f (x, t)) x₀ ∂μ) x₀ := by
+  wlog hab : a < b with h
+  · obtain hab | hab := lt_or_eq_of_le <| le_of_not_gt hab
+    · simp_rw [intervalIntegral.integral_symm b a]
+      exact (h (μ := μ) hu (Set.uIcc_comm a b ▸ hF) hab).neg
+    · simp [hab, hasFDerivAt_const]
+  rw [uIcc_of_le hab.le] at hF
   replace ⟨u, hu, hxu, hF⟩ : ∃ u, IsOpen u ∧ x₀ ∈ u ∧ ContDiffOn ℝ 1 f (u ×ˢ Icc a b) := by
     have ⟨u', hu'⟩ := mem_nhds_iff.1 hu
     exact ⟨u', hu'.2.1, hu'.2.2, hF.mono <| prod_mono_left hu'.1⟩
@@ -203,37 +215,44 @@ nonrec theorem intervalIntegral.hasFDerivAt_integral_of_contDiffOn
     exact hF.differentiableOn_one.comp (by fun_prop) fun x hx ↦
       ⟨hx, Ioc_subset_Icc_self <| uIoc_of_le hab.le ▸ ht⟩
 
-lemma ContDiffOn.intervalIntegral {f : E × ℝ → F} {u : Set E} (hu : IsOpen u) {n : ℕ∞}
-    (hf : ContDiffOn ℝ n f (u ×ˢ Set.Icc 0 1)) :
-    ContDiffOn ℝ n (fun x ↦ ∫ t in 0..1, f (x, t)) u := by
+lemma ContDiffOn.intervalIntegral {μ : MeasureTheory.Measure ℝ}
+    [MeasureTheory.IsLocallyFiniteMeasure μ] [MeasureTheory.NoAtoms μ]
+    {f : E × ℝ → F} {u : Set E} (hu : IsOpen u) {a b : ℝ} {n : ℕ∞}
+    (hf : ContDiffOn ℝ n f (u ×ˢ [[a, b]])) :
+    ContDiffOn ℝ n (fun x ↦ ∫ t in a..b, f (x, t) ∂μ) u := by
+  wlog hab : a < b with h
+  · obtain hab | hab := lt_or_eq_of_le <| le_of_not_gt hab
+    · simp_rw [intervalIntegral.integral_symm b a]
+      exact (h hu (Set.uIcc_comm a b ▸ hf) hab).neg
+    · simp [hab, contDiffOn_const]
   revert F; change ∀ F : _, _
   refine ENat.nat_induction n ?_ ?_ ?_
-  · intro F _ _ _ f
+  · intro F _ _ f
     simp_rw [WithTop.coe_zero, contDiffOn_zero]
-    exact ContinuousOn.intervalIntegral zero_le_one
-  · intro k h F _ _ _ f hf
+    exact ContinuousOn.intervalIntegral
+  · intro k h F _ _ f hf
     refine (contDiffOn_succ_iff_fderiv_of_isOpen (𝕜 := ℝ) (n := k) hu).2 ⟨?_, by simp, ?_⟩
     · intro x hx
-      have h := intervalIntegral.hasFDerivAt_integral_of_contDiffOn (μ := MeasureTheory.volume)
-        (hu.mem_nhds hx) zero_lt_one (hf.of_le <| by simp)
+      have h := intervalIntegral.hasFDerivAt_integral_of_contDiffOn (μ := μ)
+        (hu.mem_nhds hx) (hf.of_le <| by simp)
       exact h.differentiableAt.differentiableWithinAt
-    · have := hf.fderivWithin (hu.uniqueDiffOn.prod <| uniqueDiffOn_Icc zero_lt_one) (m := k) le_rfl
-      refine (h _ (f := fun x ↦ (fderivWithin ℝ f (u ×ˢ Set.Icc 0 1) x).comp (.inl ℝ E ℝ))
+    · have := hf.fderivWithin (hu.uniqueDiffOn.prod <| Set.uIcc_of_le hab.le ▸ uniqueDiffOn_Icc hab)
+        (m := k) le_rfl
+      refine (h _ (f := fun x ↦ (fderivWithin ℝ f (u ×ˢ [[a, b]]) x).comp (.inl ℝ E ℝ))
         (by fun_prop)).congr ?_
       intro x hx
-      have h := intervalIntegral.hasFDerivAt_integral_of_contDiffOn (μ := MeasureTheory.volume)
-        (hu.mem_nhds hx) zero_lt_one (hf.of_le <| by simp)
+      have h := intervalIntegral.hasFDerivAt_integral_of_contDiffOn (μ := μ)
+        (hu.mem_nhds hx) (hf.of_le <| by simp)
       rw [h.fderiv]
       refine intervalIntegral.integral_congr fun t ht ↦ ?_
-      rw [Set.uIcc_of_le zero_le_one] at ht
       rw [show (fun x ↦ f (x, t)) = (f ∘ fun x ↦ (x, t)) by rfl]
       rw [← fderivWithin_eq_fderiv (hu.uniqueDiffWithinAt hx) (((hf.differentiableOn (by simp)).comp
         (by fun_prop) (fun x hx ↦ ⟨hx, ht⟩)).differentiableAt (hu.mem_nhds hx))]
-      rw [fderivWithin_comp _ (t := u ×ˢ Set.Icc 0 1) (hf.differentiableOn (by simp) _ ⟨hx, ht⟩)
+      rw [fderivWithin_comp _ (t := u ×ˢ [[a, b]]) (hf.differentiableOn (by simp) _ ⟨hx, ht⟩)
         (by fun_prop) (fun x hx ↦ ⟨hx, ht⟩) (hu.uniqueDiffWithinAt hx)]
       congr
       exact (hasFDerivAt_prodMk_left x t).hasFDerivWithinAt.fderivWithin (hu.uniqueDiffWithinAt hx)
-  · intro h F _ _ _ f hf
+  · intro h F _ _ f hf
     exact contDiffOn_infty.2 fun n ↦ h n F <| hf.of_le <| WithTop.coe_le_coe.2 le_top
 
 /-- The function appearing in Hadamard's lemma applied to the function `f` at `x` for a basis
@@ -246,6 +265,7 @@ protected lemma ContDiffOn.hadamardFun {x : E} {s : Set E} (hs : IsOpen s) (hs' 
     ContDiffOn ℝ m (hadamardFun f x b) s := by
   unfold hadamardFun
   refine ContDiffOn.intervalIntegral (f := fun y ↦ lineDeriv ℝ f (x + y.2 • (y.1 - x)) b) hs ?_
+  rw [Set.uIcc_of_le zero_le_one]
   refine .congr ?_ (fun y hy ↦ DifferentiableAt.lineDeriv_eq_fderiv <|
     (hf.differentiableOn <| by simp [le_of_add_le_right hm]).differentiableAt <|
       hs.mem_nhds <| hs'.add_smul_sub_mem hy.1 hy.2.1 hy.2.2)
@@ -257,6 +277,8 @@ protected lemma ContDiffOn.hadamardFun {x : E} {s : Set E} (hs : IsOpen s) (hs' 
 protected lemma ContDiff.hadamardFun {x : E} {f : E → F} {n m : ℕ∞} (hf : ContDiff ℝ n f)
     (hm : m + 1 ≤ n) (b : E) : ContDiff ℝ m (hadamardFun f x b) :=
   contDiffOn_univ.1 <| (contDiffOn_univ.2 hf).hadamardFun isOpen_univ (starConvex_univ x) hm b
+
+variable [CompleteSpace F]
 
 open intervalIntegral in
 lemma eqOn_add_sum_hadamardFun {x : E} {s : Set E} (hs : IsOpen s) (hs' : StarConvex ℝ x s)
