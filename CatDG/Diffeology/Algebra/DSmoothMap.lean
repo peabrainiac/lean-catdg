@@ -371,11 +371,11 @@ def coeFnLinearMap [Ring R] [AddCommMonoid M] [Module R M] [DSmoothAdd M] [DSmoo
 omit [DiffeologicalSpace R] in
 /-- Smooth constant functions as a `RingHom`. -/
 def C [CommSemiring R] [Ring A] [Algebra R A] [DiffeologicalRing A] : R →+* (DSmoothMap X A) where
-  toFun := fun c : R => ⟨fun _ : X => (algebraMap R A) c, dsmooth_const⟩
-  map_one' := by ext _; exact (algebraMap R A).map_one
-  map_mul' c₁ c₂ := by ext _; exact (algebraMap R A).map_mul _ _
-  map_zero' := by ext _; exact (algebraMap R A).map_zero
-  map_add' c₁ c₂ := by ext _; exact (algebraMap R A).map_add _ _
+  toFun := fun c : R => .const _ ((algebraMap R A) c)
+  map_one' := by ext _; simp
+  map_mul' c₁ c₂ := by ext _; simp
+  map_zero' := by ext _; simp
+  map_add' c₁ c₂ := by ext _; simp
 
 omit [DiffeologicalSpace R] in
 @[simp]
@@ -383,6 +383,7 @@ theorem C_apply [CommSemiring R] [Ring A] [Algebra R A] [DiffeologicalRing A] (r
     C r x = algebraMap R A r :=
   rfl
 
+@[simps!]
 instance algebra [CommSemiring R] [Ring A] [Algebra R A] [DiffeologicalRing A] [DSmoothSMul R A] :
     Algebra R (DSmoothMap X A) where
   algebraMap := C

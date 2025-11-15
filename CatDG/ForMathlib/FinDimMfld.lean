@@ -25,6 +25,8 @@ in the category of finite-dimensional manifolds are precisely the injective func
 * show that `FinDimMfld 𝕜 n` is essentially small
 * generalise `epi_iff_denseRange` to smoothness degrees in `ℕ∞`
 * can anything interesting be said about extremal monomorphisms / epimorphisms?
+* define the embedding into `(CommAlgCat ℝ)ᵒᵖ` and show that it is fully faithful. Fullness will
+  likely require a stronger Whitney embedding theorem than currently is in mathlib.
 -/
 
 universe u

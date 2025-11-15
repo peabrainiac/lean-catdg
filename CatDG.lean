@@ -13,6 +13,7 @@ import CatDG.Diffeology.Continuous
 import CatDG.Diffeology.DDiffeomorph
 import CatDG.Diffeology.DSmoothMap
 import CatDG.Diffeology.DiffSp
+import CatDG.Diffeology.Hadamard
 import CatDG.Diffeology.Induced
 import CatDG.Diffeology.LocallyModelled
 import CatDG.Diffeology.Manifolds

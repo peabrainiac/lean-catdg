@@ -274,8 +274,8 @@ protected lemma ContDiffOn.hadamardFun {x : E} {s : Set E} (hs : IsOpen s) (hs' 
   exact (ContinuousLinearMap.apply ℝ F b).contDiff.comp_contDiffOn <|
     (hf.fderiv_of_isOpen hs <| WithTop.coe_le_coe.2 hm).comp (by fun_prop) <| s.mapsTo_preimage _
 
-protected lemma ContDiff.hadamardFun {x : E} {f : E → F} {n m : ℕ∞} (hf : ContDiff ℝ n f)
-    (hm : m + 1 ≤ n) (b : E) : ContDiff ℝ m (hadamardFun f x b) :=
+protected lemma ContDiff.hadamardFun {f : E → F} {n m : ℕ∞} (hf : ContDiff ℝ n f)
+    (hm : m + 1 ≤ n) (x b : E) : ContDiff ℝ m (hadamardFun f x b) :=
   contDiffOn_univ.1 <| (contDiffOn_univ.2 hf).hadamardFun isOpen_univ (starConvex_univ x) hm b
 
 variable [CompleteSpace F]
