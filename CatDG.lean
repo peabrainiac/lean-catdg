@@ -18,7 +18,6 @@ import CatDG.Diffeology.Induced
 import CatDG.Diffeology.LocallyModelled
 import CatDG.Diffeology.Manifolds
 import CatDG.Diffeology.Reflexive
-import CatDG.Diffeology.Sites
 import CatDG.Diffeology.SmoothSp
 import CatDG.Diffeology.TangentSpace
 import CatDG.ForMathlib.BiseparatedPresheaf
@@ -31,3 +30,6 @@ import CatDG.ForMathlib.LocalSite
 import CatDG.ForMathlib.LocallyConnectedSite
 import CatDG.ForMathlib.MorphismProperty
 import CatDG.ForMathlib.Triple
+import CatDG.Sites.CartSp
+import CatDG.Sites.EuclOp
+import CatDG.Sites.ToCommAlgOp

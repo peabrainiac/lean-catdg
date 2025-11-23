@@ -1,8 +1,5 @@
-import Mathlib.CategoryTheory.Monad.Limits
-import CatDG.Diffeology.Sites
 import CatDG.Diffeology.DiffSp
-import CatDG.Diffeology.Algebra.Module
-import Mathlib.LinearAlgebra.Multilinear.FiniteDimensional
+import CatDG.Sites.CartSp
 
 /-!
 # Smooth Spaces
