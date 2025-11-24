@@ -28,6 +28,7 @@ import CatDG.ForMathlib.FinDimMfld
 import CatDG.ForMathlib.Hadamard
 import CatDG.ForMathlib.LocalSite
 import CatDG.ForMathlib.LocallyConnectedSite
+import CatDG.ForMathlib.Mfld
 import CatDG.ForMathlib.MorphismProperty
 import CatDG.ForMathlib.Triple
 import CatDG.Sites.CartSp
