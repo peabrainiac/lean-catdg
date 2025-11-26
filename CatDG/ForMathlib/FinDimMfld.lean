@@ -5,11 +5,12 @@ import Mathlib.Geometry.Manifold.PartitionOfUnity
 
 /-!
 # The category of finite-dimensional manifolds
-Results on the category of finite-dimensional, Hausdorff, sigma-compact manifolds without boundary,
-for any given smoothness degree `n : WithTop ℕ∞` and nontrivially normed ground field `𝕜`.
+Results on the category `FinDimMfld 𝕜 n` of finite-dimensional, Hausdorff, sigma-compact manifolds
+without boundary, for any given smoothness degree `n : WithTop ℕ∞` and nontrivially normed ground
+field `𝕜`.
 
-This category `FinDimMfld 𝕜 n` already defined in `CatDG.ForMathlib.Mfld` as a full subcategory of
-`Mfld 𝕜 n` and equipped with several forgetful functors there; here we only prove more specific
+This category is already defined in `CatDG.ForMathlib.Mfld` as a full subcategory of `Mfld 𝕜 n`
+and equipped with forgetful functors to various categories there; here we only prove more specific
 results.
 
 ## Main definitions / results

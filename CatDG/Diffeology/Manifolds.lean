@@ -157,15 +157,16 @@ theorem DSmooth.smooth {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     [FiniteDimensional ℝ E]
     {H : Type*} [TopologicalSpace H] {I : ModelWithCorners ℝ E H} {M : Type*}
     [TopologicalSpace M] [ChartedSpace H M] [m : IsManifold I ∞ M]
-    [hI : I.Boundaryless]
+    [hI : BoundarylessManifold I M]
     {E' : Type*} [NormedAddCommGroup E'] [NormedSpace ℝ E'] [FiniteDimensional ℝ E']
     {H' : Type*} [TopologicalSpace H'] {I' : ModelWithCorners ℝ E' H'} {N : Type*}
     [TopologicalSpace N] [ChartedSpace H' N] [m' : IsManifold I' ∞ N]
     {f : M → N} (hf : DSmooth[m.toDiffeology,m'.toDiffeology] f) : ContMDiff I I' ∞ f := by
   let _ := m.toDiffeology; let _ := m'.toDiffeology
   intro x; let x' := toEuclidean (extChartAt I x x); let n := Module.finrank ℝ E
-  let ⟨ε,hε,hε'⟩ := Metric.isOpen_iff.1 (toEuclidean.isOpenMap _ (isOpen_extChartAt_target x))
-    x' <| mem_image_of_mem _ <| (extChartAt I x).map_source (mem_extChartAt_source x)
+  have ⟨ε, hε, hε'⟩ := (Metric.mem_nhds_iff (x := x')).1 <| toEuclidean.isOpenMap.image_mem_nhds <|
+    mem_interior_iff_mem_nhds.1 <| I.isInteriorPoint_iff.1 <|
+    BoundarylessManifold.isInteriorPoint (x := x)
   let e := (extChartAt I x).symm ∘ toEuclidean.symm ∘
     (univUnitBall.trans' (unitBallBall x' ε hε) rfl)
   have he : ContMDiff (𝓡 n) I ∞ e := (contMDiffOn_extChartAt_symm x).comp_contMDiff

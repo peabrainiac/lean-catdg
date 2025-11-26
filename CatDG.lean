@@ -17,6 +17,7 @@ import CatDG.Diffeology.Hadamard
 import CatDG.Diffeology.Induced
 import CatDG.Diffeology.LocallyModelled
 import CatDG.Diffeology.Manifolds
+import CatDG.Diffeology.MfldToDiffSp
 import CatDG.Diffeology.Reflexive
 import CatDG.Diffeology.SmoothSp
 import CatDG.Diffeology.TangentSpace
