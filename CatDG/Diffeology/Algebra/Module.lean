@@ -72,7 +72,7 @@ instance (X : Type*) [NormedAddCommGroup X] [NormedSpace ℝ X] [DiffeologicalSp
 lemma LinearMap.isPlot (X : Type*) [AddCommGroup X] [Module ℝ X] [DiffeologicalSpace X]
     [DSmoothAdd X] [DSmoothSMul ℝ X] {n : ℕ} (p : Eucl n →ₗ[ℝ] X) : IsPlot p := by
   rw [show ⇑p = fun x ↦ ∑ i, (EuclideanSpace.proj i x) • p (EuclideanSpace.single i 1) by
-    ext x; convert (p.pi_apply_eq_sum_univ x) using 4; ext i; simp [eq_comm (b := i)]]
+    ext x; simpa using congr_arg p ((EuclideanSpace.basisFun _ _).sum_repr x).symm]
   refine (dsmooth_finset_sum _ fun i _ ↦ ?_).isPlot
   exact (EuclideanSpace.proj (𝕜 := ℝ) i).contDiff.dsmooth.smul dsmooth_const
 

@@ -1,6 +1,7 @@
 import CatDG.Cohesive.CohesiveSite
 import CatDG.Diffeology.Algebra.Module
 import CatDG.ForMathlib.ConcreteSite
+import Mathlib.CategoryTheory.Limits.Shapes.Opposites.Products
 import Mathlib.CategoryTheory.Sites.Canonical
 
 /-!

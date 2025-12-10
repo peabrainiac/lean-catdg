@@ -144,7 +144,7 @@ theorem toEquiv_coe_symm (h : X ᵈ≃ Y) : ⇑h.toEquiv.symm = h.symm :=
   rfl
 
 theorem image_eq_preimage (h : X ᵈ≃ Y) (s : Set X) : h '' s = h.symm ⁻¹' s :=
-  h.toEquiv.image_eq_preimage s
+  h.toEquiv.image_eq_preimage_symm s
 
 theorem symm_image_eq_preimage (h : X ᵈ≃ Y) (s : Set Y) : h.symm '' s = h ⁻¹' s :=
   h.symm.image_eq_preimage s

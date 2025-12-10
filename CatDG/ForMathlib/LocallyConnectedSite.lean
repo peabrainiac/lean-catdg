@@ -51,9 +51,8 @@ instance [HasTerminal C] : Nonempty C := ⟨⊤_ C⟩
 
 /-- Every category becomes a locally connected site with the trivial topology. -/
 instance {C : Type u} [Category.{v} C] : (trivial C).IsLocallyConnectedSite where
-  isConnected_of_mem S hS := by
-    refine @isConnected_of_hasTerminal _ _ ?_
-    exact hasLimitsOfShape_of_closedUnderLimits fun _ _ _ _ ↦ trivial_covering.1 hS ▸ trivial
+  isConnected_of_mem _ hS := @isConnected_of_hasTerminal _ _ <|
+    @hasLimitsOfShape_of_closedUnderLimits _ _ _ _ _ ⟨fun _ _ ↦ trivial_covering.1 hS ▸ trivial⟩ _
 
 variable [J.IsLocallyConnectedSite]
 

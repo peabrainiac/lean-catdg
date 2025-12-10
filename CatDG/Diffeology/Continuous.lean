@@ -30,8 +30,11 @@ def continuousDiffeology (X : Type u) [TopologicalSpace X] : DiffeologicalSpace 
       let ⟨v,hv,hxv,hv'⟩ := h x hxu
       exact ((hv' x hxv).continuousAt (hv.mem_nhds hxv)).continuousWithinAt
     dTopology := .deltaGenerated X
-    isOpen_iff_preimages_plots := isOpen_deltaGenerated_iff.trans <|
-      forall_congr' fun n ↦ ⟨fun h p hp ↦ h ⟨p,hp⟩,fun h p ↦ h p p.2⟩ }
+    isOpen_iff_preimages_plots := isOpen_deltaGenerated_iff.trans <| forall_congr' fun n ↦ by
+      refine ⟨fun h p hp ↦ ?_, fun h p ↦ ?_⟩
+      · simpa [Set.preimage_comp] using (h ⟨p ∘ (PiLp.homeomorph 2 _).symm, by fun_prop⟩:)
+      · simpa [Set.preimage_comp, show TopologicalSpace.IsOpen = IsOpen by rfl]
+          using h (p ∘ (PiLp.homeomorph 2 _)) (by fun_prop)}
 
 /-- The D-topology of the continuous diffeology is the delta-generification of the
 original topology. -/

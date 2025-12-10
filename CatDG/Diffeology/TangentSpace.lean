@@ -147,6 +147,7 @@ lemma internalTangentMap_comp {f : X → Y} {g : Y → Z} (hf : DSmooth f) (hg :
   simp_rw [internalTangentMap, preInternalTangentMap_comp hf hg]
   exact Submodule.mapQ_comp _ _ _ _ _ _ _
 
+open EuclideanSpace in
 /-- The canonical map from a diffeological vector space to its internal tangent space at a point
 `x`, sending any vector `v` to the internal tangent vector represented by the path
 `t ↦ x + t • v`. -/
@@ -157,18 +158,22 @@ def vectorSpaceToInternalTangentSpace [AddCommGroup X] [Module ℝ X] [Diffeolog
     -- TODO get fun_prop to handle this
     refine ((dsmooth_add_left x).comp ?_).isPlot
     refine dsmooth_smul.comp (DSmooth.prod_mk ?_ dsmooth_const)
-    exact (EuclideanSpace.proj (𝕜 := ℝ) (0 : Fin 1)).dsmooth
+    exact (proj (𝕜 := ℝ) (0 : Fin 1)).dsmooth
   map_add' v w := by
     let i₁ : Eucl 1 →L[ℝ] Eucl 2 := ⟨⟨⟨fun t ↦ .single (0 : Fin 2) (t 0), fun _ _ ↦
-      Pi.single_add _ _ _⟩, fun a _ ↦ Pi.single_smul _ a _⟩, (LinearMap.dsmooth _ _).continuous⟩
+      by simp [← toLp_single, Pi.single_add]⟩, fun a _ ↦
+      by simp [← toLp_single, Pi.single_smul, - smul_eq_mul, - Algebra.id.smul_eq_mul]⟩,
+        (LinearMap.dsmooth _ _).continuous⟩
     let i₂ : Eucl 1 →L[ℝ] Eucl 2 := ⟨⟨⟨fun t ↦ .single (1 : Fin 2) (t 0), fun _ _ ↦
-      Pi.single_add _ _ _⟩, fun a _ ↦ Pi.single_smul _ a _⟩, (LinearMap.dsmooth _ _).continuous⟩
+      by simp [← toLp_single, Pi.single_add]⟩, fun a _ ↦
+      by simp [← toLp_single, Pi.single_smul, - smul_eq_mul, - Algebra.id.smul_eq_mul]⟩,
+        (LinearMap.dsmooth _ _).continuous⟩
     let p : pointedPlots x := ⟨⟨2, fun t ↦ x + t 0 • v + t 1 • w⟩, by
       -- TODO get fun_prop to handle this
       simp_rw [add_assoc]
       refine ((dsmooth_add_left x).comp (DSmooth.add ?_ ?_)).isPlot <;>
         refine dsmooth_smul.comp (DSmooth.prod_mk ?_ dsmooth_const) <;>
-        exact (EuclideanSpace.proj (𝕜 := ℝ) (_ : Fin 2)).dsmooth, by simp⟩
+        exact (proj (𝕜 := ℝ) (_ : Fin 2)).dsmooth, by simp⟩
     have h₁ := InternalTangentSpace.lof_comp_apply p i₁.contDiff (map_zero i₁) (.single 0 1)
     have h₂ := InternalTangentSpace.lof_comp_apply p i₂.contDiff (map_zero i₂) (.single 0 1)
     have h₃ := InternalTangentSpace.lof_comp_apply p (i₁ + i₂).contDiff (by simp) (.single 0 1)
@@ -183,7 +188,7 @@ def vectorSpaceToInternalTangentSpace [AddCommGroup X] [Module ℝ X] [Diffeolog
       -- TODO get fun_prop to handle this
       refine ((dsmooth_add_left x).comp ?_).isPlot
       refine dsmooth_smul.comp (DSmooth.prod_mk ?_ dsmooth_const)
-      exact (EuclideanSpace.proj (𝕜 := ℝ) (0 : Fin 1)).dsmooth, by simp⟩
+      exact (proj (𝕜 := ℝ) (0 : Fin 1)).dsmooth, by simp⟩
     have h := InternalTangentSpace.lof_comp_apply p f.contDiff (map_zero f) (.single 0 1)
     rw [f.fderiv] at h; rw [← map_smul]
     convert h; dsimp [p, f]; rw [smul_smul, mul_comm a]

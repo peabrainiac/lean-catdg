@@ -262,7 +262,7 @@ lemma isOpen_iff_preimages_plots' {s : Set X} : IsOpen[DTop] s ↔
     have := dTop_induced_comm ((Subtype.range_val (s := u)).symm ▸ hu)
     convert @IsOpen.preimage _ _ DTop DTop p hp.continuous _ hs
     exact (dTop_induced_comm ((Subtype.range_val (s := u)).symm ▸ hu)).symm
-  · let e := Homeomorph.Set.univ (Fin n → ℝ)
+  · let e := Homeomorph.Set.univ (Eucl n)
     rw [←e.isOpen_preimage,←preimage_comp]
     exact hs n _ (p ∘ e) isOpen_univ (hp.dsmooth.comp dsmooth_subtype_val)
 

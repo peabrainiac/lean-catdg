@@ -12,7 +12,7 @@ package «CatDG» where
   -- add any additional package configuration options here
 
 require mathlib from git
-  "https://github.com/leanprover-community/mathlib4.git" @ "v4.24.0"
+  "https://github.com/leanprover-community/mathlib4.git" @ "v4.25.0"
 
 @[default_target]
 lean_lib «CatDG» where
