@@ -219,6 +219,14 @@ theorem coe_toHomeomorph_symm' [TopologicalSpace X] [TopologicalSpace Y] [DTopCo
     [DTopCompatible Y] (h : X ᵈ≃ Y) : ⇑(h.toHomeomorph'.symm) = h.symm :=
   rfl
 
+/-- If a diffeomorphism between diffeological spaces equipped with topologies is also a
+homeomorphism and the topology on the domain agrees with the D-topology, then the topology
+on the codomain does as well. -/
+lemma dTopCompatible {X Y : Type*} [DiffeologicalSpace X] [DiffeologicalSpace Y]
+    [TopologicalSpace X] [TopologicalSpace Y] (e : X ᵈ≃ Y) (h : IsHomeomorph e)
+    [DTopCompatible X] : DTopCompatible Y :=
+  ⟨by simp [← @e.toHomeomorph.coinduced_eq _ _ (_) (_), dTop_eq X, h.isQuotientMap.2]⟩
+
 @[simp]
 theorem dsmooth_comp_ddiffeomorph_iff (h : X ᵈ≃ Y) {f : Y → Z} :
     DSmooth (f ∘ h) ↔ DSmooth f := by

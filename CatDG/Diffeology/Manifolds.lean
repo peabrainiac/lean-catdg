@@ -12,7 +12,7 @@ equivalent.
 
 open Set
 
-open scoped Manifold ContDiff
+open scoped Manifold ContDiff Topology
 
 open OpenPartialHomeomorph in
 /-- The diffeology defined by a manifold structure on M, with the plots given by the maps
@@ -89,23 +89,6 @@ instance {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimension
   replace hp := (contMDiffOn_model_symm).comp_contMDiff hp fun x ↦ mem_range_self _
   rw [←Function.comp_assoc,I.symm_comp_self,Function.id_comp] at hp
   exact (contMDiffOn_chart_symm (x := x)).comp_contMDiff hp fun x ↦ (p x).2⟩
-
-/-- In particular, the D-topology agrees with the standard topology on all manifolds
-modelled on a "boundaryless" model.
-TODO: It would be nice to have this (and all lemmas depending on it) for all boundaryless
-manifolds in the sense of `BoundarylessManifold`, such as manifolds with corners whose
-boundary just happens to be empty, but that would require either redoing the above lemma
-in slightly greater generality or passing from manifolds with empty boundary to manifolds
-modelled on a boundaryless model, both of which sound like a lot of work for something that
-is not a high priority. -/
-instance {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimensional ℝ E]
-    {H : Type*} [TopologicalSpace H] (I : ModelWithCorners ℝ E H) [hI : I.Boundaryless]
-    (M : Type*) [TopologicalSpace M] [ChartedSpace H M] [m : IsManifold I ∞ M] :
-    let _ := m.toDiffeology; DTopCompatible M := by
-  let _ := m.toDiffeology; let _ := euclideanDiffeology (X := E)
-  have : DTopCompatible I.target :=
-    I.target_eq.trans hI.range_eq_univ ▸ isOpen_univ.dTopCompatible
-  infer_instance
 
 /-- Every smooth map between manifolds is also D-smooth, i.e. this construction defines a
 functor of concrete categories. -/
@@ -188,6 +171,40 @@ theorem DSmooth.smooth {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     exact inter_comm _ _ ▸ extChartAt_source I x ▸ ContinuousOn.isOpen_inter_preimage
       (toEuclidean.continuous.comp_continuousOn (continuousOn_extChartAt x))
       (isOpen_extChartAt_source x) Metric.isOpen_ball
+
+/-- The D-topology agrees with the standard topology on all boundaryless manifolds.
+
+Note that this is at least a priori not a special case of the previous instance, because it allows
+for the spaces that the manifolds are modelled on to have boundary and corners, even if the
+manifolds do not. It might however still turn out to be a special case if we can prove that
+every model with corners is `DTopCompatible`. -/
+instance {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimensional ℝ E]
+    {H : Type*} [TopologicalSpace H] (I : ModelWithCorners ℝ E H) (M : Type*) [TopologicalSpace M]
+    [ChartedSpace H M] [m : IsManifold I ∞ M] [hI : BoundarylessManifold I M] :
+    let _ := m.toDiffeology; DTopCompatible M := let _ := m.toDiffeology; by
+  refine dTopCompatible_of_locally_dTopCompatible fun x ↦ ⟨_ ∩ _ ⁻¹' interior _,
+    ⟨by simp, I.isInteriorPoint_iff.1 BoundarylessManifold.isInteriorPoint⟩,
+    isOpen_extChartAt_preimage' x isOpen_interior,
+    fun p hp ↦ IsOpen.preimage hp.continuous <| isOpen_extChartAt_preimage' x isOpen_interior, ?_⟩
+  let _ := euclideanDiffeology (X := E)
+  let e : interior (extChartAt I x).target ᵈ≃
+      ((extChartAt I x).source ∩ (extChartAt I x) ⁻¹' interior (extChartAt I x).target : Set _) := {
+    toFun x' := ⟨(extChartAt I x).symm x', (extChartAt I x).map_target <| interior_subset x'.2,
+      by rw [mem_preimage, (extChartAt I x).rightInvOn (interior_subset x'.2)]; exact x'.2⟩
+    invFun x' := ⟨extChartAt I x x', x'.2.2⟩
+    left_inv x' := Subtype.ext <| (extChartAt I x).rightInvOn <| interior_subset x'.2
+    right_inv x' := Subtype.ext <| (extChartAt I x).leftInvOn <| x'.2.1
+    dsmooth_toFun := (IsManifold.toDiffeology_eq_euclideanDiffeology (E := E) ▸
+        ((contMDiffOn_extChartAt_symm (x := x)).mono interior_subset).dsmooth_restrict).subtype_mk _
+    dsmooth_invFun := by
+      exact (IsManifold.toDiffeology_eq_euclideanDiffeology (E := E) ▸ (contMDiffOn_extChartAt.mono
+        (by simp) (t := (extChartAt I x).source ∩ _)).dsmooth_restrict).subtype_mk _ }
+  have := (isOpen_interior (s := (extChartAt I x).target)).dTopCompatible
+  refine e.dTopCompatible <| isHomeomorph_iff_exists_inverse.2 ⟨?_, _, e.left_inv, e.right_inv, ?_⟩
+  · exact (continuousOn_iff_continuous_restrict.1 <|
+      (continuousOn_extChartAt_symm (x := x)).mono interior_subset).subtype_mk _
+  · exact (continuousOn_iff_continuous_restrict.1 <|
+      (continuousOn_extChartAt (x := x)).mono (by simp)).subtype_mk _
 
 /-- A finite-dimensional, boundaryless smooth manifold with corners in the sense of `IsManifold`
 is also a manifold in the sense of `IsDiffeologicalManifold`. -/

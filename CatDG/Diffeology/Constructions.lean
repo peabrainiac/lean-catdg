@@ -453,6 +453,34 @@ instance {X : Type*} [DiffeologicalSpace X] [TopologicalSpace X] [DTopCompatible
     DeltaGeneratedSpace X :=
   dTop_eq (X := X) ▸ inferInstance
 
+-- TODO: move this into mathlib?
+lemma TopologicalSpace.le_of_locally_le {X : Type*} {t t' : TopologicalSpace X}
+    (h : ∀ x : X, ∃ u, x ∈ u ∧ IsOpen[t] u ∧ IsOpen[t'] u ∧
+      @instTopologicalSpaceSubtype _ u t ≤ @instTopologicalSpaceSubtype _ u t') : t ≤ t' := by
+  refine fun u hu ↦ (@isOpen_iff_mem_nhds _ t).2 fun x hxu ↦ ?_
+  have ⟨v, hxv, hv, hv', hv''⟩ := h x
+  refine (@mem_nhds_iff _ t).2 ⟨_, inter_subset_left, ?_, hxu, hxv⟩
+  rw [(@(@hv.isOpenEmbedding_subtypeVal).isOpen_iff_preimage_isOpen) (by simp)]
+  refine hv'' _ ?_
+  rw [← (@(@hv'.isOpenEmbedding_subtypeVal).isOpen_iff_preimage_isOpen) (by simp)]
+  exact hu.inter hv'
+
+-- TODO: move this into mathlib?
+lemma TopologicalSpace.eq_of_locally_eq {X : Type*} {t t' : TopologicalSpace X}
+    (h : ∀ x : X, ∃ u, x ∈ u ∧ IsOpen[t] u ∧ IsOpen[t'] u ∧
+      @instTopologicalSpaceSubtype _ u t = @instTopologicalSpaceSubtype _ u t') : t = t' :=
+  le_antisymm (le_of_locally_le <| forall_imp (by grind) h)
+    (le_of_locally_le <| forall_imp (by grind) h)
+
+/-- If a topology on a diffeological space agrees with the D-topology locally in the sense that
+every point has a neighbourhood that is open in both topologies and on which the topologies
+coincide, then it also agrees with the D-topology globally. -/
+lemma dTopCompatible_of_locally_dTopCompatible {X : Type*} [DiffeologicalSpace X]
+    [TopologicalSpace X] (h : ∀ x : X, ∃ u, x ∈ u ∧ IsOpen u ∧ IsOpen[DTop] u ∧ DTopCompatible u) :
+    DTopCompatible X :=
+  ⟨TopologicalSpace.eq_of_locally_eq <| forall_imp (fun x ↦ .imp fun v ⟨hxv, hv, hv', hv''⟩ ↦
+    ⟨hxv, hv', hv, (dTop_induced_comm <| by rwa [Subtype.range_coe]).symm.trans (dTop_eq v)⟩) h⟩
+
 end DTop
 
 section Quotient
