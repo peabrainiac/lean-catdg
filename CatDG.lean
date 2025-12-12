@@ -34,4 +34,5 @@ import CatDG.ForMathlib.MorphismProperty
 import CatDG.ForMathlib.Triple
 import CatDG.Sites.CartSp
 import CatDG.Sites.EuclOp
+import CatDG.Sites.FinDimMfld
 import CatDG.Sites.ToCommAlgOp
