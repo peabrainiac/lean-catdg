@@ -21,10 +21,10 @@ it should hopefully be easy to rephrase this in terms of smooth embeddings and g
   jointly surjective families of open inductions
 * `FinDimMfld.openCoverTopology`: the open cover topology on `FinDimMfld ℝ ∞`, consisting of all
   sieves containing a jointly surjective family of open inductions
+* `FinDimMfld ℝ ∞` with the open cover topology is a concrete site
 
 ## TODO
 * `FinDimMfld.openCoverTopology` is subcanonical
-* `FinDimMfld ℝ ∞` is a concrete (and hence local) site
 * `FinDimMfld ℝ ∞` has `EuclOp` (and hence also `CartSp`) as a dense sub-site
 -/
 
@@ -81,7 +81,7 @@ def openCoverCoverage : Coverage (FinDimMfld ℝ ∞) where
       let _ := IsManifold.toDiffeology k'.1.modelWithCorners k'
       let f'' := (DDiffeomorph.ofIsInduction (hs.1 k' f' hf'.1).1)
       use ⟨_, (f''.dsmooth_invFun.comp <| (ConcreteCategory.hom (f ≫ g)).2.dsmooth.subtype_mk
-        (fun x ↦ hf'.2 (mem_range_self x))).smooth⟩
+        (fun x ↦ hf'.2 (mem_range_self x))).contMDiff⟩
       refine ⟨f', hf'.1, ?_⟩; ext x; change f'.1 (f''.invFun _) = _
       rw [show f'.1 = Subtype.val ∘ f'' by rfl]
       dsimp; exact congrArg Subtype.val <| f''.apply_symm_apply _
@@ -134,5 +134,17 @@ lemma openCoverTopology.mem_sieves_iff' {M : FinDimMfld ℝ ∞} {s : Sieve M} :
   · let _ := IsManifold.toDiffeology M.1.modelWithCorners M
     exact ⟨fun N f ↦ s f ∧ @IsOpenInduction _ _
       (IsManifold.toDiffeology N.1.modelWithCorners N) _ f, fun _ _ h ↦ h.1, fun _ _ h ↦ h.2, h⟩
+
+/-- `FinDimMfld ℝ ∞` is a concrete site, in that it is concrete with elements corresponding to
+morphisms from the terminal object and carries a topology consisting entirely of jointly surjective
+sieves. -/
+noncomputable instance : openCoverTopology.IsConcreteSite where
+  forgetNatIsoCoyoneda := NatIso.ofComponents fun M ↦
+    (ContMDiffMap.equivDSmoothMap.trans <| @DSmoothMap.equivFnOfUnique _ M (_) (_) _ _ _).toIso.symm
+  forgetNatIsoCoyoneda_apply := rfl
+  isJointlySurjective_of_mem hs := by
+    rw [openCoverTopology.mem_sieves_iff] at hs
+    obtain ⟨r, hr⟩ := hs
+    exact .mono hr.1 <| Presieve.isJointlySurjective_iff_iUnion_range_eq_univ.2 hr.2.2
 
 end FinDimMfld

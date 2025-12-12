@@ -1,5 +1,5 @@
 import CatDG.Diffeology.LocallyModelled
-import Mathlib.Geometry.Manifold.ContMDiff.NormedSpace
+import Mathlib.Geometry.Manifold.ContMDiffMap
 import Mathlib.Geometry.Manifold.ContMDiff.Atlas
 
 /-!
@@ -136,7 +136,7 @@ theorem IsOpen.dsmooth_iff_smoothOn {E : Type*} [NormedAddCommGroup E] [NormedSp
 open OpenPartialHomeomorph in
 /-- Every D-smooth map from a boundaryless manifold to another manifold is also smooth.
 This could probably be proven in quite a lot greater generality. -/
-theorem DSmooth.smooth {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+theorem DSmooth.contMDiff {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     [FiniteDimensional ℝ E]
     {H : Type*} [TopologicalSpace H] {I : ModelWithCorners ℝ E H} {M : Type*}
     [TopologicalSpace M] [ChartedSpace H M] [m : IsManifold I ∞ M]
@@ -171,6 +171,21 @@ theorem DSmooth.smooth {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     exact inter_comm _ _ ▸ extChartAt_source I x ▸ ContinuousOn.isOpen_inter_preimage
       (toEuclidean.continuous.comp_continuousOn (continuousOn_extChartAt x))
       (isOpen_extChartAt_source x) Metric.isOpen_ball
+
+/-- The canonical bijection `ContMDiffMap I I' M N ∞ ≃ DSmoothMap M N` stemming from the fact that
+functions between boundaryless manifolds are smooth iff they are diffeologically smooth. -/
+def ContMDiffMap.equivDSmoothMap {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+    [FiniteDimensional ℝ E]
+    {H : Type*} [TopologicalSpace H] {I : ModelWithCorners ℝ E H} {M : Type*}
+    [TopologicalSpace M] [ChartedSpace H M] [m : IsManifold I ∞ M]
+    [hI : BoundarylessManifold I M]
+    {E' : Type*} [NormedAddCommGroup E'] [NormedSpace ℝ E'] [FiniteDimensional ℝ E']
+    {H' : Type*} [TopologicalSpace H'] {I' : ModelWithCorners ℝ E' H'} {N : Type*}
+    [TopologicalSpace N] [ChartedSpace H' N] [m' : IsManifold I' ∞ N] :
+    ContMDiffMap I I' M N ∞ ≃
+    @DSmoothMap M N (IsManifold.toDiffeology I M) (IsManifold.toDiffeology I' N) where
+  toFun f := @DSmoothMap.mk _ _ (_) (_) f f.2.dsmooth
+  invFun f := ⟨f, (@DSmoothMap.dsmooth _ _ (_) (_) f).contMDiff⟩
 
 /-- The D-topology agrees with the standard topology on all boundaryless manifolds.
 

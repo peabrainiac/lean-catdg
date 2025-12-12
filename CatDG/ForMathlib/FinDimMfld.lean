@@ -83,6 +83,11 @@ instance : HasFiniteProducts (FinDimMfld 𝕜 n) := by
   refine @hasFiniteProducts_of_has_binary_and_terminal _ _ ?_ isTerminalPt.hasTerminal
   exact @hasBinaryProducts_of_hasLimit_pair _ _ ⟨⟨_, prodBinaryFanIsLimit _ _⟩⟩
 
+-- TODO: figure out how to get this from more general instances
+noncomputable instance : Unique (⊤_ (FinDimMfld 𝕜 n)) := by
+  have : Unique ((forget (FinDimMfld 𝕜 n)).obj pt) := inferInstanceAs (Unique PUnit)
+  exact ((forget _).mapIso (terminalIsTerminal.uniqueUpToIso isTerminalPt)).toEquiv.unique
+
 lemma mono_iff_injective {M N : FinDimMfld.{u} 𝕜 n} (f : M ⟶ N) : Mono f ↔ Injective f := by
   refine ⟨fun hf x y h ↦ ?_, ConcreteCategory.mono_of_injective _⟩
   let x' : pt ⟶ M := ofHom (.const x)

@@ -51,7 +51,7 @@ namespace FinDimMfld
 def fullyFaithfulForgetToDiffSp : (forget₂ (FinDimMfld.{u, 0} ℝ ∞) DiffSp).FullyFaithful where
   preimage {M N} f := by
     change ContMDiffMap _ _ _ _ ∞
-    exact ⟨f.hom, DSmooth.smooth (f.hom.dsmooth)⟩
+    exact ⟨f.hom, DSmooth.contMDiff (f.hom.dsmooth)⟩
 
 instance : (forget₂ (FinDimMfld ℝ ∞) DiffSp).Full := fullyFaithfulForgetToDiffSp.full
 
