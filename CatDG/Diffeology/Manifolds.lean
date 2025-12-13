@@ -172,6 +172,18 @@ theorem DSmooth.contMDiff {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
       (toEuclidean.continuous.comp_continuousOn (continuousOn_extChartAt x))
       (isOpen_extChartAt_source x) Metric.isOpen_ball
 
+/-- Maps between boundaryless manifolds are smooth iff they are diffeologically smooth. -/
+theorem contMDiff_iff_dsmooth {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+    [FiniteDimensional ℝ E]
+    {H : Type*} [TopologicalSpace H] {I : ModelWithCorners ℝ E H} {M : Type*}
+    [TopologicalSpace M] [ChartedSpace H M] [m : IsManifold I ∞ M]
+    [hI : BoundarylessManifold I M]
+    {E' : Type*} [NormedAddCommGroup E'] [NormedSpace ℝ E'] [FiniteDimensional ℝ E']
+    {H' : Type*} [TopologicalSpace H'] {I' : ModelWithCorners ℝ E' H'} {N : Type*}
+    [TopologicalSpace N] [ChartedSpace H' N] [m' : IsManifold I' ∞ N]
+    {f : M → N} : ContMDiff I I' ∞ f ↔ DSmooth[m.toDiffeology,m'.toDiffeology] f :=
+  ⟨ContMDiff.dsmooth, DSmooth.contMDiff⟩
+
 /-- The canonical bijection `ContMDiffMap I I' M N ∞ ≃ DSmoothMap M N` stemming from the fact that
 functions between boundaryless manifolds are smooth iff they are diffeologically smooth. -/
 def ContMDiffMap.equivDSmoothMap {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]

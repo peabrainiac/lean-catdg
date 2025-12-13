@@ -22,9 +22,9 @@ it should hopefully be easy to rephrase this in terms of smooth embeddings and g
 * `FinDimMfld.openCoverTopology`: the open cover topology on `FinDimMfld ℝ ∞`, consisting of all
   sieves containing a jointly surjective family of open inductions
 * `FinDimMfld ℝ ∞` with the open cover topology is a concrete site
+* the open cover topology on `FinDimMfld ℝ ∞` is subcanonical
 
 ## TODO
-* `FinDimMfld.openCoverTopology` is subcanonical
 * `FinDimMfld ℝ ∞` has `EuclOp` (and hence also `CartSp`) as a dense sub-site
 -/
 
@@ -138,7 +138,7 @@ lemma openCoverTopology.mem_sieves_iff' {M : FinDimMfld ℝ ∞} {s : Sieve M} :
 /-- `FinDimMfld ℝ ∞` is a concrete site, in that it is concrete with elements corresponding to
 morphisms from the terminal object and carries a topology consisting entirely of jointly surjective
 sieves. -/
-noncomputable instance : openCoverTopology.IsConcreteSite where
+noncomputable instance : openCoverTopology.{u}.IsConcreteSite where
   forgetNatIsoCoyoneda := NatIso.ofComponents fun M ↦
     (ContMDiffMap.equivDSmoothMap.trans <| @DSmoothMap.equivFnOfUnique _ M (_) (_) _ _ _).toIso.symm
   forgetNatIsoCoyoneda_apply := rfl
@@ -146,5 +146,29 @@ noncomputable instance : openCoverTopology.IsConcreteSite where
     rw [openCoverTopology.mem_sieves_iff] at hs
     obtain ⟨r, hr⟩ := hs
     exact .mono hr.1 <| Presieve.isJointlySurjective_iff_iUnion_range_eq_univ.2 hr.2.2
+
+open GrothendieckTopology.IsConcreteSite in
+/-- `FinDimMfld ℝ ∞` is a subcanonical site, i.e. all representable presheaves on it are sheaves. -/
+instance : openCoverTopology.{u}.Subcanonical := by
+  refine .of_isSheaf_yoneda_obj _ fun M N s hs ↦ ?_
+  refine (isSeparated_yoneda_obj _ M s hs).isSheafFor fun f hf ↦ ?_
+  let hs' := hs; simp_rw [openCoverTopology.mem_sieves_iff', eq_univ_iff_forall, mem_iUnion] at hs'
+  refine ⟨⟨?_, ?_⟩, ?_⟩
+  · exact fun x ↦ (show ⊤_ _ ⟶ M from f _ <| from_terminal_mem_of_mem _ hs (.const x)) default
+  · let _ := IsManifold.toDiffeology M.1.modelWithCorners M
+    let _ := IsManifold.toDiffeology N.1.modelWithCorners N
+    refine contMDiff_iff_dsmooth.2 <| dsmooth_iff_locally_dsmooth.2 fun x ↦ ?_
+    let ⟨N', g, hg, hx⟩ := hs' x
+    let _ := IsManifold.toDiffeology N'.1.modelWithCorners N'
+    refine ⟨_, hg.2.isOpen_range, hx, ?_⟩
+    rw [← hg.2.dsmooth_comp_iff_dsmooth_restrict]
+    convert (f g hg.1).2.dsmooth; ext1 x'
+    specialize hf (𝟙 (⊤_ _)) (Y₂ := N') (.const x')
+      (from_terminal_mem_of_mem _ hs (.const (g x'))) hg.1 rfl
+    exact congrFun (congrArg Subtype.val hf) (default : ⊤_ FinDimMfld ℝ ∞)
+  · intro N' g hg; dsimp; ext x
+    specialize hf (𝟙 (⊤_ _)) (Y₂ := N') (.const x)
+      (from_terminal_mem_of_mem _ hs (.const (g x))) hg rfl
+    exact congrFun (congrArg Subtype.val hf) (default : ⊤_ FinDimMfld ℝ ∞)
 
 end FinDimMfld
