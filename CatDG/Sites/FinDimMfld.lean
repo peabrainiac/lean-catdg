@@ -23,21 +23,25 @@ it should hopefully be easy to rephrase this in terms of smooth embeddings and g
   sieves containing a jointly surjective family of open inductions
 * `FinDimMfld ℝ ∞` with the open cover topology is a concrete site
 * the open cover topology on `FinDimMfld ℝ ∞` is subcanonical
+* `EuclOp.toFinDimMfld`: the inclusion functor `EuclOp ⥤ FinDimMfld ℝ ∞` from open subsets of
+  euclidean spaces to manifolds
+* `EuclOp.toFinDimMfld` exhibits `EuclOp` as a dense sub-site of `FinDimMfld ℝ ∞`.
 
 ## TODO
-* `FinDimMfld ℝ ∞` has `EuclOp` (and hence also `CartSp`) as a dense sub-site
+* Show that `Functor.IsDenseSubsite` is closed under compositions, so that `CartSp` is a dense
+  sub-site of `FinDimMfld ℝ ∞` too
 -/
 
 universe u
 
-open CategoryTheory ContDiff TopologicalSpace Topology Set
+open CategoryTheory ContDiff TopologicalSpace Topology Set Manifold
 
 namespace FinDimMfld
 
 /-- On any open subset `u` of a manifold `M`, the diffeology derived from the manifold structure on
 `u` and the subspace diffeology coming from the diffeology on `M` agree.
 TODO: move somewhere else. -/
-lemma IsManifold.toDiffeology_eq_subtype {E : Type*} [NormedAddCommGroup E]
+lemma _root_.IsManifold.toDiffeology_eq_subtype {E : Type*} [NormedAddCommGroup E]
     [NormedSpace ℝ E] {H : Type*} [TopologicalSpace H] (I : ModelWithCorners ℝ E H) {M : Type*}
     [TopologicalSpace M] [ChartedSpace H M] [IsManifold I ∞ M] (u : Opens M) :
     IsManifold.toDiffeology I u =
@@ -172,3 +176,119 @@ instance : openCoverTopology.{u}.Subcanonical := by
     exact congrFun (congrArg Subtype.val hf) (default : ⊤_ FinDimMfld ℝ ∞)
 
 end FinDimMfld
+
+section EuclOpToFinDimMfld
+
+/-- The embedding of `EuclOp` into `FinDimMfld  ℝ ∞`. -/
+@[simps]
+noncomputable def EuclOp.toFinDimMfld : EuclOp ⥤ FinDimMfld.{0} ℝ ∞ where
+  obj u := .mk' u.2 𝓘(ℝ, Eucl u.1)
+  map f := ⟨f, DSmooth.contMDiff <| by simp_rw [IsManifold.toDiffeology_eq_subtype,
+    IsManifold.toDiffeology_eq_euclideanDiffeology]; exact f.2⟩
+
+/-- `extChartAt I x` as a diffeological diffeomorphism. -/
+@[simps]
+def extChartAtDDiffeomorph {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+    [FiniteDimensional ℝ E] {H : Type*} [TopologicalSpace H] (I : ModelWithCorners ℝ E H)
+    {M : Type*} [TopologicalSpace M] [ChartedSpace H M] [IsManifold I ∞ M] (x : M) :
+    @DDiffeomorph (extChartAt I x).source (extChartAt I x).target
+      (@instDiffeologicalSpaceSubtype _ (IsManifold.toDiffeology I M) _)
+      (@instDiffeologicalSpaceSubtype _ euclideanDiffeology _) := by
+    let _ := IsManifold.toDiffeology I M
+    let _ := euclideanDiffeology (X := E)
+    exact ⟨⟨(extChartAt _ x).mapsTo.restrict, (extChartAt _ x).symm_mapsTo.restrict,
+      fun _ ↦ by ext1; simp [-extChartAt], fun _ ↦ by ext1; simp [-extChartAt]⟩, by
+      have := (contMDiffOn_extChartAt (I := I)
+        (x := x) (n := ∞)).dsmooth_restrict
+      rw [← extChartAt_source I x,
+        IsManifold.toDiffeology_eq_euclideanDiffeology] at this
+      exact this.codRestrict _, by
+      have := (contMDiffOn_extChartAt_symm (I := I)
+        (x := x) (n := ∞)).dsmooth_restrict
+      rw [IsManifold.toDiffeology_eq_euclideanDiffeology] at this
+      exact this.codRestrict _⟩
+
+/-- Manifolds can be covered with open subsets of cartesian spaces. -/
+instance : EuclOp.toFinDimMfld.IsCoverDense FinDimMfld.openCoverTopology := by
+  constructor; intro M
+  rw [FinDimMfld.openCoverTopology.mem_sieves_iff', eq_univ_iff_forall]
+  intro x
+  simp_rw [mem_iUnion, exists_prop]
+  use .mk' (Opens.interior (extChartAt M.1.modelWithCorners x).target) 𝓘(ℝ, M.1.modelVectorSpace)
+  use ⟨(extChartAt _ x).symm ∘ (↑), (contMDiffOn_extChartAt_symm x).comp_contMDiff
+    contMDiff_subtype_val fun x ↦ interior_subset x.2⟩
+  refine ⟨⟨⟨?_⟩, ?_⟩, ?_⟩
+  · refine ⟨⟨_, ⟨toEuclidean '' interior (extChartAt M.1.modelWithCorners x).target, ?_⟩⟩,
+      ⟨(mapsTo_image _ _).restrict toEuclidean, DSmooth.contMDiff ?_⟩,
+      ⟨(extChartAt M.1.modelWithCorners x).symm ∘ toEuclidean.symm ∘ Subtype.val, ?_⟩, ?_⟩
+    · exact toEuclidean.isOpenMap _ isOpen_interior
+    · let _ : DiffeologicalSpace M.obj.modelVectorSpace := euclideanDiffeology
+      simpa [IsManifold.toDiffeology_eq_subtype, IsManifold.toDiffeology_eq_euclideanDiffeology]
+        using toEuclidean.contDiff.dsmooth.restrict (mapsTo_image _ _)
+    · exact (contMDiffOn_extChartAt_symm x).comp_contMDiff
+        (toEuclidean.symm.contDiff.contMDiff.comp <| by dsimp; exact contMDiff_subtype_val)
+        fun y ↦ interior_subset <| by simpa only [toEuclidean.image_eq_preimage_symm] using y.2
+    · ext x
+      exact congrArg (extChartAt _ _).symm <| toEuclidean.symm_apply_apply _
+  · let _ := IsManifold.toDiffeology M.1.modelWithCorners M
+    let _ : DiffeologicalSpace M.obj.modelVectorSpace := euclideanDiffeology
+    let e := extChartAtDDiffeomorph M.1.modelWithCorners x
+    rw [IsManifold.toDiffeology_eq_subtype, IsManifold.toDiffeology_eq_euclideanDiffeology]
+    refine (IsOpen.isOpenInduction_subtype_val' ?_).comp <| e.symm.isOpenInduction.comp <|
+      isOpen_interior.isOpenInduction_inclusion interior_subset
+    rw [extChartAt_source]; exact (chartAt _ _).open_source
+  · use ⟨_, M.1.modelWithCorners.isInteriorPoint_iff.1 BoundarylessManifold.isInteriorPoint⟩
+    change (extChartAt _ x).symm _ = x
+    simp
+
+instance EuclOp.toFinDimMfld_fullyFaithful : EuclOp.toFinDimMfld.FullyFaithful where
+  preimage {u v} f :=
+    ⟨f, by simpa [IsManifold.toDiffeology_eq_subtype,
+      IsManifold.toDiffeology_eq_euclideanDiffeology] using (ConcreteCategory.ofHom f).2.dsmooth⟩
+
+instance : EuclOp.toFinDimMfld.Full := EuclOp.toFinDimMfld_fullyFaithful.full
+
+instance : EuclOp.toFinDimMfld.Faithful := EuclOp.toFinDimMfld_fullyFaithful.faithful
+
+/-- `EuclOp.toFinDimMfld` exhibits `EuclOp` as a dense sub-site of `FinDimMfld ℝ ∞` with respect to
+the open cover topologies.
+In particular, the sheaf topoi of the two sites are equivalent via `IsDenseSubsite.sheafEquiv`. -/
+instance : EuclOp.toFinDimMfld.IsDenseSubsite
+    EuclOp.openCoverTopology FinDimMfld.openCoverTopology where
+  functorPushforward_mem_iff {u} s := by
+    rw [EuclOp.openCoverTopology.mem_sieves_iff', FinDimMfld.openCoverTopology.mem_sieves_iff']
+    refine Eq.congr_left (subset_antisymm ?_ ?_)
+    · refine iUnion_subset fun M ↦ iUnion₂_subset fun f hf ↦ ?_
+      obtain ⟨v, g, h, hg, rfl⟩ := hf.1; replace hf := hf.2
+      refine range_subset_iff.2 fun x : M ↦ ?_
+      change g (h x) ∈ _
+      let e := extChartAtDDiffeomorph M.1.modelWithCorners x
+      let _ := IsManifold.toDiffeology M.1.modelWithCorners M
+      let _ := euclideanDiffeology (X := M.1.modelVectorSpace)
+      have hi : IsOpenInduction (Subtype.val ∘ e.symm ∘ (mapsTo_iff_subset_preimage.2 <|
+          interior_subset.trans_eq <| toEuclidean.image_eq_preimage_symm _).restrict) := by
+        refine (IsOpen.isOpenInduction_subtype_val' ?_).comp <| e.symm.isOpenInduction.comp <|
+          toEuclidean.symm.toDDiffeomorph.isOpenInduction.restrict isOpen_interior _
+        rw [extChartAt_source]; exact (chartAt _ _).open_source
+      let _ := IsManifold.toDiffeology (EuclOp.toFinDimMfld.obj u).obj.modelWithCorners
+        (EuclOp.toFinDimMfld.obj u)
+      let _ := IsManifold.toDiffeology (EuclOp.toFinDimMfld.obj v).obj.modelWithCorners
+        (EuclOp.toFinDimMfld.obj v)
+      have hh := (ConcreteCategory.ofHom h).2.dsmooth
+      simp only [EuclOp.toFinDimMfld, IsManifold.toDiffeology_eq_subtype,
+        IsManifold.toDiffeology_eq_euclideanDiffeology ] at hf hh
+      refine mem_iUnion_of_mem ⟨_, ⟨interior <|
+        toEuclidean '' (extChartAt M.1.modelWithCorners x).target, isOpen_interior⟩⟩ ?_
+      refine mem_iUnion₂_of_mem (i := ⟨_, hh.comp hi.dsmooth⟩ ≫ g)
+        ⟨s.downward_closed hg _, hf.comp hi⟩ ?_
+      use ⟨toEuclidean (extChartAt M.1.modelWithCorners x x),
+        toEuclidean.isOpenMap.image_interior_subset _ <| mem_image_of_mem toEuclidean <|
+          M.1.modelWithCorners.isInteriorPoint_iff.1 BoundarylessManifold.isInteriorPoint⟩
+      exact congr_arg (g ∘ h) (by simp : (extChartAt _ _).symm _ = x)
+    · refine iUnion_subset fun v ↦ iUnion₂_subset fun f hf ↦ subset_iUnion_of_subset _ <|
+        subset_iUnion₂_of_subset (EuclOp.toFinDimMfld.map f) ⟨?_, ?_⟩ subset_rfl
+      · exact ⟨v, f, 𝟙 _, hf.1, (Category.id_comp _).symm⟩
+      · simpa [IsManifold.toDiffeology_eq_subtype,
+          IsManifold.toDiffeology_eq_euclideanDiffeology] using hf.2
+
+end EuclOpToFinDimMfld
