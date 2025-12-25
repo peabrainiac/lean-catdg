@@ -162,11 +162,11 @@ def vectorSpaceToInternalTangentSpace [AddCommGroup X] [Module ℝ X] [Diffeolog
   map_add' v w := by
     let i₁ : Eucl 1 →L[ℝ] Eucl 2 := ⟨⟨⟨fun t ↦ .single (0 : Fin 2) (t 0), fun _ _ ↦
       by simp [← toLp_single, Pi.single_add]⟩, fun a _ ↦
-      by simp [← toLp_single, Pi.single_smul, - smul_eq_mul, - Algebra.id.smul_eq_mul]⟩,
+      by simp [← toLp_single, Pi.single_smul, - smul_eq_mul]⟩,
         (LinearMap.dsmooth _ _).continuous⟩
     let i₂ : Eucl 1 →L[ℝ] Eucl 2 := ⟨⟨⟨fun t ↦ .single (1 : Fin 2) (t 0), fun _ _ ↦
       by simp [← toLp_single, Pi.single_add]⟩, fun a _ ↦
-      by simp [← toLp_single, Pi.single_smul, - smul_eq_mul, - Algebra.id.smul_eq_mul]⟩,
+      by simp [← toLp_single, Pi.single_smul, - smul_eq_mul]⟩,
         (LinearMap.dsmooth _ _).continuous⟩
     let p : pointedPlots x := ⟨⟨2, fun t ↦ x + t 0 • v + t 1 • w⟩, by
       -- TODO get fun_prop to handle this

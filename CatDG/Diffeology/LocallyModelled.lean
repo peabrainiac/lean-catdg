@@ -85,7 +85,7 @@ instance {n : ℕ} {X : Type*} [Zero (Fin n)] [DiffeologicalSpace X]
   -- TODO: requires diffeomorphism of R^n to a ball in H^n
   sorry⟩
 
-set_option synthInstance.maxHeartbeats 40000 in
+set_option synthInstance.maxHeartbeats 70000 in
 /-- Any diffeological manifold is also a diffeological orbifold. -/
 instance {n : ℕ} {X : Type*} [DiffeologicalSpace X] [hm : IsDiffeologicalManifold n X] :
     IsOrbifold n X := ⟨fun x ↦ by

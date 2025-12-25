@@ -124,58 +124,6 @@ instance {M : FinDimMfld ℝ ∞} : LocallyCompactSpace M := by
     M.1.modelWithCorners.range_eq_target ▸ M.1.modelWithCorners.isClosed_range.locallyCompactSpace
   exact ChartedSpace.locallyCompactSpace M.1.model M
 
-lemma _root_.TopologicalSpace.Opens.chartAt_eq {H : Type*} [TopologicalSpace H] {M : Type*}
-    [TopologicalSpace M] [ChartedSpace H M] (u : Opens M) {x : u} :
-    chartAt H x = (chartAt H x.1).subtypeRestr ⟨x⟩ := by
-  rfl
-
-lemma _root_.ModelWithCorners.isInteriorPoint_iff_isInteriorPoint_val {𝕜 : Type*}
-    [NontriviallyNormedField 𝕜] {E : Type*} [NormedAddCommGroup E] [NormedSpace 𝕜 E] {H : Type*}
-    [TopologicalSpace H] (I : ModelWithCorners 𝕜 E H) {M : Type*} [TopologicalSpace M]
-    [ChartedSpace H M] {u : Opens M} {x : u} : I.IsInteriorPoint x ↔ I.IsInteriorPoint x.1 := by
-  simpa [I.isInteriorPoint_iff, u.chartAt_eq, OpenPartialHomeomorph.subtypeRestr,
-    mem_interior_iff_mem_nhds] using
-    fun _ _ ↦ (chartAt H x.1).extend_preimage_mem_nhds (mem_chart_source H x.1) (u.2.mem_nhds x.2)
-
-lemma _root_.ModelWithCorners.isBoundaryPoint_iff_isBoundaryPoint_val {𝕜 : Type*}
-    [NontriviallyNormedField 𝕜] {E : Type*} [NormedAddCommGroup E] [NormedSpace 𝕜 E] {H : Type*}
-    [TopologicalSpace H] (I : ModelWithCorners 𝕜 E H) {M : Type*} [TopologicalSpace M]
-    [ChartedSpace H M] {u : Opens M} {x : u} : I.IsBoundaryPoint x ↔ I.IsBoundaryPoint x.1 := by
-  simpa [I.isInteriorPoint_iff_not_isBoundaryPoint, not_iff_not] using
-    I.isInteriorPoint_iff_isInteriorPoint_val
-
-lemma _root_.ModelWithCorners.interior_eq_preimage_val {𝕜 : Type*}
-    [NontriviallyNormedField 𝕜] {E : Type*} [NormedAddCommGroup E] [NormedSpace 𝕜 E] {H : Type*}
-    [TopologicalSpace H] (I : ModelWithCorners 𝕜 E H) {M : Type*} [TopologicalSpace M]
-    [ChartedSpace H M] (u : Opens M) :
-    I.interior u = (↑) ⁻¹' I.interior M := by
-  ext1; exact I.isInteriorPoint_iff_isInteriorPoint_val
-
-lemma _root_.ModelWithCorners.boundary_eq_preimage_val {𝕜 : Type*}
-    [NontriviallyNormedField 𝕜] {E : Type*} [NormedAddCommGroup E] [NormedSpace 𝕜 E] {H : Type*}
-    [TopologicalSpace H] (I : ModelWithCorners 𝕜 E H) {M : Type*} [TopologicalSpace M]
-    [ChartedSpace H M] (u : Opens M) :
-    I.boundary u = (↑) ⁻¹' I.boundary M := by
-  simp [← I.compl_interior, I.interior_eq_preimage_val]
-
-lemma boundarylessManifold_iff {𝕜 : Type*} [NontriviallyNormedField 𝕜] {E : Type*}
-    [NormedAddCommGroup E] [NormedSpace 𝕜 E] {H : Type*} [TopologicalSpace H]
-    (I : ModelWithCorners 𝕜 E H)  {M : Type*} [TopologicalSpace M] [ChartedSpace H M] :
-    BoundarylessManifold I M ↔ ∀ x : M, I.IsInteriorPoint x :=
-  ⟨fun h _ ↦ h.isInteriorPoint, fun h ↦ ⟨h⟩⟩
-
-lemma boundarylessManifold_iff_interior_eq_univ {𝕜 : Type*} [NontriviallyNormedField 𝕜] {E : Type*}
-    [NormedAddCommGroup E] [NormedSpace 𝕜 E] {H : Type*} [TopologicalSpace H]
-    (I : ModelWithCorners 𝕜 E H)  {M : Type*} [TopologicalSpace M] [ChartedSpace H M] :
-    BoundarylessManifold I M ↔ I.interior M = Set.univ := by
-  simp [boundarylessManifold_iff, Set.eq_univ_iff_forall]; rfl
-
-instance {𝕜 : Type*} [NontriviallyNormedField 𝕜] {E : Type*} [NormedAddCommGroup E]
-    [NormedSpace 𝕜 E] {H : Type*} [TopologicalSpace H] (I : ModelWithCorners 𝕜 E H)
-    {M : Type*} [TopologicalSpace M] [ChartedSpace H M] [BoundarylessManifold I M] (u : Opens M) :
-    BoundarylessManifold I u :=
-  ⟨fun _ ↦ I.isInteriorPoint_iff_isInteriorPoint_val.2 BoundarylessManifold.isInteriorPoint⟩
-
 noncomputable abbrev mkOfOpen {M : FinDimMfld ℝ ∞} (u : Opens M) :
     FinDimMfld ℝ ∞ :=
   .mk' u M.1.modelWithCorners

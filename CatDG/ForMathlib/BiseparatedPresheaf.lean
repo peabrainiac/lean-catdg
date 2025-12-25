@@ -1,4 +1,4 @@
-import Mathlib.CategoryTheory.Closed.Types
+import Mathlib.CategoryTheory.Monoidal.Closed.Types
 import Mathlib.CategoryTheory.Sites.CartesianClosed
 import Mathlib.CategoryTheory.Sites.LeftExact
 import CatDG.ForMathlib.Classifier

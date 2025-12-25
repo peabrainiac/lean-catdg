@@ -1,5 +1,5 @@
 import Mathlib.CategoryTheory.Limits.Types.Limits
-import Mathlib.CategoryTheory.Closed.Cartesian
+import Mathlib.CategoryTheory.Monoidal.Closed.Cartesian
 import Mathlib.Topology.Category.DeltaGenerated
 import Mathlib.Topology.Category.TopCat.Basic
 import CatDG.Diffeology.DDiffeomorph
