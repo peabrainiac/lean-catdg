@@ -1,4 +1,4 @@
-import Mathlib.Geometry.Manifold.ContMDiffMap
+import Mathlib.Geometry.Manifold.Diffeomorph
 import Mathlib.Geometry.Manifold.IsManifold.InteriorBoundary
 import Mathlib.Topology.Category.TopCat.Basic
 
@@ -38,7 +38,7 @@ inclusions into other subcategories are provided in the form of `HasForget₂`-i
 
 universe u
 
-open CategoryTheory
+open CategoryTheory ConcreteCategory Manifold
 
 /-- The category of all (possbily non-Hausdorff, non-paracompact and infinite-dimensional) manifolds
 with corners for a fixed ground field `𝕜` and smoothness degree `n : WithTop ℕ∞`.
@@ -212,5 +212,42 @@ instance [CompleteSpace 𝕜] : Fact (finDimMfld ≤ banachMfld (𝕜 := 𝕜) (
 example : HasForget₂ (FinDimMfld 𝕜 n) (FinDimMfldWCorners 𝕜 n) := inferInstance
 
 example [CompleteSpace 𝕜] : HasForget₂ (FinDimMfld 𝕜 n) (BanachMfld 𝕜 n) := inferInstance
+
+section Isomorphisms
+
+@[simps]
+def isoOfDiffeomorph {M N : Mfld 𝕜 n} (d : M ≃ₘ^n⟮M.modelWithCorners,N.modelWithCorners⟯ N) :
+    M ≅ N where
+  hom := ofHom d.toContMDiffMap
+  inv := ofHom d.symm.toContMDiffMap
+  hom_inv_id := by ext x; simp [hom_ofHom]
+  inv_hom_id := by ext x; simp [hom_ofHom]
+
+@[simps]
+def diffeomorphOfIso {M N : Mfld 𝕜 n} (i : M ≅ N) :
+    M ≃ₘ^n⟮M.modelWithCorners,N.modelWithCorners⟯ N where
+  toFun := hom i.hom
+  invFun := hom i.inv
+  contMDiff_toFun := (hom i.hom).2
+  contMDiff_invFun := (hom i.inv).2
+  left_inv x := by simp
+  right_inv x := by simp
+
+@[simp]
+lemma isoOfDiffeomorph_diffeomorphOfIso {M N : Mfld 𝕜 n} (i : M ≅ N) :
+    isoOfDiffeomorph (diffeomorphOfIso i) = i := by rfl
+
+@[simp]
+lemma diffeomorphOfIso_isoOfDiffeomorph {M N : Mfld 𝕜 n}
+    (d : M ≃ₘ^n⟮M.modelWithCorners,N.modelWithCorners⟯ N) :
+    diffeomorphOfIso (isoOfDiffeomorph d) = d := by rfl
+
+@[simps]
+def isoEquivDiffeomorph {M N : Mfld 𝕜 n} :
+    (M ≅ N) ≃ (M ≃ₘ^n⟮M.modelWithCorners,N.modelWithCorners⟯ N) where
+  toFun := diffeomorphOfIso
+  invFun := isoOfDiffeomorph
+
+end Isomorphisms
 
 end Mfld
