@@ -30,10 +30,25 @@ have to define some instances like `[Fact (a ≤ c)] : Fact (a ⊓ b ≤ c)`.
 For each of these subcategories a forgetful functor to `TopCat`, an inclusion into `Mfld 𝕜 n` and
 inclusions into other subcategories are provided in the form of `HasForget₂`-instances.
 
+We also show that isomorphisms in the category of manifolds are diffeomorphisms and that
+some of the introduced object properties are invariant under isomorphism. Unfortunately,
+all properties pertaining to the model spaces of the manifolds are not invariant under isomorphism,
+because the empty type is a manifold for all model spaces simultaneously. One could try to
+work around this in the future by defining e.g. `banach M` as
+`IsEmpty M ∨ CompleteSpace M.modelVectorSpace` instead of just `CompleteSpace M.modelVectorSpace`;
+that way `banach` would be closed under isomorphisms, but instances like
+`CompleteSpace M.obj.modelVectorSpace` for `M : BanachMfld 𝕜 n` could only be provided under
+the assumption `Nonempty M`.
+
 ## TODOs
 * Show that `Mfld 𝕜 n` has all products.
+* Show that `boundaryless` is closed under isomorphisms.
+* Redefine `banach` and `finiteDimensional` such that they are closed under isomorphisms too.
 * Show that various object properties are closed under arbitrary / finite products, and conclude
-  that the subcategories under consideration also have arbitrary / finite products.
+  that the subcategories under consideration also have arbitrary / finite products. This requires
+  showing that they are closed under isomorphisms first, because
+  `ObjectProperty.IsClosedUnderLimitsOfShape` is defined to mean that the property contains not just
+  some but all limits of diagrams within it.
 -/
 
 universe u
@@ -249,5 +264,26 @@ def isoEquivDiffeomorph {M N : Mfld 𝕜 n} :
   invFun := isoOfDiffeomorph
 
 end Isomorphisms
+
+section ClosedUnderIsomorphisms
+
+instance : hausdorff.IsClosedUnderIsomorphisms (C := Mfld.{u} 𝕜 n) :=
+  ⟨fun i (_ : T2Space _) ↦ (diffeomorphOfIso i).toHomeomorph.t2Space⟩
+
+-- TODO: move this somewhere else
+lemma _root_.Homeomorph.sigmaCompactSpace {X Y : Type*} [TopologicalSpace X]
+    [TopologicalSpace Y] [SigmaCompactSpace X] (h : X ≃ₜ Y) : SigmaCompactSpace Y := by
+  rwa [← isSigmaCompact_univ_iff, ← h.isSigmaCompact_preimage, Set.preimage_univ,
+    isSigmaCompact_univ_iff]
+
+instance : sigmaCompact.IsClosedUnderIsomorphisms (C := Mfld.{u} 𝕜 n) :=
+  ⟨fun i (_ : SigmaCompactSpace _) ↦ (diffeomorphOfIso i).toHomeomorph.sigmaCompactSpace⟩
+
+/-- TODO: prove this. This involves showing that the boundary and interior of manifolds
+are preserved by diffeomorphisms, which probably needs #33189 to be merged first. -/
+proof_wanted instIsClosedUnderIsomorphismsBoundaryless :
+    boundaryless.IsClosedUnderIsomorphisms (C := Mfld.{u} 𝕜 n)
+
+end ClosedUnderIsomorphisms
 
 end Mfld
