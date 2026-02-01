@@ -214,7 +214,7 @@ def dTop : DiffSp.{u} ⥤ TopCat.{u} where
 space. -/
 def diffToDeltaGenerated : DiffSp.{u} ⥤ DeltaGenerated.{u} where
   obj X := ⟨@TopCat.of X DTop,inferInstance⟩
-  map f := @TopCat.ofHom _ _ (_) (_) <| @ContinuousMap.mk _ _ (_) (_) f f.hom.dsmooth.continuous
+  map f := ⟨@TopCat.ofHom _ _ (_) (_) <| @ContinuousMap.mk _ _ (_) (_) f f.hom.dsmooth.continuous⟩
 
 /-- The functor equipping each topological space with the continuous diffeology. -/
 def topToDiff : TopCat.{u} ⥤ DiffSp.{u} where
@@ -224,7 +224,7 @@ def topToDiff : TopCat.{u} ⥤ DiffSp.{u} where
 /-- The functor equipping each delta-generated space with the continuous diffeology. -/
 def deltaGeneratedToDiff : DeltaGenerated.{u} ⥤ DiffSp.{u} where
   obj X := of (withContinuousDiffeology X)
-  map f := @ofHom _ _ (_) (_) <| @DSmoothMap.mk _ _ (_) (_) f f.hom.continuous.dsmooth
+  map f := @ofHom _ _ (_) (_) <| @DSmoothMap.mk _ _ (_) (_) f f.hom.hom.continuous.dsmooth
 
 /-- Adjunction between the D-topology and continuous diffeology as functors between
 `DiffSp` and `TopCat`. -/
@@ -245,8 +245,8 @@ def dTopAdj' : diffToDeltaGenerated ⊣ deltaGeneratedToDiff :=
       app := fun X ↦ @ofHom _ _ (_) (_) <| @DSmoothMap.mk _ _ (_) (_) id
         dsmooth_id.continuous.dsmooth' }
     counit := {
-      app := fun X ↦ @TopCat.ofHom _ _ (_) (_) <| @ContinuousMap.mk _ _ (_) (_) id <|
-        continuous_iff_coinduced_le.mpr dTop_continuousDiffeology_eq_self.le } }
+      app := fun X ↦ ⟨@TopCat.ofHom _ _ (_) (_) <| @ContinuousMap.mk _ _ (_) (_) id <|
+        continuous_iff_coinduced_le.mpr dTop_continuousDiffeology_eq_self.le⟩ } }
 
 /-- The D-topology functor `DiffSp ⥤ TopCat` is a left-adjoint. -/
 instance : Functor.IsLeftAdjoint (dTop.{u}) :=
@@ -428,7 +428,7 @@ instance : CartesianMonoidalCategory DiffSp :=
     fun X Y ↦ ⟨binaryProductCone X Y, binaryProductLimit X Y⟩
 
 /-- `DiffSp` is cartesian-closed. -/
-noncomputable instance cartesianClosed : CartesianClosed DiffSp.{u} where
+noncomputable instance cartesianClosed : MonoidalClosed DiffSp.{u} where
   closed X := ⟨{
       obj := fun Y ↦ DiffSp.of (DSmoothMap X Y)
       map := fun f ↦ ⟨f.hom.comp,DSmoothMap.dsmooth_comp.curry_right⟩

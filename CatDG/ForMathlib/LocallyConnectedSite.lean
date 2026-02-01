@@ -66,7 +66,7 @@ lemma isSheaf_const_obj {X : Type w} : Presheaf.IsSheaf J ((Functor.const _).obj
     refine constant_of_preserves_morphisms (J := S.arrows.category)
       (fun f ↦ @x f.obj.left f.obj.hom f.property) ?_ ⟨f, hf⟩ ⟨.mk g, hg⟩
     intro f g h
-    simpa using hx (𝟙 _) h.left f.property g.property
+    simpa using hx (𝟙 _) h.hom.left f.property g.property
   · intro x hx
     exact hx f.hom hf
 

@@ -72,7 +72,7 @@ def prodBinaryFan (M N : FinDimMfld 𝕜 n) : BinaryFan N M :=
 
 /-- The constructed binary fan is indeed a limit. -/
 def prodBinaryFanIsLimit (M N : FinDimMfld 𝕜 n) : IsLimit (prodBinaryFan N M) where
-  lift c := ofHom <| .prodMk (BinaryFan.fst c) (BinaryFan.snd c)
+  lift c := ofHom <| .prodMk (hom <| BinaryFan.fst c) (hom <| BinaryFan.snd c)
   fac := by rintro c (_ | _) <;> dsimp [prodBinaryFan, prodFst] <;> ext <;> rfl
   uniq c f h := by
     ext x; refine Prod.ext ?_ ?_
@@ -101,7 +101,7 @@ lemma epi_iff_denseRange {M N : FinDimMfld.{0} ℝ ∞} (f : M ⟶ N) :
     replace hf := Set.nonempty_iff_ne_empty.2 hf
     obtain ⟨x, hx⟩ := hf
     let ℝ' : FinDimMfld.{0} ℝ ∞:= .mk' ℝ 𝓘(ℝ, ℝ)
-    let ⟨g, hg⟩ := exists_smooth_zero_one_of_isClosed N.obj.modelWithCorners
+    let ⟨g, hg⟩ := exists_contMDiffMap_zero_one_of_isClosed N.obj.modelWithCorners (n := ⊤)
       (isClosed_closure (s := Set.range (hom f))) (isClosed_singleton (x := x)) (by simpa using hx)
     have hg' := hf'.left_cancellation (Z := ℝ') (ofHom g) (ofHom (.const 0))
       (by ext y; exact congrFun (Set.eqOn_range.1 <| hg.1.mono subset_closure) y)

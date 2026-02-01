@@ -190,32 +190,32 @@ protected def GrothendieckTopology.Ω : Sheaf J (Type max u v) where
         exact h ▸ (hR g' hg' ▸ hg:)
 
 -- TODO: move to `Mathlib.CategoryTheory.Sites.Subsheaf`
-lemma Subpresheaf.isSheaf_range {C : Type u} [Category.{v} C] {J : GrothendieckTopology C}
+lemma Subfunctor.isSheaf_range {C : Type u} [Category.{v} C] {J : GrothendieckTopology C}
     {F F' : Sheaf J (Type w)} (f : F ⟶ F') [Mono f] :
-    Presieve.IsSheaf J (Subpresheaf.range f.val).toPresheaf := by
+    Presieve.IsSheaf J (Subfunctor.range f.val).toFunctor := by
   have : Mono f.val := (sheafToPresheaf _ _).map_mono f
-  exact Presieve.isSheaf_iso J (asIso (Subpresheaf.toRange f.val)) <|
+  exact Presieve.isSheaf_iso J (asIso (Subfunctor.toRange f.val)) <|
     (isSheaf_iff_isSheaf_of_type J _).1 <| F.2
 
--- TODO: move to `Mathlib.CategoryTheory.Subpresheaf.Sieves`
-lemma Subpresheaf.sieveOfSection_eq_top_iff {C : Type u} [Category.{v} C] {F : Cᵒᵖ ⥤ Type w}
-    {G : Subpresheaf F} {U : Cᵒᵖ} {s : F.obj U} :
+-- TODO: move to `Mathlib.CategoryTheory.Subfunctor.Sieves`
+lemma Subfunctor.sieveOfSection_eq_top_iff {C : Type u} [Category.{v} C] {F : Cᵒᵖ ⥤ Type w}
+    {G : Subfunctor F} {U : Cᵒᵖ} {s : F.obj U} :
     G.sieveOfSection s = ⊤ ↔ s ∈ G.obj U := by
   refine ⟨fun h ↦ ?_, fun h ↦ ?_⟩
   · simpa [← Sieve.id_mem_iff_eq_top] using h
   · ext _ f; simpa using G.map f.op h
 
--- TODO: move to `Mathlib.CategoryTheory.Subpresheaf.Sieves`
-lemma Subpresheaf.pullback_sieveOfSection {C : Type u} [Category.{v} C] {F : Cᵒᵖ ⥤ Type w}
-    {G : Subpresheaf F} {U V : Cᵒᵖ} (f : U ⟶ V) (s : F.obj U) :
+-- TODO: move to `Mathlib.CategoryTheory.Subfunctor.Sieves`
+lemma Subfunctor.pullback_sieveOfSection {C : Type u} [Category.{v} C] {F : Cᵒᵖ ⥤ Type w}
+    {G : Subfunctor F} {U V : Cᵒᵖ} (f : U ⟶ V) (s : F.obj U) :
     (G.sieveOfSection s).pullback f.unop = G.sieveOfSection (F.map f s) := by
   ext; simp
 
-lemma Subpresheaf.isClosed_sieveOfSection {C : Type u} [Category.{v} C] {J : GrothendieckTopology C}
-    {F : Cᵒᵖ ⥤ Type w} (hF : Presieve.IsSheaf J F) {G : Subpresheaf F}
-    (hG : Presieve.IsSheaf J G.toPresheaf) {U : Cᵒᵖ} (s : F.obj U) :
+lemma Subfunctor.isClosed_sieveOfSection {C : Type u} [Category.{v} C] {J : GrothendieckTopology C}
+    {F : Cᵒᵖ ⥤ Type w} (hF : Presieve.IsSheaf J F) {G : Subfunctor F}
+    (hG : Presieve.IsSheaf J G.toFunctor) {U : Cᵒᵖ} (s : F.obj U) :
     (G.sieveOfSection s).IsClosed J :=
-  fun _ f hf ↦ (Subpresheaf.isSheaf_iff _ hF).1 hG _ _ <|
+  fun _ f hf ↦ (Subfunctor.isSheaf_iff _ hF).1 hG _ _ <|
     J.superset_covering (G.pullback_sieveOfSection f.op s).le hf
 
 /- A few lemmas for which I haven't found a better place yet.
@@ -273,14 +273,14 @@ noncomputable def classifier : Classifier (Sheaf J (Type max u v)) :=
   .mkOfTerminalΩ₀ _ terminalIsTerminal J.Ω
     ⟨{ app _ := fun _ ↦ (⊤ : ClosedSieve J _) }⟩
     (fun {F G} i _ ↦ ⟨{
-      app X x := ⟨(Subpresheaf.range i.val).sieveOfSection x, Subpresheaf.isClosed_sieveOfSection
-        ((isSheaf_iff_isSheaf_of_type J _).1 <| G.2) ((Subpresheaf.isSheaf_range i)) x⟩ }⟩)
+      app X x := ⟨(Subfunctor.range i.val).sieveOfSection x, Subfunctor.isClosed_sieveOfSection
+        ((isSheaf_iff_isSheaf_of_type J _).1 <| G.2) ((Subfunctor.isSheaf_range i)) x⟩ }⟩)
     (fun {F G} i _ ↦ by
-      refine ⟨⟨by ext X x; dsimp; ext1; exact Subpresheaf.sieveOfSection_eq_top_iff.2 (by simp)⟩,
+      refine ⟨⟨by ext X x; dsimp; ext1; exact Subfunctor.sieveOfSection_eq_top_iff.2 (by simp)⟩,
         ⟨isLimitOfReflects (sheafToPresheaf J (Type max u v)) ?_⟩⟩
       refine evaluationJointlyReflectsLimits _ fun X ↦ ?_
       refine Nonempty.some <| (Types.isLimit_iff _).2 fun s hs ↦ ?_
-      have hs' := Subpresheaf.sieveOfSection_eq_top_iff.1 <| congrArg ClosedSieve.toSieve <|
+      have hs' := Subfunctor.sieveOfSection_eq_top_iff.1 <| congrArg ClosedSieve.toSieve <|
         (hs WalkingCospan.Hom.inl).trans (hs WalkingCospan.Hom.inr).symm
       let ⟨x, hx, hx'⟩ := Function.Injective.existsUnique_of_mem_range
         (by have : Mono i.val := (sheafToPresheaf J _).map_mono i; exact injective_of_mono _) hs'

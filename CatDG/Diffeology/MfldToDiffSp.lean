@@ -49,9 +49,9 @@ namespace FinDimMfld
 
 /-- For finite-dimensional manifolds, the inclusion into `DiffSp` is fully faithful. -/
 def fullyFaithfulForgetToDiffSp : (forget₂ (FinDimMfld.{u, 0} ℝ ∞) DiffSp).FullyFaithful where
-  preimage {M N} f := by
+  preimage {M N} f := ⟨by
     change ContMDiffMap _ _ _ _ ∞
-    exact ⟨f.hom, DSmooth.contMDiff (f.hom.dsmooth)⟩
+    exact ⟨f.hom, DSmooth.contMDiff (f.hom.dsmooth)⟩⟩
 
 instance : (forget₂ (FinDimMfld ℝ ∞) DiffSp).Full := fullyFaithfulForgetToDiffSp.full
 

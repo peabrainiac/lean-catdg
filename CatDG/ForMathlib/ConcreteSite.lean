@@ -130,7 +130,7 @@ structure ConcreteSheaf extends Sheaf J (Type w) where
 
 /-- Morphisms of concrete sheaves are simply morphisms of sheaves. -/
 instance : Category (ConcreteSheaf J) :=
-  InducedCategory.category ConcreteSheaf.toSheaf
+  InducedCategory.instCategory (F := ConcreteSheaf.toSheaf)
 
 /-- The forgetful functor from concrete sheaves to sheaves. -/
 def concreteSheafToSheaf : ConcreteSheaf J ⥤ Sheaf J (Type w) :=

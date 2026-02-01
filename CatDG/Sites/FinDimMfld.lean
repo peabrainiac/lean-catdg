@@ -61,7 +61,7 @@ def openCoverCoverage : Coverage (FinDimMfld ℝ ∞) where
       (IsManifold.toDiffeology u.obj.modelWithCorners _) f) ∧
     ⋃ (v : _) (f ∈ s (Y := v)), range f = univ}
   pullback u v g s hs := by
-    use fun k ↦ {f | (∃ (k : _) (f' : k ⟶ u), s f' ∧ range (g.1 ∘ f.1) ⊆ range f')
+    use fun k ↦ {f | (∃ (k : _) (f' : k ⟶ u), s f' ∧ range (g.hom.1 ∘ f.hom.1) ⊆ range f')
       ∧ @IsOpenInduction _ _ (IsManifold.toDiffeology k.obj.modelWithCorners _)
       (IsManifold.toDiffeology v.obj.modelWithCorners _) f}
     refine ⟨⟨fun k f hf ↦ hf.2, ?_⟩, ?_⟩
@@ -71,12 +71,12 @@ def openCoverCoverage : Coverage (FinDimMfld ℝ ∞) where
       let _ := IsManifold.toDiffeology u.1.modelWithCorners u
       let _ := IsManifold.toDiffeology v.1.modelWithCorners v
       let _ := IsManifold.toDiffeology w.1.modelWithCorners w
-      use .mkOfOpen ⟨_, (hs.1 _ _ hf).isOpen_range'.preimage g.2.continuous⟩
+      use .mkOfOpen ⟨_, (hs.1 _ _ hf).isOpen_range'.preimage g.hom.2.continuous⟩
       refine mem_iUnion₂.2 ⟨⟨_, contMDiff_subtype_val (I := v.1.modelWithCorners)⟩, ?_⟩
       refine ⟨⟨⟨w, f, hf, ?_⟩, ?_⟩, ?_⟩
       · dsimp; rw [range_comp, Subtype.range_val]; simp
       · dsimp; rw [IsManifold.toDiffeology_eq_subtype]
-        exact ((hs.1 _ _ hf).isOpen_range'.preimage g.2.continuous).isOpenInduction_subtype_val'
+        exact ((hs.1 _ _ hf).isOpen_range'.preimage g.hom.2.continuous).isOpenInduction_subtype_val'
       · change x ∈ range (Subtype.val : g ⁻¹' range f → _)
         simpa using hgx
     · intro k f ⟨⟨k', f', hf'⟩, hf⟩; use k'
@@ -143,8 +143,9 @@ lemma openCoverTopology.mem_sieves_iff' {M : FinDimMfld ℝ ∞} {s : Sieve M} :
 morphisms from the terminal object and carries a topology consisting entirely of jointly surjective
 sieves. -/
 noncomputable instance : openCoverTopology.{u}.IsConcreteSite where
-  forgetNatIsoCoyoneda := NatIso.ofComponents fun M ↦
-    (ContMDiffMap.equivDSmoothMap.trans <| @DSmoothMap.equivFnOfUnique _ M (_) (_) _ _ _).toIso.symm
+  forgetNatIsoCoyoneda := NatIso.ofComponents fun M ↦ (InducedCategory.homEquiv.trans <|
+    ContMDiffMap.equivDSmoothMap.trans <|
+      @DSmoothMap.equivFnOfUnique _ M (_) (_) _ _ _).toIso.symm
   forgetNatIsoCoyoneda_apply := rfl
   isJointlySurjective_of_mem hs := by
     rw [openCoverTopology.mem_sieves_iff] at hs
@@ -158,7 +159,7 @@ instance : openCoverTopology.{u}.Subcanonical := by
   refine (isSeparated_yoneda_obj _ M s hs).isSheafFor fun f hf ↦ ?_
   let hs' := hs; simp_rw [openCoverTopology.mem_sieves_iff', eq_univ_iff_forall, mem_iUnion] at hs'
   refine ⟨⟨?_, ?_⟩, ?_⟩
-  · exact fun x ↦ (show ⊤_ _ ⟶ M from f _ <| from_terminal_mem_of_mem _ hs (.const x)) default
+  · exact fun x ↦ (show ⊤_ _ ⟶ M from f _ <| from_terminal_mem_of_mem _ hs ⟨.const x⟩) default
   · let _ := IsManifold.toDiffeology M.1.modelWithCorners M
     let _ := IsManifold.toDiffeology N.1.modelWithCorners N
     refine contMDiff_iff_dsmooth.2 <| dsmooth_iff_locally_dsmooth.2 fun x ↦ ?_
@@ -166,14 +167,14 @@ instance : openCoverTopology.{u}.Subcanonical := by
     let _ := IsManifold.toDiffeology N'.1.modelWithCorners N'
     refine ⟨_, hg.2.isOpen_range, hx, ?_⟩
     rw [← hg.2.dsmooth_comp_iff_dsmooth_restrict]
-    convert (f g hg.1).2.dsmooth; ext1 x'
-    specialize hf (𝟙 (⊤_ _)) (Y₂ := N') (.const x')
-      (from_terminal_mem_of_mem _ hs (.const (g x'))) hg.1 rfl
-    exact congrFun (congrArg Subtype.val hf) (default : ⊤_ FinDimMfld ℝ ∞)
+    convert (f g hg.1).hom.2.dsmooth; ext1 x'
+    specialize hf (𝟙 (⊤_ _)) (Y₂ := N') ⟨.const x'⟩
+      (from_terminal_mem_of_mem _ hs ⟨.const (g x')⟩) hg.1 rfl
+    exact congrFun (congrArg (Subtype.val ∘ InducedCategory.Hom.hom) hf) default
   · intro N' g hg; dsimp; ext x
-    specialize hf (𝟙 (⊤_ _)) (Y₂ := N') (.const x)
-      (from_terminal_mem_of_mem _ hs (.const (g x))) hg rfl
-    exact congrFun (congrArg Subtype.val hf) (default : ⊤_ FinDimMfld ℝ ∞)
+    specialize hf (𝟙 (⊤_ _)) (Y₂ := N') ⟨.const x⟩
+      (from_terminal_mem_of_mem _ hs ⟨.const (g x)⟩) hg rfl
+    exact congrFun (congrArg (Subtype.val ∘ InducedCategory.Hom.hom) hf) default
 
 end FinDimMfld
 
@@ -242,9 +243,9 @@ instance : EuclOp.toFinDimMfld.IsCoverDense FinDimMfld.openCoverTopology := by
     simp
 
 instance EuclOp.toFinDimMfld_fullyFaithful : EuclOp.toFinDimMfld.FullyFaithful where
-  preimage {u v} f :=
-    ⟨f, by simpa [IsManifold.toDiffeology_eq_subtype,
-      IsManifold.toDiffeology_eq_euclideanDiffeology] using (ConcreteCategory.ofHom f).2.dsmooth⟩
+  preimage {u v} f := ⟨f, by
+    simpa [IsManifold.toDiffeology_eq_subtype, IsManifold.toDiffeology_eq_euclideanDiffeology]
+      using (ConcreteCategory.ofHom f.hom).2.dsmooth⟩
 
 instance : EuclOp.toFinDimMfld.Full := EuclOp.toFinDimMfld_fullyFaithful.full
 
@@ -274,7 +275,7 @@ instance : EuclOp.toFinDimMfld.IsDenseSubsite
         (EuclOp.toFinDimMfld.obj u)
       let _ := IsManifold.toDiffeology (EuclOp.toFinDimMfld.obj v).obj.modelWithCorners
         (EuclOp.toFinDimMfld.obj v)
-      have hh := (ConcreteCategory.ofHom h).2.dsmooth
+      have hh := (ConcreteCategory.ofHom h.hom).2.dsmooth
       simp only [EuclOp.toFinDimMfld, IsManifold.toDiffeology_eq_subtype,
         IsManifold.toDiffeology_eq_euclideanDiffeology ] at hf hh
       refine mem_iUnion_of_mem ⟨_, ⟨interior <|

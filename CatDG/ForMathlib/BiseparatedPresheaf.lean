@@ -18,6 +18,8 @@ universe u v w u₂ v₂
 
 open CategoryTheory Category Sheaf GrothendieckTopology
 
+open scoped CartesianClosed
+
 namespace CategoryTheory
 
 variable {C : Type u} [Category.{v} C] (J K : GrothendieckTopology C)
@@ -79,8 +81,8 @@ attribute [local instance] CategoryTheory.Types.instConcreteCategory
 attribute [local instance] CategoryTheory.Types.instFunLike
 
 noncomputable def Sheaf.toExpΩ' (h : J ≤ K) (X : Sheaf J (Type max u v)) : X ⟶ X ⟹ J.Ω' h :=
-  CartesianClosed.curry (J.classifier.χ <| CartesianMonoidalCategory.lift (𝟙 X) (𝟙 X)) ≫
-    (exp X).map (J.ΩProjectionOfLE h)
+  MonoidalClosed.curry (J.classifier.χ <| CartesianMonoidalCategory.lift (𝟙 X) (𝟙 X)) ≫
+    (ihom X).map (J.ΩProjectionOfLE h)
 
 open MonoidalCategory in
 /-- A more concrete choice of exponential object in presheaf categories. -/
@@ -101,10 +103,10 @@ to `Functor.chosenExp`. -/
 noncomputable def Functor.expObjIsoChosenExp {C : Type u} [Category.{v} C]
     (F G : Cᵒᵖ ⥤ Type max u v) : F ⟹ G ≅ F.chosenExp G :=
   NatIso.ofComponents (fun X ↦ {
-    hom x := CartesianClosed.uncurry <| uliftYonedaEquiv.symm x
-    inv f := uliftYonedaEquiv <| CartesianClosed.curry f
-  }) fun f ↦ funext fun x ↦ (congrArg CartesianClosed.uncurry <|
-    uliftYonedaEquiv_naturality_symm x f).trans <| CartesianClosed.uncurry_natural_left _ _
+    hom x := MonoidalClosed.uncurry <| uliftYonedaEquiv.symm x
+    inv f := uliftYonedaEquiv <| MonoidalClosed.curry f
+  }) fun f ↦ funext fun x ↦ (congrArg MonoidalClosed.uncurry <|
+    uliftYonedaEquiv_naturality_symm x f).trans <| MonoidalClosed.uncurry_natural_left _ _
 
 open MonoidalCategory in
 example {C : Type u} [Category.{v} C] {F G : Cᵒᵖ ⥤ Type max w v} (f : F ⟶ G)
@@ -140,7 +142,7 @@ lemma Presieve.IsSeparated.exp {C : Type u} [Category.{v} C] {J : GrothendieckTo
   all_goals exact Prod.ext rfl <| ULift.ext _ _ (id_comp _).symm
 
 lemma Presheaf.IsSheaf.exp {C : Type u} [Category.{v} C] {J : GrothendieckTopology C} {A : Type u₂}
-    [Category.{v₂} A] [HasSheafify J A] [CartesianMonoidalCategory A] [CartesianClosed (Cᵒᵖ ⥤ A)]
+    [Category.{v₂} A] [HasSheafify J A] [CartesianMonoidalCategory A] [MonoidalClosed (Cᵒᵖ ⥤ A)]
     {F : Cᵒᵖ ⥤ A} (hF : IsSheaf J F) (G : Cᵒᵖ ⥤ A) : IsSheaf J (G ⟹ F) :=
   (Presheaf.isSheaf_of_iso_iff <| Classical.choice (ExponentialIdeal.exp_closed
     (i := sheafToPresheaf J A) ⟨⟨F, hF⟩, ⟨Iso.refl _⟩⟩ G).choose_spec).1 (Sheaf.cond _)
@@ -150,7 +152,7 @@ noncomputable def sheafToBisep : Sheaf J (Type max u v) ⥤ Bisep J K where
   obj X := {
     val := _
     isSheaf := cond <| image <| X.toExpΩ' (le_sup_left (b := K))
-    isSeparated := Subpresheaf.isSeparated _ <| by
+    isSeparated := Subfunctor.isSeparated _ <| by
       refine (Presieve.IsSheaf.isSeparated ?_).exp _
       exact (isSheaf_iff_isSheaf_of_type _ _).1 <| Presheaf.isSheaf_of_le le_sup_right (J ⊔ K).Ω.2
   }

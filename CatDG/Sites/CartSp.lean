@@ -207,14 +207,14 @@ instance : openCoverTopology.IsLocallyConnectedSite where
       refine ⟨range f, hf.2.isOpen_range, ⟨y, hy⟩, fun x' ⟨y', hy'⟩ ↦ ?_⟩
       rw [← hy, ← hy']
       exact (@hF ⟨.mk (DSmoothMap.const _ (f y')), hs' _⟩ ⟨.mk f, hf.1⟩
-        (Over.homMk (DSmoothMap.const _ y'))).trans
+        ⟨Over.homMk (DSmoothMap.const _ y')⟩).trans
         (@hF ⟨.mk (DSmoothMap.const _ (f y)), hs' _⟩ ⟨.mk f, hf.1⟩
-          (Over.homMk (DSmoothMap.const _ y))).symm
+          ⟨Over.homMk (DSmoothMap.const _ y)⟩).symm
     exact fun f g ↦ (@hF ⟨.mk (DSmoothMap.const _ (f.1.hom 0)), hs' _⟩ ⟨.mk f.1.hom, f.2⟩
-      (Over.homMk (DSmoothMap.const _ 0))).symm.trans <|
+      ⟨Over.homMk (DSmoothMap.const _ 0)⟩).symm.trans <|
       (IsLocallyConstant.iff_is_const.1 hF' _ _).trans <|
       @hF ⟨.mk (DSmoothMap.const _ (g.1.hom 0)), hs' _⟩ ⟨.mk g.1.hom, g.2⟩
-        (Over.homMk (DSmoothMap.const _ 0))
+        ⟨Over.homMk (DSmoothMap.const _ 0)⟩
 
 /-- `CartSp` is a cohesive site (i.e. in particular locally connected and local, but with a few more
 properties). From this it follows that the sheaves on it form a cohesive topos.

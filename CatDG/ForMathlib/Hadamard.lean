@@ -76,7 +76,7 @@ nonrec theorem intervalIntegral.hasFDerivAt_integral_of_contDiffOn
     · dsimp [F']; rw [show (fun y ↦ f (y, x.2)) = (f ∘ fun y ↦ (y, x.2)) by rfl]
       rw [← fderivWithin_eq_fderiv (s := u) (hu.uniqueDiffWithinAt hx.1) <| by
         refine DifferentiableOn.differentiableAt (s := u) ?_ (hu.mem_nhds hx.1)
-        exact ((hF.differentiableOn le_rfl).comp (by fun_prop) (fun y hy ↦ ⟨hy, hx.2⟩))]
+        exact ((hF.differentiableOn one_ne_zero).comp (by fun_prop) (fun y hy ↦ ⟨hy, hx.2⟩))]
       rw [fderivWithin_comp _ (t := u ×ˢ Set.Icc a b) (hF.differentiableOn (by simp) _ ⟨hx.1, hx.2⟩)
         (by fun_prop) (by exact fun y hy ↦ ⟨hy, hx.2⟩) (hu.uniqueDiffWithinAt hx.1)]
       congr
@@ -99,7 +99,7 @@ nonrec theorem intervalIntegral.hasFDerivAt_integral_of_contDiffOn
     exact ⟨ε, hε, hε'.trans inter_subset_right, B + 1,
       fun x hx ↦ hv' <| prod_mono_left (hε'.trans inter_subset_left) hx⟩
   refine intervalIntegral.hasFDerivAt_integral_of_dominated_of_fderiv_le (bound := fun _ ↦ B)
-    (F' := fun x t ↦ fderiv ℝ (fun x ↦ f (x, t)) x) hε ?_ ?_ ?_ ?_ ?_ ?_
+    (F' := fun x t ↦ fderiv ℝ (fun x ↦ f (x, t)) x) (Metric.ball_mem_nhds _ hε) ?_ ?_ ?_ ?_ ?_ ?_
   · refine eventually_nhds_iff.2 ⟨u, fun x hx ↦ ?_, hu, hxu⟩
     refine ContinuousOn.aestronglyMeasurable ?_ measurableSet_uIoc
     refine .mono ?_ <| (uIoc_of_le hab.le).trans_le Ioc_subset_Icc_self
@@ -168,8 +168,8 @@ protected lemma ContDiffOn.hadamardFun {x : E} {s : Set E} (hs : IsOpen s) (hs' 
   unfold hadamardFun
   refine ContDiffOn.intervalIntegral (f := fun y ↦ lineDeriv ℝ f (x + y.2 • (y.1 - x)) b) hs ?_
   rw [Set.uIcc_of_le zero_le_one]
-  refine .congr ?_ (fun y hy ↦ DifferentiableAt.lineDeriv_eq_fderiv <|
-    (hf.differentiableOn <| by simp [le_of_add_le_right hm]).differentiableAt <|
+  refine .congr ?_ (fun y hy ↦ DifferentiableAt.lineDeriv_eq_fderiv <| (hf.differentiableOn <|
+    by simp [(show n ≠ 0 by positivity [le_of_add_le_right hm])]).differentiableAt <|
       hs.mem_nhds <| hs'.add_smul_sub_mem hy.1 hy.2.1 hy.2.2)
   refine .mono ?_ (s := (fun y : E × ℝ ↦ x + y.2 • (y.1 - x)) ⁻¹' s)
     fun y hy ↦ hs'.add_smul_sub_mem hy.1 hy.2.1 hy.2.2
@@ -187,6 +187,7 @@ lemma eqOn_add_sum_hadamardFun {x : E} {s : Set E} (hs : IsOpen s) (hs' : StarCo
     {f : E → F} {n : WithTop ℕ∞} (hf : ContDiffOn ℝ n f s) (hn : 1 ≤ n)
     {ι : Type*} [Fintype ι] (b : Module.Basis ι ℝ E) :
     s.EqOn f (fun y ↦ f x + ∑ i : ι, b.repr (y - x) i • hadamardFun f x (b i) y) := by
+  have hn' : n ≠ 0 := (one_pos.trans_le hn).ne'
   intro y hy
   have hs'' : ∀ t ∈ Set.uIcc (0 : ℝ) 1, x + t • (y - x) ∈ s := fun t ht ↦ by
     rw [Set.uIcc_of_le zero_le_one] at ht
@@ -194,7 +195,7 @@ lemma eqOn_add_sum_hadamardFun {x : E} {s : Set E} (hs : IsOpen s) (hs' : StarCo
   refine sub_eq_iff_eq_add'.1 <| Eq.trans (by simp) <| (integral_deriv_eq_sub
     (a := 0) (b := 1) (f := f ∘ fun t ↦ x + t • (y - x)) ?_ ?_).symm.trans ?_
   · intro t ht
-    have := (hf.differentiableOn hn).differentiableAt <| hs.mem_nhds <| hs'' _ ht
+    have := (hf.differentiableOn hn').differentiableAt <| hs.mem_nhds <| hs'' _ ht
     fun_prop
   · refine ContinuousOn.intervalIntegrable ?_
     exact ((hf.comp (by fun_prop) <| s.mapsTo_preimage _).continuousOn_deriv_of_isOpen
@@ -203,17 +204,17 @@ lemma eqOn_add_sum_hadamardFun {x : E} {s : Set E} (hs : IsOpen s) (hs' : StarCo
     simp_rw [← integral_smul]
     rw [← integral_finset_sum]
     · refine integral_congr fun t ht ↦ ?_
-      rw [← fderiv_deriv, fderiv_comp]
+      rw [← fderiv_apply_one_eq_deriv, fderiv_comp]
       · simp_rw [DifferentiableAt.lineDeriv_eq_fderiv <|
-          (hf.differentiableOn hn).differentiableAt <| hs.mem_nhds <| hs'' _ ht]
+          (hf.differentiableOn hn').differentiableAt <| hs.mem_nhds <| hs'' _ ht]
         simp_rw [← ContinuousLinearMap.map_smul, ← map_sum]
         simp [deriv_smul_const, - map_sub]
-      · refine (hf.differentiableOn hn).differentiableAt <| hs.mem_nhds <| hs'' _ ht
+      · refine (hf.differentiableOn hn').differentiableAt <| hs.mem_nhds <| hs'' _ ht
       · simp
     · intro i _
       refine (continuousOn_const.smul ?_).intervalIntegrable
       refine .congr ?_ (fun t ht ↦ DifferentiableAt.lineDeriv_eq_fderiv <|
-          (hf.differentiableOn hn).differentiableAt <| hs.mem_nhds <| hs'' _ ht)
+          (hf.differentiableOn hn').differentiableAt <| hs.mem_nhds <| hs'' _ ht)
       refine .mono ?_  (s := (fun t ↦ x + t • (y - x)) ⁻¹' s) fun t ht ↦ hs'' _ ht
       exact (ContinuousLinearMap.apply ℝ F _).continuous.comp_continuousOn <|
         (hf.continuousOn_fderiv_of_isOpen hs hn).comp (by fun_prop) <| s.mapsTo_preimage _
