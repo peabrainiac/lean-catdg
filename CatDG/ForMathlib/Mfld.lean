@@ -1,3 +1,4 @@
+import Mathlib.CategoryTheory.Limits.Constructions.FiniteProductsOfBinaryProducts
 import Mathlib.Geometry.Manifold.Diffeomorph
 import Mathlib.Geometry.Manifold.IsManifold.InteriorBoundary
 import Mathlib.Topology.Category.TopCat.Basic
@@ -40,20 +41,23 @@ that way `banach` would be closed under isomorphisms, but instances like
 `CompleteSpace M.obj.modelVectorSpace` for `M : BanachMfld 𝕜 n` could only be provided under
 the assumption `Nonempty M`.
 
+Lastly, we give a construction of finite products in `Mfld 𝕜 n`.
+
 ## TODOs
-* Show that `Mfld 𝕜 n` has all products.
 * Show that `boundaryless` is closed under isomorphisms.
 * Redefine `banach` and `finiteDimensional` such that they are closed under isomorphisms too.
-* Show that various object properties are closed under arbitrary / finite products, and conclude
-  that the subcategories under consideration also have arbitrary / finite products. This requires
+* Show that various object properties are closed under finite products, and conclude
+  that the subcategories under consideration also have finite products. This requires
   showing that they are closed under isomorphisms first, because
   `ObjectProperty.IsClosedUnderLimitsOfShape` is defined to mean that the property contains not just
   some but all limits of diagrams within it.
+* Make use of `Mathlib.CategoryTheory.ObjectProperty.FiniteProducts` here once mathlib is bumped
+  again.
 -/
 
 universe u
 
-open CategoryTheory ConcreteCategory Manifold
+open CategoryTheory ConcreteCategory Limits Manifold
 
 /-- The category of all (possbily non-Hausdorff, non-paracompact and infinite-dimensional) manifolds
 with corners for a fixed ground field `𝕜` and smoothness degree `n : WithTop ℕ∞`.
@@ -285,5 +289,44 @@ proof_wanted instIsClosedUnderIsomorphismsBoundaryless :
     boundaryless.IsClosedUnderIsomorphisms (C := Mfld.{u} 𝕜 n)
 
 end ClosedUnderIsomorphisms
+
+section Products
+
+/-- A choice of terminal object in the category of manifolds, given by `PUnit`. -/
+abbrev pt : Mfld 𝕜 n := ⟨PUnit, 𝓘(𝕜, PUnit)⟩
+
+/-- The choice `FinDimMfld.pt` of terminal object is indeed terminal. -/
+def isTerminalPt : IsTerminal (pt : Mfld 𝕜 n) where
+  lift s := ofHom (.const (default : PUnit))
+
+/-- An explicit choice of product in the category of manifolds, given by the product of the
+underlying types and models with corners. -/
+protected abbrev prod (M N : Mfld.{u} 𝕜 n) : Mfld.{u} 𝕜 n :=
+  ⟨M × N, M.modelWithCorners.prod N.modelWithCorners⟩
+
+/-- The first projection realising `M.prod N` as the product of `M` and `N`. -/
+def prodFst {M N : Mfld 𝕜 n} : M.prod N ⟶ M := ofHom .fst
+
+/-- The second projection realising `M.prod N` as the product of `M` and `N`. -/
+def prodSnd {M N : Mfld 𝕜 n} : M.prod N ⟶ N := ofHom .snd
+
+/-- An explicit binary fan of `M` and `N` given by `M.prod N`. -/
+def prodBinaryFan (M N : Mfld 𝕜 n) : BinaryFan N M :=
+  BinaryFan.mk prodFst prodSnd
+
+/-- The constructed binary fan is indeed a limit. -/
+def prodBinaryFanIsLimit (M N : Mfld 𝕜 n) : IsLimit (prodBinaryFan N M) where
+  lift c := ofHom <| .prodMk (hom <| BinaryFan.fst c) (hom <| BinaryFan.snd c)
+  fac := by rintro c (_ | _) <;> dsimp [prodBinaryFan, prodFst] <;> ext <;> rfl
+  uniq c f h := by
+    ext x; refine Prod.ext ?_ ?_
+    · exact CategoryTheory.congr_fun (h ⟨WalkingPair.left⟩) x
+    · exact CategoryTheory.congr_fun (h ⟨WalkingPair.right⟩) x
+
+instance : HasFiniteProducts (Mfld 𝕜 n) := by
+  refine @hasFiniteProducts_of_has_binary_and_terminal _ _ ?_ isTerminalPt.hasTerminal
+  exact @hasBinaryProducts_of_hasLimit_pair _ _ ⟨⟨_, prodBinaryFanIsLimit _ _⟩⟩
+
+end Products
 
 end Mfld
