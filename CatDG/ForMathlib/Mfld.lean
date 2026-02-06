@@ -1,5 +1,5 @@
 import Mathlib.CategoryTheory.Limits.Constructions.FiniteProductsOfBinaryProducts
-import Mathlib.Geometry.Manifold.Diffeomorph
+import Mathlib.Geometry.Manifold.LocalDiffeomorph
 import Mathlib.Geometry.Manifold.IsManifold.InteriorBoundary
 import Mathlib.Topology.Category.TopCat.Basic
 
@@ -115,16 +115,16 @@ def boundaryless : ObjectProperty (Mfld 𝕜 n) :=
 
 /-- The object property satisfied by all manifolds whose model vector space is complete. -/
 def banach : ObjectProperty (Mfld 𝕜 n) :=
-  fun M ↦ CompleteSpace M.modelVectorSpace
+  fun M ↦ IsEmpty M ∨ CompleteSpace M.modelVectorSpace
 
 /-- The object property satisfied by all manifolds whose model vector space is
 finite-dimensional. -/
 def finiteDimensional : ObjectProperty (Mfld 𝕜 n) :=
-  fun M ↦ FiniteDimensional 𝕜 M.modelVectorSpace
+  fun M ↦ IsEmpty M ∨ FiniteDimensional 𝕜 M.modelVectorSpace
 
 lemma finiteDimensional_le_banach [CompleteSpace 𝕜] :
     finiteDimensional (𝕜 := 𝕜) (n := n) ≤ banach :=
-  fun _ (_ : FiniteDimensional 𝕜 _) ↦ FiniteDimensional.complete 𝕜 _
+  fun _ ↦ Or.imp_right fun h ↦ h.complete 𝕜 _
 
 /-- The object property corresponding to Hausdorff, sigma-compact and finite-dimensional manifolds
 without boundary. -/
@@ -196,13 +196,14 @@ instance {P : ObjectProperty (Mfld 𝕜 n)} [Fact (P ≤ boundaryless)] (M : P.F
     BoundarylessManifold M.obj.modelWithCorners M :=
   (Fact.out : P ≤ boundaryless) _ M.property
 
-instance {P : ObjectProperty (Mfld 𝕜 n)} [Fact (P ≤ banach)] (M : P.FullSubcategory) :
+instance {P : ObjectProperty (Mfld 𝕜 n)} [Fact (P ≤ banach)] (M : P.FullSubcategory) [Nonempty M] :
     CompleteSpace M.obj.modelVectorSpace :=
-  (Fact.out : P ≤ banach) _ M.property
+  (or_iff_right <| not_isEmpty_of_nonempty _).1 <| (Fact.out : P ≤ banach) _ M.property
 
-instance {P : ObjectProperty (Mfld 𝕜 n)} [Fact (P ≤ finiteDimensional)] (M : P.FullSubcategory) :
+instance {P : ObjectProperty (Mfld 𝕜 n)} [Fact (P ≤ finiteDimensional)] (M : P.FullSubcategory)
+    [Nonempty M] :
     FiniteDimensional 𝕜 M.obj.modelVectorSpace :=
-  (Fact.out : P ≤ finiteDimensional) _ M.property
+  (or_iff_right <| not_isEmpty_of_nonempty _).1 <| (Fact.out : P ≤ finiteDimensional) _ M.property
 
 /-- Every object of one of these subcategories automatically receives all the correct instances. -/
 example (M : FinDimMfld 𝕜 n) : T2Space M := inferInstance
@@ -287,6 +288,35 @@ instance : sigmaCompact.IsClosedUnderIsomorphisms (C := Mfld.{u} 𝕜 n) :=
 are preserved by diffeomorphisms, which probably needs #33189 to be merged first. -/
 proof_wanted instIsClosedUnderIsomorphismsBoundaryless :
     boundaryless.IsClosedUnderIsomorphisms (C := Mfld.{u} 𝕜 n)
+
+/-- Every continuous linear equivalence is a uniform isomorphism.
+TODO: move to another file. -/
+@[simps]
+def _root_.ContinuousLinearEquiv.toUniformEquiv {R₁ : Type*} {R₂ : Type*} [Semiring R₁]
+    [Semiring R₂] {σ₁₂ : R₁ →+* R₂} {σ₂₁ : R₂ →+* R₁} [RingHomInvPair σ₁₂ σ₂₁]
+    [RingHomInvPair σ₂₁ σ₁₂] {E₁ : Type*} {E₂ : Type*} [UniformSpace E₁] [UniformSpace E₂]
+    [AddCommGroup E₁] [AddCommGroup E₂] [Module R₁ E₁] [Module R₂ E₂] [IsUniformAddGroup E₁]
+    [IsUniformAddGroup E₂] (e : E₁ ≃SL[σ₁₂] E₂) : UniformEquiv E₁ E₂ where
+  toFun := e
+  invFun := e.symm
+  uniformContinuous_toFun := e.toContinuousLinearMap.uniformContinuous
+  uniformContinuous_invFun := e.symm.toContinuousLinearMap.uniformContinuous
+  left_inv x := by simp
+  right_inv x := by simp
+
+instance [NeZero n] : banach.IsClosedUnderIsomorphisms (C := Mfld.{u} 𝕜 n) :=
+  ⟨fun {M N} i ↦ .rec (Or.inl ∘ @(diffeomorphOfIso i).symm.isEmpty) <| fun _ ↦ by
+    refine or_not.imp_right <| (fun ⟨x⟩ ↦ ?_) ∘ not_isEmpty_iff.1
+    have e : N.modelVectorSpace ≃L[𝕜] M.modelVectorSpace :=
+      (diffeomorphOfIso i).symm.mfderivToContinuousLinearEquiv NeZero.out x
+    exact e.toUniformEquiv.completeSpace_iff.2 ‹_›⟩
+
+instance [NeZero n] : finiteDimensional.IsClosedUnderIsomorphisms (C := Mfld.{u} 𝕜 n) :=
+  ⟨fun {M N} i ↦ .rec (Or.inl ∘ @(diffeomorphOfIso i).symm.isEmpty) <| fun _ ↦ by
+    refine or_not.imp_right <| (fun ⟨x⟩ ↦ ?_) ∘ not_isEmpty_iff.1
+    have e : N.modelVectorSpace ≃L[𝕜] M.modelVectorSpace :=
+      (diffeomorphOfIso i).symm.mfderivToContinuousLinearEquiv NeZero.out x
+    exact e.symm.finiteDimensional⟩
 
 end ClosedUnderIsomorphisms
 

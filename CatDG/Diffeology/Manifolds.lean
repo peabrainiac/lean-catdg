@@ -141,7 +141,7 @@ theorem DSmooth.contMDiff {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     {H : Type*} [TopologicalSpace H] {I : ModelWithCorners ℝ E H} {M : Type*}
     [TopologicalSpace M] [ChartedSpace H M] [m : IsManifold I ∞ M]
     [hI : BoundarylessManifold I M]
-    {E' : Type*} [NormedAddCommGroup E'] [NormedSpace ℝ E'] [FiniteDimensional ℝ E']
+    {E' : Type*} [NormedAddCommGroup E'] [NormedSpace ℝ E']
     {H' : Type*} [TopologicalSpace H'] {I' : ModelWithCorners ℝ E' H'} {N : Type*}
     [TopologicalSpace N] [ChartedSpace H' N] [m' : IsManifold I' ∞ N]
     {f : M → N} (hf : DSmooth[m.toDiffeology,m'.toDiffeology] f) : ContMDiff I I' ∞ f := by
@@ -178,7 +178,7 @@ theorem contMDiff_iff_dsmooth {E : Type*} [NormedAddCommGroup E] [NormedSpace �
     {H : Type*} [TopologicalSpace H] {I : ModelWithCorners ℝ E H} {M : Type*}
     [TopologicalSpace M] [ChartedSpace H M] [m : IsManifold I ∞ M]
     [hI : BoundarylessManifold I M]
-    {E' : Type*} [NormedAddCommGroup E'] [NormedSpace ℝ E'] [FiniteDimensional ℝ E']
+    {E' : Type*} [NormedAddCommGroup E'] [NormedSpace ℝ E']
     {H' : Type*} [TopologicalSpace H'] {I' : ModelWithCorners ℝ E' H'} {N : Type*}
     [TopologicalSpace N] [ChartedSpace H' N] [m' : IsManifold I' ∞ N]
     {f : M → N} : ContMDiff I I' ∞ f ↔ DSmooth[m.toDiffeology,m'.toDiffeology] f :=
@@ -191,7 +191,7 @@ def ContMDiffMap.equivDSmoothMap {E : Type*} [NormedAddCommGroup E] [NormedSpace
     {H : Type*} [TopologicalSpace H] {I : ModelWithCorners ℝ E H} {M : Type*}
     [TopologicalSpace M] [ChartedSpace H M] [m : IsManifold I ∞ M]
     [hI : BoundarylessManifold I M]
-    {E' : Type*} [NormedAddCommGroup E'] [NormedSpace ℝ E'] [FiniteDimensional ℝ E']
+    {E' : Type*} [NormedAddCommGroup E'] [NormedSpace ℝ E']
     {H' : Type*} [TopologicalSpace H'] {I' : ModelWithCorners ℝ E' H'} {N : Type*}
     [TopologicalSpace N] [ChartedSpace H' N] [m' : IsManifold I' ∞ N] :
     ContMDiffMap I I' M N ∞ ≃

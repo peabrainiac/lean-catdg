@@ -27,7 +27,7 @@ category `DiffSp` of diffeological spaces, and show that some of them are fully 
 
 universe u
 
-open CategoryTheory ContDiff
+open CategoryTheory ConcreteCategory ContDiff
 
 /-- The category of (possibly non-Hausdorff, non-paracompact) smooth real manifolds with corners
 carries a functor to the category of diffeological spaces that assigns to each manifold `M` the
@@ -49,9 +49,11 @@ namespace FinDimMfld
 
 /-- For finite-dimensional manifolds, the inclusion into `DiffSp` is fully faithful. -/
 def fullyFaithfulForgetToDiffSp : (forget₂ (FinDimMfld.{u, 0} ℝ ∞) DiffSp).FullyFaithful where
-  preimage {M N} f := ⟨by
-    change ContMDiffMap _ _ _ _ ∞
-    exact ⟨f.hom, DSmooth.contMDiff (f.hom.dsmooth)⟩⟩
+  preimage {M N} f := by
+    refine ⟨ofHom ⟨f.hom, ?_⟩⟩
+    obtain _ | _ := isEmpty_or_nonempty M
+    · exact IsEmpty.elim (by assumption)
+    · exact DSmooth.contMDiff (f.hom.dsmooth)
 
 instance : (forget₂ (FinDimMfld ℝ ∞) DiffSp).Full := fullyFaithfulForgetToDiffSp.full
 

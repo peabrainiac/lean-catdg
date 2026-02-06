@@ -3,6 +3,7 @@ import CatDG.ForMathlib.Mfld
 import Mathlib.CategoryTheory.ConcreteCategory.EpiMono
 import Mathlib.CategoryTheory.Limits.Constructions.FiniteProductsOfBinaryProducts
 import Mathlib.Geometry.Manifold.PartitionOfUnity
+import Mathlib.RingTheory.Finiteness.Prod
 
 /-!
 # The category of finite-dimensional manifolds
@@ -39,6 +40,8 @@ initialize_simps_projections Mfld (+carrier, +modelVectorSpace, +model, +modelWi
 
 namespace FinDimMfld
 
+section
+
 variable {𝕜 : Type*} [NontriviallyNormedField 𝕜] {n : WithTop ℕ∞}
 
 protected abbrev mk' {𝕜 : Type*} [NontriviallyNormedField 𝕜] {n : WithTop ℕ∞} (M : Type u)
@@ -46,7 +49,7 @@ protected abbrev mk' {𝕜 : Type*} [NontriviallyNormedField 𝕜] {n : WithTop 
     [TopologicalSpace H] (I : ModelWithCorners 𝕜 E H) [ChartedSpace H M] [IsManifold I n M]
     [FiniteDimensional 𝕜 E] [T2Space M] [SigmaCompactSpace M] [BoundarylessManifold I M] :
     FinDimMfld 𝕜 n :=
-  ⟨⟨M, I⟩, ⟨⟨‹_›, ‹_›⟩, ‹_›⟩, ‹_›⟩
+  ⟨⟨M, I⟩, ⟨⟨‹_›, ‹_›⟩, ‹_›⟩, Or.inr ‹_›⟩
 
 /-- A choice of terminal object in the category of manifolds, given by `PUnit`. -/
 abbrev pt : FinDimMfld 𝕜 n := .mk' PUnit 𝓘(𝕜, PUnit)
@@ -58,7 +61,12 @@ def isTerminalPt : IsTerminal (pt : FinDimMfld 𝕜 n) where
 /-- An explicit choice of product in the category of manifolds, given by the product of the
 underlying types and models with corners. -/
 protected abbrev prod (M N : FinDimMfld.{u} 𝕜 n) : FinDimMfld.{u} 𝕜 n :=
-  .mk' (M × N) (M.obj.modelWithCorners.prod N.obj.modelWithCorners)
+  ⟨⟨M × N, M.obj.modelWithCorners.prod N.obj.modelWithCorners⟩,
+    ⟨⟨inferInstanceAs (T2Space _), inferInstanceAs (SigmaCompactSpace _)⟩,
+    inferInstanceAs (BoundarylessManifold _ _)⟩, by
+      refine (isEmpty_or_nonempty M).rec (Or.inl ∘ @Prod.isEmpty_left _ _) fun _ ↦ ?_
+      refine (isEmpty_or_nonempty N).imp (@Prod.isEmpty_right _ _) fun _ : Nonempty N ↦ ?_
+      infer_instance⟩
 
 /-- The first projection realising `M.prod N` as the product of `M` and `N`. -/
 def prodFst {M N : FinDimMfld 𝕜 n} : M.prod N ⟶ M := ofHom .fst
@@ -97,7 +105,10 @@ lemma mono_iff_injective {M N : FinDimMfld.{u} 𝕜 n} (f : M ⟶ N) : Mono f �
 lemma epi_iff_denseRange {M N : FinDimMfld.{0} ℝ ∞} (f : M ⟶ N) :
     Epi f ↔ DenseRange f := by
   refine ⟨not_imp_not.1 fun hf hf' ↦ ?_, fun hf ↦ ⟨fun g g' hg ↦ ?_⟩⟩
-  · rw [DenseRange, ← compl_compl (Set.range _), ← interior_eq_empty_iff_dense_compl] at hf
+  · wlog _ : Nonempty N
+    · rw [not_nonempty_iff, denseRange_iff_closure_range] at *
+      exact hf <| Subsingleton.elim _ _
+    rw [DenseRange, ← compl_compl (Set.range _), ← interior_eq_empty_iff_dense_compl] at hf
     replace hf := Set.nonempty_iff_ne_empty.2 hf
     obtain ⟨x, hx⟩ := hf
     let ℝ' : FinDimMfld.{0} ℝ ∞:= .mk' ℝ 𝓘(ℝ, ℝ)
@@ -115,17 +126,28 @@ instance {X : Type*} [TopologicalSpace X] [LocallyCompactSpace X] (u : Opens X) 
     LocallyCompactSpace u :=
   u.2.locallyCompactSpace
 
+end
+
 instance {M : FinDimMfld ℝ ∞} : SecondCountableTopology M := by
+  wlog h : Nonempty M
+  · rw [not_nonempty_iff] at h;  infer_instance
   have := M.1.modelWithCorners.toHomeomorphTarget.secondCountableTopology
   exact ChartedSpace.secondCountable_of_sigmaCompact M.1.model M
 
 instance {M : FinDimMfld ℝ ∞} : LocallyCompactSpace M := by
+  wlog h : Nonempty M
+  · rw [not_nonempty_iff] at h;  infer_instance
   have := M.1.modelWithCorners.toHomeomorphTarget.locallyCompactSpace_iff.2 <|
     M.1.modelWithCorners.range_eq_target ▸ M.1.modelWithCorners.isClosed_range.locallyCompactSpace
   exact ChartedSpace.locallyCompactSpace M.1.model M
 
 noncomputable abbrev mkOfOpen {M : FinDimMfld ℝ ∞} (u : Opens M) :
     FinDimMfld ℝ ∞ :=
-  .mk' u M.1.modelWithCorners
+  ⟨⟨u, M.obj.modelWithCorners⟩, by
+    refine ⟨⟨⟨inferInstanceAs (T2Space _), inferInstanceAs (SigmaCompactSpace _)⟩, ?_⟩, ?_⟩
+    · let _ : ChartedSpace M.obj.model u := inferInstance
+      change BoundarylessManifold _ _
+      infer_instance
+    · refine (isEmpty_or_nonempty M).imp ?_ ?_ <;> intro <;> infer_instance⟩
 
 end FinDimMfld
