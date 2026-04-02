@@ -97,9 +97,6 @@ noncomputable def π₀ConstantSheafAdj [HasWeakSheafify J (Type max u w)] :
 TODO: clean up. -/
 section TerminalSheaf
 
-attribute [local instance] HasForget.hasCoeToSort
-attribute [local instance] HasForget.instFunLike
-
 /-- Morphisms to a terminal object are unique. -/
 noncomputable def Limits.IsTerminal.uniqueHom {C : Type u} [Category.{v} C]
     {T : C} (hT : IsTerminal T) (X : C) : Unique (X ⟶ T) :=
@@ -149,7 +146,7 @@ instance [HasTerminal C] : PreservesLimit (Functor.empty.{0} _) (π₀.{u,v,w} J
 Taken from mathlib PR #17781.
 TODO: generalise the universe levels of `IsSifted.colim_preservesFiniteProducts_of_isSifted` so it
 can replace this. -/
-instance colimPreservesFiniteProductsOfIsSifted {C : Type u} [Category.{v} C] :
+instance colimPreservesFiniteProductsOfIsSifted {C : Type u} [Category.{v} C] [IsSifted C] :
     PreservesFiniteProducts (colim : (C ⥤ _) ⥤ Type max u w) := by
   sorry
 

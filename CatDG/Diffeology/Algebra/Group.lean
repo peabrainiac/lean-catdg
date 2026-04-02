@@ -530,7 +530,7 @@ theorem toDiffeologicalSpace_inf (x y : GroupDiffeology G) : (x ⊓ y).1 = x.1 �
 
 @[to_additive]
 instance : SemilatticeInf (GroupDiffeology G) :=
-  toDiffeologicalSpace_injective.semilatticeInf _ toDiffeologicalSpace_inf
+  toDiffeologicalSpace_injective.semilatticeInf _ (by rfl) (by rfl) toDiffeologicalSpace_inf
 
 @[to_additive]
 instance : Inhabited (GroupDiffeology G) := ⟨⊤⟩

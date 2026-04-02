@@ -222,9 +222,6 @@ lemma Subfunctor.isClosed_sieveOfSection {C : Type u} [Category.{v} C] {J : Grot
 TODO: clean up. -/
 section TerminalSheaf
 
-attribute [local instance] HasForget.hasCoeToSort
-attribute [local instance] HasForget.instFunLike
-
 /-- Evaluating a terminal functor yields terminal objects.
 TODO: move somewhere else -/
 noncomputable def Limits.IsTerminal.isTerminalObj_functor {C : Type u} [Category.{v} C]
@@ -248,8 +245,10 @@ noncomputable def Limits.IsTerminal.isTerminalSheafValObj {C : Type u} [Category
 sections of the terminal sheaf are unique. -/
 noncomputable instance Sheaf.instUniqueTerminalValObjForget {C : Type u} [Category.{v} C]
     {J : GrothendieckTopology C} {A : Type u₂} [Category.{v₂} A] [HasLimits A]
-    [HasForget.{w} A] [PreservesLimit (Functor.empty _) (forget A)] (Y : Cᵒᵖ) :
-    Unique ((⊤_ Sheaf J A).val.obj Y) :=
+    {FA : outParam (A → A → Type w)} {CA : outParam (A → Type w)}
+    [outParam ((X Y : A) → FunLike (FA X Y) (CA X) (CA Y))] [ConcreteCategory A FA]
+    [PreservesLimit (Functor.empty _) (forget A)] (Y : Cᵒᵖ) :
+    Unique (CA ((⊤_ Sheaf J A).val.obj Y)) :=
   (Types.isTerminalEquivUnique _).1 <|
     (terminalIsTerminal.isTerminalSheafValObj Y).isTerminalObj (forget _) _
 

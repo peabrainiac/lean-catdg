@@ -147,7 +147,8 @@ lemma openCoverTopology.mem_sieves_iff' {M : FinDimMfld ℝ ∞} {s : Sieve M} :
 /-- `FinDimMfld ℝ ∞` is a concrete site, in that it is concrete with elements corresponding to
 morphisms from the terminal object and carries a topology consisting entirely of jointly surjective
 sieves. -/
-noncomputable instance : openCoverTopology.{u}.IsConcreteSite where
+noncomputable instance : openCoverTopology.{u}.IsConcreteSite
+    (fun M N : FinDimMfld ℝ ∞ => ContMDiffMap M.1.modelWithCorners N.1.modelWithCorners M N ∞) where
   forgetNatIsoCoyoneda := NatIso.ofComponents fun M ↦ (InducedCategory.homEquiv.trans <|
     ContMDiffMap.equivDSmoothMap.trans <|
       @DSmoothMap.equivFnOfUnique _ M (_) (_) _ _ _).toIso.symm

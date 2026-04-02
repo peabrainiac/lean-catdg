@@ -253,7 +253,7 @@ protected theorem IsPlot.dsmooth {n : ℕ} {p : Eucl n → X} (hp : IsPlot p) : 
   fun _ _ ↦ isPlot_reparam hp
 
 protected theorem DSmooth.isPlot {n : ℕ} {p : Eucl n → X} (hp : DSmooth p) : IsPlot p :=
-  hp n id <| @contDiff_id ℝ _ (Eucl n) _ _ ∞
+  hp n id <| @contDiff_id ℝ (Eucl n) _ _ _ ∞
 
 theorem isPlot_iff_dsmooth {n : ℕ} {p : Eucl n → X} : IsPlot p ↔ DSmooth p :=
   ⟨IsPlot.dsmooth,DSmooth.isPlot⟩

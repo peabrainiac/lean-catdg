@@ -25,9 +25,9 @@ implemented in mathlib, so diffeological inductions are used instead.
 * `CartSp` is a concrete, cohesive and subcanonical site
 
 ## TODO
-* Switch from `HasForget` to the new `ConcreteCategory` design
-* Use `Presieve.IsJointlySurjective` more (currently runs into problems regarding which `FunLike`
-  instances are used)
+* Use `Presieve.IsJointlySurjective` more (this ran into problems regarding which `FunLike`
+  instances are used; maybe now that we switched to using `ConcreteCategory` instead of `HasForget`
+  this can be done better?)
 * Generalise `CartSp` to take a smoothness parameter in `ℕ∞`
 * General results about concrete sites
 -/
@@ -51,16 +51,12 @@ noncomputable instance : SmallCategory CartSp where
   id := fun n ↦ DSmoothMap.id _
   comp := fun f g ↦ g.comp f
 
-instance : HasForget CartSp where
-  forget := { obj := fun n ↦ n, map := fun f ↦ f.1 }
-  forget_faithful := { map_injective := fun {_ _} ↦ DSmoothMap.coe_injective }
-
-instance instFunLike (n m : CartSp) : FunLike (n ⟶ m) n m where
-  coe f := DFunLike.coe (F := DSmoothMap _ _) f
-  coe_injective' := DFunLike.coe_injective (F := DSmoothMap _ _)
+noncomputable instance : ConcreteCategory.{0} CartSp (fun n m ↦ DSmoothMap n m) where
+  hom f := f
+  ofHom f := f
 
 @[simp]
-theorem id_app (n : CartSp) (x : n) : (𝟙 n : n ⟶ n) x = x := rfl
+theorem id_app (n : CartSp) (x : n) : (𝟙 n : n ⟶ n) x = x := by rfl
 
 @[simp]
 theorem comp_app {n m k : CartSp} (f : n ⟶ m) (g : m ⟶ k) (x : n) :
@@ -94,7 +90,7 @@ def openCoverCoverage : Coverage CartSp where
       let f'' := (DDiffeomorph.ofIsInduction (hs.1 k' f' hf'.1).1)
       use ⟨_,(f''.dsmooth_invFun.comp <|
         (f ≫ g).2.subtype_mk (fun x ↦ hf'.2 (mem_range_self x)))⟩
-      refine ⟨f', hf'.1, ?_⟩; ext x; change f'.1 (f''.invFun _) = _
+      refine ⟨f', hf'.1, ?_⟩; ext x : 2; change f'.1 (f''.invFun _) = _
       simp_rw [show f'.1 = Subtype.val ∘ f'' by rfl]
       dsimp; exact congrArg Subtype.val <| f''.apply_symm_apply _
 
@@ -141,7 +137,7 @@ lemma openCoverTopology.mem_sieves_iff' {n : CartSp} {s : Sieve n} :
 /-- The `0`-dimensional cartesian space is terminal in `CartSp`. -/
 noncomputable def isTerminal0 : IsTerminal (0 : CartSp) where
   lift s := DSmoothMap.const _ 0
-  uniq c f h := by ext x; exact Subsingleton.elim (α := EuclideanSpace ℝ (Fin 0)) (f x) 0
+  uniq c f h := by ext x : 2; exact Subsingleton.elim (α := EuclideanSpace ℝ (Fin 0)) (f x) 0
 
 /-- The first projection realising `EuclideanSpace ℝ (Fin (n + m))` as the product of
 `EuclideanSpace ℝ n` and `EuclideanSpace ℝ m`. -/
@@ -166,13 +162,13 @@ noncomputable def prodBinaryFanIsLimit (n m : CartSp) : IsLimit (prodBinaryFan n
     DSmoothMap.prodMk (BinaryFan.fst c) (BinaryFan.snd c)
   fac := by
     rintro c (_ | _) <;> dsimp [prodBinaryFan, prodFst]
-    all_goals ext (x : EuclideanSpace _ _)
+    all_goals ext (x : EuclideanSpace _ _) : 2
     -- TODO: figure out how to better deal with simp-breaking situations like this
     all_goals rw [CategoryTheory.comp_apply]
     · exact congrArg Prod.fst (EuclideanSpace.finAddEquivProd.toDDiffeomorph.apply_symm_apply _)
     · exact congrArg Prod.snd (EuclideanSpace.finAddEquivProd.toDDiffeomorph.apply_symm_apply _)
   uniq c f h := by
-    ext x
+    ext x : 2
     change _ = EuclideanSpace.finAddEquivProd.toDDiffeomorph.toEquiv.symm _
     rw [Equiv.eq_symm_apply]
     refine Prod.ext ?_ ?_
@@ -197,7 +193,7 @@ instance : openCoverTopology.IsLocallyConnectedSite where
     have hs' : ∀ f : ⊤_ _ ⟶ n, s.arrows f := fun f ↦ by
       let ⟨m, g, hg, x, hx⟩ := hs (f 0)
       convert s.downward_closed (Z := ⊤_ _) hg.1 (DSmoothMap.const _ x)
-      ext _; exact (congrArg _ (Subsingleton.allEq (α := ⊤_ CartSp) _ _)).trans hx.symm
+      ext _ : 2; exact (congrArg _ (Subsingleton.allEq (α := ⊤_ CartSp) _ _)).trans hx.symm
     have _ : Nonempty s.arrows.category := ⟨.mk (Y := ⊤_ _) (DSmoothMap.const _ 0), hs' _⟩
     refine .of_constant_of_preserves_morphisms fun {α} F hF ↦ ?_
     let F' : n → α := fun x ↦ F ⟨.mk (DSmoothMap.const _ x), hs' _⟩
@@ -227,7 +223,7 @@ instance : openCoverTopology.IsCohesiveSite where
 
 /-- `CartSp` is a concrete site, in that it is concrete with elements corresponding to morphisms
 from the terminal object and carries a topology consisting entirely of jointly surjective sieves. -/
-noncomputable instance : openCoverTopology.IsConcreteSite where
+noncomputable instance : openCoverTopology.IsConcreteSite (fun n m : CartSp ↦ DSmoothMap n m) where
   forgetNatIsoCoyoneda := NatIso.ofComponents fun n ↦
     (DSmoothMap.equivFnOfUnique (Y := Eucl n)).toIso.symm
   forgetNatIsoCoyoneda_apply := rfl
@@ -253,7 +249,7 @@ instance : openCoverTopology.Subcanonical := by
     specialize hf (𝟙 (⊤_ _)) (Y₂ := k) (DSmoothMap.const _ x')
       (from_terminal_mem_of_mem _ hs (.const _ (g x'))) hg.1 rfl
     exact congrFun (congrArg DSmoothMap.toFun hf) (default : ⊤_ CartSp)
-  · intro k g hg; dsimp; ext1 x
+  · intro k g hg; dsimp; ext x : 2
     specialize hf (𝟙 (⊤_ _)) (Y₂ := k) (DSmoothMap.const _ x)
       (from_terminal_mem_of_mem _ hs (.const _ (g x))) hg rfl
     exact congrFun (congrArg DSmoothMap.toFun hf) (default : ⊤_ CartSp)

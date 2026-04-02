@@ -17,7 +17,6 @@ it is one of several sites on which concrete sheaves correspond exactly to diffe
 ## TODO
 * Show that `EuclOp` has all finite products
 * Show that that `CartSp.toEuclOp` preserves finite products
-* Switch from `HasForget` to the new `ConcreteCategory` design
 * Use `Presieve.IsJointlySurjective` more (currently runs into problems regarding which `FunLike`
   instances are used)
 * Generalise `EuclOp` to take a smoothness parameter in `WithTop ℕ∞`
@@ -39,13 +38,9 @@ noncomputable instance : SmallCategory EuclOp where
   id := fun n ↦ DSmoothMap.id _
   comp := fun f g ↦ g.comp f
 
-instance : HasForget EuclOp where
-  forget := { obj := fun u ↦ u, map := fun f ↦ f.1 }
-  forget_faithful := { map_injective := fun {_ _} ↦ DSmoothMap.coe_injective }
-
-instance instFunLike (u v : EuclOp) : FunLike (u ⟶ v) u v where
-  coe f := DFunLike.coe (F := DSmoothMap _ _) f
-  coe_injective' := DFunLike.coe_injective (F := DSmoothMap _ _)
+noncomputable instance : ConcreteCategory.{0} EuclOp (fun u v ↦ DSmoothMap u v) where
+  hom f := f
+  ofHom f := f
 
 @[simp]
 theorem id_app (u : EuclOp) (x : u) : (𝟙 u : u ⟶ u) x = x := rfl
@@ -82,7 +77,7 @@ def openCoverCoverage : Coverage EuclOp where
       let f'' := (DDiffeomorph.ofIsInduction (hs.1 k' f' hf'.1).1)
       use ⟨_,(f''.dsmooth_invFun.comp <|
         (f ≫ g).2.subtype_mk (fun x ↦ hf'.2 (mem_range_self x)))⟩
-      refine ⟨f', hf'.1, ?_⟩; ext x; change f'.1 (f''.invFun _) = _
+      refine ⟨f', hf'.1, ?_⟩; ext x : 2; change f'.1 (f''.invFun _) = _
       simp_rw [show f'.1 = Subtype.val ∘ f'' by rfl]
       dsimp; exact congrArg Subtype.val <| f''.apply_symm_apply _
 
@@ -130,7 +125,7 @@ lemma openCoverTopology.mem_sieves_iff' {n : EuclOp} {s : Sieve n} :
 noncomputable def isTerminal0Top : IsTerminal (C := EuclOp) ⟨0, ⊤⟩ where
   lift s := DSmoothMap.const _ ⟨0, mem_univ _⟩
   uniq c f h := by
-    ext x; exact Subsingleton.elim (α := univ (α := Eucl 0)) (f x) ⟨0, mem_univ _⟩
+    ext x : 2; exact Subsingleton.elim (α := univ (α := Eucl 0)) (f x) ⟨0, mem_univ _⟩
 
 -- TODO: show more generally that `EuclOp` has finite products
 instance : HasTerminal EuclOp := isTerminal0Top.hasTerminal
@@ -143,7 +138,7 @@ noncomputable instance : Unique (⊤_ EuclOp) := by
 
 /-- `EuclOp` is a concrete site, in that it is concrete with elements corresponding to morphisms
 from the terminal object and carries a topology consisting entirely of jointly surjective sieves. -/
-noncomputable instance : openCoverTopology.IsConcreteSite where
+noncomputable instance : openCoverTopology.IsConcreteSite (fun u v : EuclOp ↦ DSmoothMap u v) where
   forgetNatIsoCoyoneda := NatIso.ofComponents fun u ↦
     (DSmoothMap.equivFnOfUnique (Y := u.2)).toIso.symm
   forgetNatIsoCoyoneda_apply := rfl
@@ -169,7 +164,7 @@ instance : openCoverTopology.Subcanonical := by
     specialize hf (𝟙 (⊤_ _)) (Y₂ := k) (DSmoothMap.const _ x')
       (from_terminal_mem_of_mem _ hs (.const _ (g x'))) hg.1 rfl
     exact congrFun (congrArg DSmoothMap.toFun hf) (default : ⊤_ EuclOp)
-  · intro k g hg; dsimp; ext1 x
+  · intro k g hg; dsimp; ext x : 2
     specialize hf (𝟙 (⊤_ _)) (Y₂ := k) (DSmoothMap.const _ x)
       (from_terminal_mem_of_mem _ hs (.const _ (g x))) hg rfl
     exact congrFun (congrArg DSmoothMap.toFun hf) (default : ⊤_ EuclOp)

@@ -52,7 +52,7 @@ noncomputable def DiffSp.toSmoothSp : DiffSp.{u} ⥤ SmoothSp.{u} where
       dsimp [f'']
       have h := @hf _ _ 0 (DSmoothMap.const _ (hf' (g x)).2.choose)
         (DSmoothMap.const _ x) _ _ (hf' (g x)).1 hg
-        (by ext; exact (hf' (g x)).2.choose_spec)
+        (by ext : 2; exact (hf' (g x)).2.choose_spec)
       exact DFunLike.congr_fun h 0
     refine ⟨⟨f'', ?_⟩, ?_, ?_⟩
     · refine dsmooth_iff_locally_dsmooth.2 fun x : n ↦

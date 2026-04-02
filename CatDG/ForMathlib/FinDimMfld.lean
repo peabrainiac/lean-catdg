@@ -94,7 +94,7 @@ instance : HasFiniteProducts (FinDimMfld 𝕜 n) := by
 -- TODO: figure out how to get this from more general instances
 noncomputable instance : Unique (⊤_ (FinDimMfld 𝕜 n)) := by
   have : Unique ((forget (FinDimMfld 𝕜 n)).obj pt) := inferInstanceAs (Unique PUnit)
-  exact ((forget _).mapIso (terminalIsTerminal.uniqueUpToIso isTerminalPt)).toEquiv.unique
+  exact ((forget _).mapIso (terminalIsTerminal.uniqueUpToIso <| @isTerminalPt 𝕜 _ n)).toEquiv.unique
 
 lemma mono_iff_injective {M N : FinDimMfld.{u} 𝕜 n} (f : M ⟶ N) : Mono f ↔ Injective f := by
   refine ⟨fun hf x y h ↦ ?_, ConcreteCategory.mono_of_injective _⟩

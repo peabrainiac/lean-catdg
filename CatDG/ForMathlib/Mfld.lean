@@ -210,7 +210,10 @@ example (M : FinDimMfld 𝕜 n) : T2Space M := inferInstance
 
 -- TODO: move this somewhere else
 @[simps]
-instance {C D : Type*} [Category C] [Category D] [HasForget.{u} C] [HasForget.{u} D]
+instance {C D : Type*} [Category C] {FC : C → C → Type u} {CC : C → Type u}
+    [∀ X Y, FunLike (FC X Y) (CC X) (CC Y)] [ConcreteCategory C FC]
+    [Category D] {FD : D → D → Type u} {CD : D → Type u}
+    [∀ X Y, FunLike (FD X Y) (CD X) (CD Y)] [ConcreteCategory D FD]
     [HasForget₂ C D] (P : ObjectProperty C) : HasForget₂ P.FullSubcategory D :=
   ⟨forget₂ _ C ⋙ forget₂ C D, by simp [Functor.assoc, HasForget₂.forget_comp]⟩
 
@@ -218,8 +221,10 @@ instance {C D : Type*} [Category C] [Category D] [HasForget.{u} C] [HasForget.{u
 example : HasForget₂ (FinDimMfld 𝕜 n) TopCat := inferInstance
 
 -- TODO: move this somewhere else, get `@[simps]` to work
-instance {C : Type*} [Category C] [HasForget.{u} C] (P : ObjectProperty C) (Q : ObjectProperty C)
-    [Fact (P ≤ Q)] : HasForget₂ P.FullSubcategory Q.FullSubcategory :=
+instance {C : Type*} [Category C] {FC : C → C → Type u} {CC : C → Type u}
+    [∀ X Y, FunLike (FC X Y) (CC X) (CC Y)] [ConcreteCategory C FC]
+    (P : ObjectProperty C) (Q : ObjectProperty C) [Fact (P ≤ Q)] :
+    HasForget₂ P.FullSubcategory Q.FullSubcategory :=
   ⟨P.ιOfLE Fact.out, rfl⟩
 
 instance : Fact (finDimMfld (𝕜 := 𝕜) (n := n) ≤ finDimMfldWCorners) :=
