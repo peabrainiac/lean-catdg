@@ -25,8 +25,7 @@ See https://ncatlab.org/nlab/show/locally+connected+site.
 * On locally connected sites with a terminal object, `π₀` preserves the terminal object, i.e.
   the terminal sheaf is connected. This is enough to show that the sheaf topos is connected.
 * On cosifted locally connected sites, `π₀` preserves all finite products, i.e. the sheaf topos
-  is strongly connected. This is not yet sorry-free because it depends on a characterisation
-  of sifted categories.
+  is strongly connected.
 -/
 
 universe u v w u₂ v₂
@@ -78,13 +77,13 @@ instance {X : Type w} [HasWeakSheafify J (Type w)] :
 
 /-- The connected components functor on sheaves of types on any local site, defined as taking
 colimits of the underlying presheaves. -/
-noncomputable def Sheaf.π₀ : Sheaf J (Type max u w) ⥤ Type max u w :=
+noncomputable def Sheaf.π₀ : Sheaf J (Type max u v w) ⥤ Type max u v w :=
   sheafToPresheaf J _ ⋙ colim
 
 /-- The connected components functor on local sites is left-adjoint to the constant sheaf functor.
 TODO: remove `HasSheafify` instance. -/
-noncomputable def π₀ConstantSheafAdj [HasWeakSheafify J (Type max u w)] :
-    Sheaf.π₀ J ⊣ constantSheaf J (Type max u w) := by
+noncomputable def π₀ConstantSheafAdj [HasWeakSheafify J (Type max u v w)] :
+    Sheaf.π₀ J ⊣ constantSheaf J (Type max u v w) := by
   refine colimConstAdj.restrictFullyFaithful (fullyFaithfulSheafToPresheaf J _) (.id _) ?_ ?_
   · exact (Functor.rightUnitor _).symm
   · refine ((Functor.leftUnitor _).trans ((Functor.rightUnitor _).symm.trans ?_)).trans
@@ -133,22 +132,22 @@ noncomputable def unique_colimit_representable {C : Type u} [Category.{v} C]
 end TerminalSheaf
 
 /-- `Sheaf.π₀` sends representable sheaves to singleton types. -/
-noncomputable def uniqueπ₀Obj_of_isRepresentable (X : Sheaf J (Type max u w))
+noncomputable def uniqueπ₀Obj_of_isRepresentable (X : Sheaf J (Type max u v w))
     [X.val.IsRepresentable] : Unique ((π₀ J).obj X) :=
-  unique_colimit_representable X.val
+  unique_colimit_representable.{u,v,max v w} X.val
 
 /-- On locally connected sites with a terminal object, `Sheaf.π₀` preserves the terminal object. -/
 instance [HasTerminal C] : PreservesLimit (Functor.empty.{0} _) (π₀.{u,v,w} J) := by
   refine preservesTerminal_of_iso _ (IsTerminal.uniqueUpToIso ?_ terminalIsTerminal)
   exact (Types.isTerminalEquivUnique _).2 <| uniqueπ₀Obj_of_isRepresentable _ _
 
-/-- If `C` is sifted, the `colim` functor `(C ⥤ Type) ⥤ Type` preserves finite products.
-Taken from mathlib PR #17781.
-TODO: generalise the universe levels of `IsSifted.colim_preservesFiniteProducts_of_isSifted` so it
-can replace this. -/
+/-- If `C` is sifted, the `colim` functor `(C ⥤ Type max u v w) ⥤ Type max u v w` preserves
+finite products. This is a variant of `IsSifted.colim_preservesFiniteProducts_of_isSifted` with
+more general universe levels. -/
 instance colimPreservesFiniteProductsOfIsSifted {C : Type u} [Category.{v} C] [IsSifted C] :
-    PreservesFiniteProducts (colim : (C ⥤ _) ⥤ Type max u w) := by
-  sorry
+    PreservesFiniteProducts (colim : (C ⥤ _) ⥤ Type max u v w) := by
+  have _ := IsSifted.isSifted_iff_asSmallIsSifted.{w} (C := C).1 ‹_›
+  exact ⟨fun n ↦ preservesLimitsOfShape_of_natIso (Functor.Final.colimIso AsSmall.equiv.inverse)⟩
 
 /-- Sheaf topoi on cosifted locally connected sites are strongly connected, in the sense that
 `π₀` preserves all finite products.
