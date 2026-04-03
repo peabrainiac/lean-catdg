@@ -55,6 +55,7 @@ instance {C : Type u} [Category.{v} C] : (trivial C).IsLocallyConnectedSite wher
 
 variable [J.IsLocallyConnectedSite]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- On locally connected sites, every constant presheaf is a sheaf. -/
 lemma isSheaf_const_obj {X : Type w} : Presheaf.IsSheaf J ((Functor.const _).obj X) := by
   refine (isSheaf_iff_isSheaf_of_type J _).2 fun Y S hS x hx ↦ ?_
@@ -97,6 +98,7 @@ TODO: clean up. -/
 section TerminalSheaf
 
 /-- Morphisms to a terminal object are unique. -/
+@[implicit_reducible]
 noncomputable def Limits.IsTerminal.uniqueHom {C : Type u} [Category.{v} C]
     {T : C} (hT : IsTerminal T) (X : C) : Unique (X ⟶ T) :=
   ⟨⟨hT.from X⟩, fun _ ↦ hT.hom_ext _ _⟩
@@ -114,11 +116,12 @@ instance {C : Type u} [Category.{v} C] [HasTerminal C] : (⊤_ Cᵒᵖ ⥤ Type 
 
 /-- On sites with a terminal object, the terminal sheaf is representable. -/
 instance Sheaf.isRepresentable_terminal {C : Type u} [Category.{v} C] [HasTerminal C]
-    {J : GrothendieckTopology C} : (⊤_ Sheaf J (Type w)).val.IsRepresentable :=
+    {J : GrothendieckTopology C} : (⊤_ Sheaf J (Type w)).obj.IsRepresentable :=
   (terminalIsTerminal.isTerminalSheafVal.representableBy_isTerminal
     terminalIsTerminal).isRepresentable
 
 /-- The colimit of any representable functor is a singleton type. -/
+@[implicit_reducible]
 noncomputable def unique_colimit_representable {C : Type u} [Category.{v} C]
     (F : Cᵒᵖ ⥤ Type max u w) [F.IsRepresentable] : Unique (colimit F) :=
   @Equiv.unique _ _ {
@@ -132,9 +135,10 @@ noncomputable def unique_colimit_representable {C : Type u} [Category.{v} C]
 end TerminalSheaf
 
 /-- `Sheaf.π₀` sends representable sheaves to singleton types. -/
+@[implicit_reducible]
 noncomputable def uniqueπ₀Obj_of_isRepresentable (X : Sheaf J (Type max u v w))
-    [X.val.IsRepresentable] : Unique ((π₀ J).obj X) :=
-  unique_colimit_representable.{u,v,max v w} X.val
+    [X.obj.IsRepresentable] : Unique ((π₀ J).obj X) :=
+  unique_colimit_representable.{u,v,max v w} X.obj
 
 /-- On locally connected sites with a terminal object, `Sheaf.π₀` preserves the terminal object. -/
 instance [HasTerminal C] : PreservesLimit (Functor.empty.{0} _) (π₀.{u,v,w} J) := by

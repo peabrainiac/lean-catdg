@@ -85,6 +85,7 @@ instance {n : ℕ} {X : Type*} [Zero (Fin n)] [DiffeologicalSpace X]
   -- TODO: requires diffeomorphism of R^n to a ball in H^n
   sorry⟩
 
+--set_option backward.isDefEq.respectTransparency false in
 set_option synthInstance.maxHeartbeats 70000 in
 /-- Any diffeological manifold is also a diffeological orbifold. -/
 instance {n : ℕ} {X : Type*} [DiffeologicalSpace X] [hm : IsDiffeologicalManifold n X] :
@@ -96,7 +97,10 @@ instance {n : ℕ} {X : Type*} [DiffeologicalSpace X] [hm : IsDiffeologicalManif
     ext a b; dsimp; rw [MulAction.orbitRel_apply,MulAction.mem_orbit_iff]
     refine ⟨fun ⟨g,hg⟩ ↦ hg ▸ ?_,fun h ↦ ⟨1,by rw [h,one_smul]⟩⟩
     rw [Unique.eq_default g,unique_one,one_smul]
-  dsimp [MulAction.orbitRel.Quotient]; rw [h]
+  dsimp [MulAction.orbitRel.Quotient]
+  -- these two lines used to be just `rw [h]` before lean 4.29.0 - why?
+  suffices ∃ v : Set (Quotient (⊥ : Setoid (Eucl n))), IsOpen v ∧ Nonempty (u ᵈ≃ v) by
+    rw [← h] at this; exact this
   have e := d.trans ((DDiffeomorph.quotient_bot (Eucl n)).restrictPreimage v).symm
   refine ⟨(Quotient.lift id fun a b ↦ id) ⁻¹' v,?_,⟨e⟩⟩
   exact @IsOpen.preimage _ _ DTop DTop _ (dsmooth_id.quotient_lift _).continuous _ hv⟩

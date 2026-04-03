@@ -72,16 +72,16 @@ noncomputable def DiffSp.toSmoothSp : DiffSp.{u} ⥤ SmoothSp.{u} where
   map_comp := fun _ _ ↦ rfl
 
 /-- `DiffSp.toSmoothSp` is fully faithful. -/
-def DiffSp.toSmoothSp.fullyFaithful : DiffSp.toSmoothSp.{u}.FullyFaithful where
+noncomputable def DiffSp.toSmoothSp.fullyFaithful : DiffSp.toSmoothSp.{u}.FullyFaithful where
   preimage f := ofHom ⟨fun x ↦
-      (by exact f.val.app (.op 0) ⟨fun _ ↦ x, dsmooth_const⟩ : DSmoothMap (Eucl 0) _) 0, by
-    intro n p hp; convert (f.val.app (.op n) ⟨p, hp.dsmooth⟩).dsmooth.isPlot using 1; ext x
+      (by exact f.hom.app (.op 0) ⟨fun _ ↦ x, dsmooth_const⟩ : DSmoothMap (Eucl 0) _) 0, by
+    intro n p hp; convert (f.hom.app (.op n) ⟨p, hp.dsmooth⟩).dsmooth.isPlot using 1; ext x
     exact DFunLike.congr_fun (F := DSmoothMap _ _)
-      (congrFun (f.val.naturality ⟨fun _ ↦ x, dsmooth_const⟩) ⟨p, hp.dsmooth⟩) 0⟩
+      (congrFun (f.hom.naturality ⟨fun _ ↦ x, dsmooth_const⟩) ⟨p, hp.dsmooth⟩) 0⟩
   map_preimage f := by
-    apply Sheaf.Hom.ext; ext n p; refine DSmoothMap.ext fun x ↦ ?_
+    apply ObjectProperty.hom_ext; ext n p; refine DSmoothMap.ext fun x ↦ ?_
     exact DFunLike.congr_fun (F := DSmoothMap _ _)
-      (congrFun (f.val.naturality ⟨fun _ : Eucl 0 ↦ x, dsmooth_const⟩) p) 0
+      (congrFun (f.hom.naturality ⟨fun _ : Eucl 0 ↦ x, dsmooth_const⟩) p) 0
 
 instance : DiffSp.toSmoothSp.{u}.Full := DiffSp.toSmoothSp.fullyFaithful.full
 
@@ -90,46 +90,47 @@ instance : DiffSp.toSmoothSp.{u}.Faithful := DiffSp.toSmoothSp.fullyFaithful.fai
 /-- The global sections functor taking a smooth space to its type of points. Note that this
 is by no means faithful; `SmoothSp` is not a concrete category. -/
 def SmoothSp.Γ : SmoothSp.{u} ⥤ Type u where
-  obj X := X.val.obj (.op 0)
-  map f := f.val.app (.op 0)
+  obj X := X.obj.obj (.op 0)
+  map f := f.hom.app (.op 0)
   map_id := fun _ ↦ by rfl
   map_comp := fun _ _ ↦ by rfl
 
 /-- The diffeology on the points of a smooth space given by the concretisation functor. -/
 instance SmoothSp.instDiffeologicalSpaceΓ (X : SmoothSp) : DiffeologicalSpace (Γ.obj X) :=
-  .generateFrom {⟨n,p⟩ | ∃ (p' : X.val.obj (.op n)),
-    p = fun x : Eucl n ↦ X.val.map (Opposite.op ⟨fun _ : Eucl 0 ↦ x, dsmooth_const⟩) p'}
+  .generateFrom {⟨n,p⟩ | ∃ (p' : X.obj.obj (.op n)),
+    p = fun x : Eucl n ↦ X.obj.map (Opposite.op ⟨fun _ : Eucl 0 ↦ x, dsmooth_const⟩) p'}
 
 /-- The reflector of `DiffSp` inside of `SmoothSp`, sending a smooth space to its concretisation. -/
 def SmoothSp.concr : SmoothSp.{u} ⥤ DiffSp.{u} where
   obj X := DiffSp.of (Γ.obj X)
   map f := DiffSp.ofHom ⟨Γ.map f, by
     rw [dsmooth_generateFrom_iff]; intro n p ⟨p', hp⟩
-    refine DiffeologicalSpace.isPlot_generateFrom_of_mem ⟨f.val.app _ p', ?_⟩
-    rw [hp]; ext x; exact congrFun (f.val.naturality ⟨fun _ : Eucl 0 ↦ x, dsmooth_const⟩) p'⟩
+    refine DiffeologicalSpace.isPlot_generateFrom_of_mem ⟨f.hom.app _ p', ?_⟩
+    rw [hp]; ext x; exact congrFun (f.hom.naturality ⟨fun _ : Eucl 0 ↦ x, dsmooth_const⟩) p'⟩
   map_id := fun _ ↦ by rfl
   map_comp := fun _ _ ↦ by rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The adjunction between the concretisation functor `SmoothSp ⥤ DiffSp` and the
 embedding `DiffSp ⥤ SmoothSp`. -/
 noncomputable def DiffSp.reflectorAdjunction : SmoothSp.concr.{u} ⊣ DiffSp.toSmoothSp.{u} :=
   Adjunction.mkOfUnitCounit {
     unit := {
       app := fun X ↦ ⟨{
-        app := fun _ p ↦ ⟨fun x ↦ X.val.map ⟨fun _ ↦ x, dsmooth_const⟩ p,
+        app := fun _ p ↦ ⟨fun x ↦ X.obj.map ⟨fun _ ↦ x, dsmooth_const⟩ p,
           IsPlot.dsmooth (DiffeologicalSpace.isPlot_generateFrom_of_mem ⟨p, rfl⟩)⟩
         naturality := fun ⟨n⟩ ⟨m⟩ f ↦ by
           ext p; refine DSmoothMap.ext fun x ↦ ?_
-          change X.val.map (Opposite.op ⟨fun _ ↦ x, dsmooth_const⟩) (X.val.map f p) =
-            X.val.map (Opposite.op ⟨fun _ ↦ f.unop x, dsmooth_const⟩) p
-          exact congrFun (X.val.map_comp f _).symm p
+          change X.obj.map (Opposite.op ⟨fun _ ↦ x, dsmooth_const⟩) (X.obj.map f p) =
+            X.obj.map (Opposite.op ⟨fun _ ↦ f.unop x, dsmooth_const⟩) p
+          exact congrFun (X.obj.map_comp f _).symm p
       }⟩
       naturality := fun {X Y} f ↦ by
-        apply Sheaf.Hom.ext; ext n p; refine DSmoothMap.ext fun x ↦ ?_
+        apply ObjectProperty.hom_ext; ext n p; refine DSmoothMap.ext fun x ↦ ?_
         dsimp at p ⊢
-        change Y.val.map (Opposite.op ⟨fun _ ↦ x, dsmooth_const⟩) (f.val.app n p) =
-          f.val.app (.op 0) (X.val.map _ _)
-        exact congrFun (f.val.naturality _).symm p
+        change Y.obj.map (Opposite.op ⟨fun _ ↦ x, dsmooth_const⟩) (f.hom.app n p) =
+          f.hom.app (.op 0) (X.obj.map _ _)
+        exact congrFun (f.hom.naturality _).symm p
     }
     counit := {
       app := fun X ↦ DiffSp.ofHom ⟨fun p : DSmoothMap _ _ ↦ p 0,
@@ -137,11 +138,11 @@ noncomputable def DiffSp.reflectorAdjunction : SmoothSp.concr.{u} ⊣ DiffSp.toS
       naturality := fun _ _ _ ↦ rfl
     }
     left_triangle := by
-      ext X x; change X.val.obj (.op 0) at x
-      change X.val.map _ x = x
+      ext X x; change X.obj.obj (.op 0) at x
+      change X.obj.map _ x = x
       rw [← show DSmoothMap.id (X := Eucl 0) = ⟨fun x ↦ 0, dsmooth_const⟩ by
         ext1 x; exact (Unique.eq_default x).trans (Unique.default_eq 0)]
-      exact congrFun (X.val.map_id (.op 0) : _ = id) x
+      exact congrFun (X.obj.map_id (.op 0) : _ = id) x
     right_triangle := rfl
   }
 
@@ -176,13 +177,13 @@ smooth maps are smooth (i.e. the first `sorry`); it requires showing that
 is a smooth function of `x`, but we have not yet even put a diffeology on the involved spaces
 of continuous linear functions. -/
 noncomputable def SmoothSp.Ω {k : ℕ} : SmoothSp where
-  val := {
+  obj := {
     obj n := DSmoothMap (Eucl n.unop) ((Eucl n.unop) [⋀^(Fin k)]→ₗ[ℝ] ℝ)
     map {n m} f := fun ω ↦
       ⟨fun x ↦ (ω (f.unop x)).compLinearMap (fderiv ℝ f.unop x).toLinearMap, by
         have := (f.unop.dsmooth.contDiff.fderiv_right (m := (⊤ : ℕ∞)) (by simp))
         sorry⟩
   }
-  cond := by sorry
+  property := by sorry
 
 end DifferentialForms

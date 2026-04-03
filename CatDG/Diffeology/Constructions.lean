@@ -453,6 +453,7 @@ instance {X : Type*} [DiffeologicalSpace X] [TopologicalSpace X] [DTopCompatible
     DeltaGeneratedSpace X :=
   dTop_eq (X := X) ▸ inferInstance
 
+set_option backward.isDefEq.respectTransparency false in
 -- TODO: move this into mathlib?
 lemma TopologicalSpace.le_of_locally_le {X : Type*} {t t' : TopologicalSpace X}
     (h : ∀ x : X, ∃ u, x ∈ u ∧ IsOpen[t] u ∧ IsOpen[t'] u ∧
@@ -472,6 +473,7 @@ lemma TopologicalSpace.eq_of_locally_eq {X : Type*} {t t' : TopologicalSpace X}
   le_antisymm (le_of_locally_le <| forall_imp (by grind) h)
     (le_of_locally_le <| forall_imp (by grind) h)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- If a topology on a diffeological space agrees with the D-topology locally in the sense that
 every point has a neighbourhood that is open in both topologies and on which the topologies
 coincide, then it also agrees with the D-topology globally. -/
@@ -842,6 +844,7 @@ lemma coinduced_sigma' {ι Y : Type*} {X : ι → Type v} [tX : (i : ι) → Top
     ⨆ i : ι, coinduced (fun x ↦ f ⟨i,x⟩) inferInstance := by
   rw [instTopologicalSpaceSigma,coinduced_iSup]; rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- For locally compact diffeological spaces, the D-topology commutes with products.
 This is not true in general, because the product topology might not be delta-generated;
 however, according to a remark in https://arxiv.org/abs/1302.2935 it should be always true

@@ -13,6 +13,7 @@ variable {X Y Z : Type*}
 
 /-- The coarsest diffeology on `X` such that `f : X → Y` is smooth, also known as the
 pullback diffeology. -/
+@[implicit_reducible]
 def DiffeologicalSpace.induced (f : X → Y) (dY : DiffeologicalSpace Y) :
     DiffeologicalSpace X where
   plots n := {p | f ∘ p ∈ plots n}
@@ -24,6 +25,7 @@ def DiffeologicalSpace.induced (f : X → Y) (dY : DiffeologicalSpace Y) :
 pushforward diffeology.
 While this is just the infimum of all diffeologies that make `f` smooth, we use a slightly
 more involved construction to make the D-topology defeq to the coinduced topology. -/
+@[implicit_reducible]
 def DiffeologicalSpace.coinduced (f : X → Y) (dX : DiffeologicalSpace X) :
     DiffeologicalSpace Y :=
   (sInf {d | DSmooth[dX,d] f}).withDTopology (DTop[dX].coinduced f) <| by

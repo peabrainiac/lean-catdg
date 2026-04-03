@@ -30,6 +30,7 @@ instance {X : Type*} [NormedAddCommGroup X] [NormedSpace ℝ X] [FiniteDimension
     exact (hp _ (((ContinuousLinearMap.proj i).contDiff).comp Φ.contDiff).dsmooth).contDiff
 
 /-- The diffeology induced by the differential space structure induced by the diffeology `d`. -/
+@[implicit_reducible]
 def DiffeologicalSpace.toReflexive {X : Type*} {d : DiffeologicalSpace X} :
     DiffeologicalSpace X where
   plots n := { p | ∀ f : X → ℝ, DSmooth f → DSmooth (f ∘ p)}

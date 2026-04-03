@@ -156,15 +156,15 @@ end ClosedSieve
 /-- A specific choice of subobject classifier in the sheaf topos `Sheaf J (Type max u v)`: the
 sheaf that associates to each `X : C` the type of all `J`-closed sieves on `X`. The data that
 makes this a subobject classifier can be found in `GrothendieckTopology.classifier`. -/
-@[simps! val_obj val_map]
+@[simps! obj_obj obj_map]
 protected def GrothendieckTopology.Ω : Sheaf J (Type max u v) where
-  val := {
+  obj := {
     obj X := ClosedSieve J X.unop
     map f S := S.pullback f.unop
     map_id _ := by ext S; simp
     map_comp _ _ := by ext S; rw [unop_comp, S.pullback_comp]; rfl
   }
-  cond := by
+  property := by
     rw [isSheaf_iff_isSheaf_of_type]
     intro X S hS T hT
     refine ⟨ClosedSieve.generate J <| .bind S fun Y f hf ↦ (T f hf).toSieve, ?_, ?_⟩
@@ -192,9 +192,9 @@ protected def GrothendieckTopology.Ω : Sheaf J (Type max u v) where
 -- TODO: move to `Mathlib.CategoryTheory.Sites.Subsheaf`
 lemma Subfunctor.isSheaf_range {C : Type u} [Category.{v} C] {J : GrothendieckTopology C}
     {F F' : Sheaf J (Type w)} (f : F ⟶ F') [Mono f] :
-    Presieve.IsSheaf J (Subfunctor.range f.val).toFunctor := by
-  have : Mono f.val := (sheafToPresheaf _ _).map_mono f
-  exact Presieve.isSheaf_iso J (asIso (Subfunctor.toRange f.val)) <|
+    Presieve.IsSheaf J (Subfunctor.range f.hom).toFunctor := by
+  have : Mono f.hom := (sheafToPresheaf _ _).map_mono f
+  exact Presieve.isSheaf_iso J (asIso (Subfunctor.toRange f.hom)) <|
     (isSheaf_iff_isSheaf_of_type J _).1 <| F.2
 
 -- TODO: move to `Mathlib.CategoryTheory.Subfunctor.Sieves`
@@ -232,13 +232,13 @@ noncomputable def Limits.IsTerminal.isTerminalObj_functor {C : Type u} [Category
 /-- A terminal sheaf is also terminal as a presheaf. -/
 noncomputable def Limits.IsTerminal.isTerminalSheafVal {C : Type u} [Category.{v} C]
     {J : GrothendieckTopology C} {A : Type u₂} [Category.{v₂} A] [HasLimits A]
-    {X : Sheaf J A} (hX : IsTerminal X) : IsTerminal X.val :=
+    {X : Sheaf J A} (hX : IsTerminal X) : IsTerminal X.obj :=
   hX.isTerminalObj (sheafToPresheaf J A)
 
 /-- Sections of a terminal sheaf are terminal objects. -/
 noncomputable def Limits.IsTerminal.isTerminalSheafValObj {C : Type u} [Category.{v} C]
     {J : GrothendieckTopology C} {A : Type u₂} [Category.{v₂} A] [HasLimits A]
-    {X : Sheaf J A} (hX : IsTerminal X) (Y : Cᵒᵖ) : IsTerminal (X.val.obj Y) :=
+    {X : Sheaf J A} (hX : IsTerminal X) (Y : Cᵒᵖ) : IsTerminal (X.obj.obj Y) :=
   hX.isTerminalSheafVal.isTerminalObj_functor Y
 
 /-- For sheaves valued in a concrete category whose terminal object is a point,
@@ -248,31 +248,33 @@ noncomputable instance Sheaf.instUniqueTerminalValObjForget {C : Type u} [Catego
     {FA : outParam (A → A → Type w)} {CA : outParam (A → Type w)}
     [outParam ((X Y : A) → FunLike (FA X Y) (CA X) (CA Y))] [ConcreteCategory A FA]
     [PreservesLimit (Functor.empty _) (forget A)] (Y : Cᵒᵖ) :
-    Unique (CA ((⊤_ Sheaf J A).val.obj Y)) :=
+    Unique (CA ((⊤_ Sheaf J A).obj.obj Y)) :=
   (Types.isTerminalEquivUnique _).1 <|
     (terminalIsTerminal.isTerminalSheafValObj Y).isTerminalObj (forget _) _
 
 /-- Terminal types are singletons. -/
+@[implicit_reducible]
 noncomputable def Limits.IsTerminal.unique {X : Type u} (h : IsTerminal X) : Unique X :=
   Types.isTerminalEquivUnique _ h
 
 /-- Sections of the terminal sheaf are unique. -/
 noncomputable instance Sheaf.instUniqueTerminalValObj {C : Type u} [Category.{v} C]
     {J : GrothendieckTopology C}  (Y : Cᵒᵖ) :
-    Unique ((⊤_ Sheaf J (Type w)).val.obj Y) :=
+    Unique ((⊤_ Sheaf J (Type w)).obj.obj Y) :=
   (terminalIsTerminal.isTerminalSheafValObj Y).unique
 
 end TerminalSheaf
 
 namespace GrothendieckTopology
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A specific choice of subobject classifier in the sheaf topos `Sheaf J (Type max u v)`, given
 by `J.Ω` and the morphism `⊤_ C ⟶ J.Ω` that picks the maximal sieve on each object. -/
 noncomputable def classifier : Classifier (Sheaf J (Type max u v)) :=
   .mkOfTerminalΩ₀ _ terminalIsTerminal J.Ω
     ⟨{ app _ := fun _ ↦ (⊤ : ClosedSieve J _) }⟩
     (fun {F G} i _ ↦ ⟨{
-      app X x := ⟨(Subfunctor.range i.val).sieveOfSection x, Subfunctor.isClosed_sieveOfSection
+      app X x := ⟨(Subfunctor.range i.hom).sieveOfSection x, Subfunctor.isClosed_sieveOfSection
         ((isSheaf_iff_isSheaf_of_type J _).1 <| G.2) ((Subfunctor.isSheaf_range i)) x⟩ }⟩)
     (fun {F G} i _ ↦ by
       refine ⟨⟨by ext X x; dsimp; ext1; exact Subfunctor.sieveOfSection_eq_top_iff.2 (by simp)⟩,
@@ -282,7 +284,7 @@ noncomputable def classifier : Classifier (Sheaf J (Type max u v)) :=
       have hs' := Subfunctor.sieveOfSection_eq_top_iff.1 <| congrArg ClosedSieve.toSieve <|
         (hs WalkingCospan.Hom.inl).trans (hs WalkingCospan.Hom.inr).symm
       let ⟨x, hx, hx'⟩ := Function.Injective.existsUnique_of_mem_range
-        (by have : Mono i.val := (sheafToPresheaf J _).map_mono i; exact injective_of_mono _) hs'
+        (by have : Mono i.hom := (sheafToPresheaf J _).map_mono i; exact injective_of_mono _) hs'
       refine ⟨x, ?_, fun y hy ↦ hx' y (hy WalkingCospan.left)⟩
       exact Option.rec (by dsimp; exact hx ▸ hs WalkingCospan.Hom.inl) <| WalkingPair.rec hx <|
         @Subsingleton.elim _ (by dsimp; infer_instance) _ _)
@@ -290,13 +292,13 @@ noncomputable def classifier : Classifier (Sheaf J (Type max u v)) :=
       ext X x; dsimp; ext Y f
       replace hχ := hχ.map (sheafToPresheaf J _ ⋙ (evaluation _ _).obj (op Y))
       dsimp at hχ
-      replace hχ : χ.val.app (op Y) (G.val.map f.op x) = (⊤ : ClosedSieve _ _) ↔
-          G.val.map f.op x ∈ Set.range (i.val.app (op Y)) := by
+      replace hχ : χ.hom.app (op Y) (G.obj.map f.op x) = (⊤ : ClosedSieve _ _) ↔
+          G.obj.map f.op x ∈ Set.range (i.hom.app (op Y)) := by
         refine ⟨fun hy ↦ ?_, fun hy ↦ by simpa [hy.choose_spec] using congrFun hχ.w hy.choose⟩
         exact ⟨_, PullbackCone.IsLimit.equivPullbackObj_symm_apply_fst hχ.isLimit
-          ⟨((G.val.map f.op x), default), hy⟩⟩
+          ⟨((G.obj.map f.op x), default), hy⟩⟩
       refine ((Sieve.mem_iff_pullback_eq_top _).trans ?_).trans hχ
-      rw [show χ.val.app _ _ = _ from congrFun (χ.val.naturality f.op) x, ClosedSieve.ext_iff]; rfl)
+      rw [show χ.hom.app _ _ = _ from congrFun (χ.hom.naturality f.op) x, ClosedSieve.ext_iff]; rfl)
 
 instance hasClassifier : HasClassifier (Sheaf J (Type max u v)) :=
   ⟨⟨J.classifier⟩⟩
@@ -312,19 +314,19 @@ variable {J} {K : GrothendieckTopology C} (h : J ≤ K)
 /-- The subobject classifier sheaf `K.Ω : Sheaf K (Type max u v)` as a `J`-sheaf for `J ≤ K`. -/
 @[simps!]
 protected def Ω' : Sheaf J (Type max u v) :=
-  ⟨K.Ω.val, Presheaf.isSheaf_of_le h K.Ω.2⟩
+  ⟨K.Ω.obj, Presheaf.isSheaf_of_le h K.Ω.2⟩
 
 /-- The inclusion of `J.Ω' h`, the subobject classifier of `K`-sheaves viewed as a `J`-sheaf,
 into `J.Ω`, the subobject classifier of `J`-sheaves. In components this is simply the inclusion of
 `K`-closed sieves into `J`-closed sieves. -/
-@[simps! val_app]
+@[simps! hom_app]
 def ΩInclusionOfLE : J.Ω' h ⟶ J.Ω :=
   ⟨{ app X := ClosedSieve.inclusionOfLE h (X := unop X) }⟩
 
 /-- The projection of `J.Ω`, the subobject classifier of `J`-sheaves, onto `J.Ω' h`, the subobject
 classifier of `K`-sheaves viewed as a `J`-sheaf. In components this generates `K`-closed sieves from
 `J`-closed sieves. -/
-@[simps! val_app]
+@[simps! hom_app]
 def ΩProjectionOfLE : J.Ω ⟶ J.Ω' h :=
   ⟨{
     app X := ClosedSieve.toClosedSieve K (X := unop X)

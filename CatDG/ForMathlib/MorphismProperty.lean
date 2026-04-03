@@ -54,7 +54,7 @@ def generatedTopology (P : MorphismProperty C) [P.RespectsRight ⊤] [P.HasFacto
   pullback_stable' X Y S f hS := by
     refine le_trans ?_ (Sieve.pullback_monotone f hS)
     refine (toSieveOn_le_iff _).2 fun Z g hg ↦ ?_
-    exact Sieve.le_generate _ _ <| RespectsRight.postcomp (Q := ⊤) f trivial g hg
+    exact Sieve.le_generate _ _ _ <| RespectsRight.postcomp (Q := ⊤) f trivial g hg
   transitive' X S hS R hR := by
     refine (toSieveOn_le_iff R).2 fun Y f hf ↦ ?_
     let ⟨Z, g, g', hf, hg, hg'⟩ :=

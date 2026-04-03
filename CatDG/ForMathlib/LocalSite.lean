@@ -88,19 +88,19 @@ noncomputable def IsLocalSite.ΓCoconstantSheafAdj [J.IsLocalSite] :
   exact {
     unit := {
       app X := ⟨{
-        app Y (x : X.val.obj Y) y := ⟨X.val.map (op y.down) x⟩
+        app Y (x : X.obj.obj Y) y := ⟨X.obj.map (op y.down) x⟩
         naturality Y Z f := by
-          ext (x : X.val.obj Y); dsimp [coconstantSheaf, Presheaf.coconst]; ext z
-          exact (FunctorToTypes.map_comp_apply X.val _ _ x).symm
+          ext (x : X.obj.obj Y); dsimp [coconstantSheaf, Presheaf.coconst]; ext z
+          exact (FunctorToTypes.map_comp_apply X.obj _ _ x).symm
       }⟩
       naturality X Y f := by
-        ext Z (x : X.val.obj Z); dsimp [coconstantSheaf, Presheaf.coconst]; ext z
-        exact (NatTrans.naturality_apply f.val _ x).symm
+        ext Z (x : X.obj.obj Z); dsimp [coconstantSheaf, Presheaf.coconst]; ext z
+        exact (NatTrans.naturality_apply f.hom _ x).symm
     }
     counit := { app X := fun f : ULift (_ ⟶ _) → _ ↦ (f default).down }
     left_triangle_components X := by
-      ext (x : X.val.obj _)
-      dsimp; convert congrFun (X.val.map_id _) x; exact Subsingleton.elim _ _
+      ext (x : X.obj.obj _)
+      dsimp; convert congrFun (X.obj.map_id _) x; exact Subsingleton.elim _ _
     right_triangle_components X := by
       ext Y (f : _ → _); dsimp [coconstantSheaf, Presheaf.coconst]; ext y
       dsimp; congr; convert Category.id_comp _; exact Subsingleton.elim _ _

@@ -18,6 +18,7 @@ universe u
 open Topology
 
 /-- The continuous diffeology on a topological space `X`. -/
+@[implicit_reducible]
 def continuousDiffeology (X : Type u) [TopologicalSpace X] : DiffeologicalSpace X :=
   DiffeologicalSpace.mkOfPlotsOn {
     isPlotOn := fun {_ u} _ p ↦ ContinuousOn p u
@@ -126,9 +127,10 @@ lemma dTop_generateFrom_eq_iSup {X : Type*} {g : Set ((n : ℕ) × (Eucl n → X
   exact generateFrom_le_iff.2 fun n p hp ↦
     continuous_le_rng (le_iSup₂ _ hp) continuous_coinduced_rng
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A version of `dTop_generateFrom_eq_iSup` stated in terms of individual open sets. -/
 lemma isOpen_dTop_generateFrom {X : Type*} {g : Set ((n : ℕ) × (Eucl n → X))} {u : Set X} :
     @IsOpen X DTop[DiffeologicalSpace.generateFrom g] u ↔
     ∀ n p, ⟨n, p⟩ ∈ g → IsOpen (p ⁻¹' u) := by
-  simp_rw [dTop_generateFrom_eq_iSup, isOpen_iSup_iff, isOpen_coinduced]
+  rw [dTop_generateFrom_eq_iSup]; simp_rw [isOpen_iSup_iff, isOpen_coinduced]
   exact ⟨fun h _ _ hp ↦ h _ hp, fun h _ hp ↦ h _ _ hp⟩

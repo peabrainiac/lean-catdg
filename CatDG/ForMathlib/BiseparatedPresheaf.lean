@@ -65,7 +65,7 @@ def bisepToSheaf : Bisep J K ⥤ Sheaf J (Type w) where
 variable (J K) in
 /-- The inclusion functor from biseparated presheaves to sheaves is fully faithful. -/
 def fullyFaithfulBisepToSheaf : (bisepToSheaf J K).FullyFaithful where
-  preimage f := ⟨f.val⟩
+  preimage f := ⟨f.hom⟩
 
 instance : (bisepToSheaf J K).Full :=
   (fullyFaithfulBisepToSheaf J K).full
@@ -145,13 +145,14 @@ lemma Presheaf.IsSheaf.exp {C : Type u} [Category.{v} C] {J : GrothendieckTopolo
     [Category.{v₂} A] [HasSheafify J A] [CartesianMonoidalCategory A] [MonoidalClosed (Cᵒᵖ ⥤ A)]
     {F : Cᵒᵖ ⥤ A} (hF : IsSheaf J F) (G : Cᵒᵖ ⥤ A) : IsSheaf J (G ⟹ F) :=
   (Presheaf.isSheaf_of_iso_iff <| Classical.choice (ExponentialIdeal.exp_closed
-    (i := sheafToPresheaf J A) ⟨⟨F, hF⟩, ⟨Iso.refl _⟩⟩ G).choose_spec).1 (Sheaf.cond _)
+    (i := sheafToPresheaf J A) ⟨⟨F, hF⟩, ⟨Iso.refl _⟩⟩ G).choose_spec).1
+      (ObjectProperty.FullSubcategory.property _)
 
 variable (J K) in
 noncomputable def sheafToBisep : Sheaf J (Type max u v) ⥤ Bisep J K where
   obj X := {
     val := _
-    isSheaf := cond <| image <| X.toExpΩ' (le_sup_left (b := K))
+    isSheaf := ObjectProperty.FullSubcategory.property <| image <| X.toExpΩ' (le_sup_left (b := K))
     isSeparated := Subfunctor.isSeparated _ <| by
       refine (Presieve.IsSheaf.isSeparated ?_).exp _
       exact (isSheaf_iff_isSheaf_of_type _ _).1 <| Presheaf.isSheaf_of_le le_sup_right (J ⊔ K).Ω.2

@@ -54,7 +54,7 @@ Since mathlib apparently doesn't have smooth embeddings yet, diffeological induc
 used instead. -/
 def openCoverCoverage : Coverage EuclOp where
   coverings u := {s | (∀ (v : _) (f : v ⟶ u), s f → IsOpenInduction f.1) ∧
-    ⋃ (v : EuclOp) (f ∈ s (Y := v)), range f.1 = univ}
+    ⋃ (v : EuclOp) (f : v ⟶ u) (_ : s f), range f.1 = univ}
   pullback u v g s hs := by
     use fun k ↦ {f | (∃ (k : _) (f' : k ⟶ u), s f' ∧ range (g.1 ∘ f.1) ⊆ range f'.1)
       ∧ IsOpenInduction f}
@@ -82,7 +82,7 @@ def openCoverCoverage : Coverage EuclOp where
       dsimp; exact congrArg Subtype.val <| f''.apply_symm_apply _
 
 /-- The open cover grothendieck topology on `EuclOp`. -/
-def openCoverTopology : GrothendieckTopology EuclOp :=
+noncomputable def openCoverTopology : GrothendieckTopology EuclOp :=
   openCoverCoverage.toGrothendieck
 
 /-- A sieve belongs to `EuclOp.openCoverTopology` iff it contains a presieve from
@@ -102,11 +102,11 @@ lemma openCoverTopology.mem_sieves_iff {n : EuclOp} {s : Sieve n} :
     refine ⟨fun k f ↦ r f ∧ IsOpenInduction f, fun _ _ h ↦ h.1, fun _ _ h ↦ h.2, ?_⟩
     rw [← univ_subset_iff, ← hs'.2.2]
     refine iUnion_subset fun m ↦ iUnion₂_subset fun f hf ↦ ?_
-    let ⟨r', hr'⟩ := hr (hs'.1 _ hf)
+    let ⟨r', hr'⟩ := hr (hs'.1 _ _ hf)
     simp_rw [← image_univ, ← hr'.2.2, image_iUnion]
     refine iUnion_subset fun k ↦ iUnion₂_subset fun g hg ↦ ?_
     refine subset_iUnion_of_subset k <| subset_iUnion₂_of_subset (g ≫ f) ⟨?_, ?_⟩ ?_
-    · exact hr'.1 _ hg
+    · exact hr'.1 _ _ hg
     · exact (hs'.2.1 _ _ hf).comp (hr'.2.1 _ _ hg)
     · rw [← range_comp, image_univ]; rfl
 
@@ -118,7 +118,7 @@ lemma openCoverTopology.mem_sieves_iff' {n : EuclOp} {s : Sieve n} :
   refine mem_sieves_iff.trans ⟨fun ⟨r, hr⟩ ↦ ?_, fun h ↦ ?_⟩
   · rw [← univ_subset_iff, ← hr.2.2]
     exact iUnion_subset fun m ↦ iUnion₂_subset fun f hf ↦ subset_iUnion_of_subset m <|
-      subset_iUnion₂_of_subset f ⟨hr.1 _ hf, hr.2.1 m f hf⟩ subset_rfl
+      subset_iUnion₂_of_subset f ⟨hr.1 _ _ hf, hr.2.1 m f hf⟩ subset_rfl
   · exact ⟨fun m f ↦ s f ∧ IsOpenInduction f, fun _ _ h ↦ h.1, fun _ _ h ↦ h.2, h⟩
 
 /-- `univ : Set (Eucl 0)` is terminal in `EuclOp`. -/
@@ -178,6 +178,7 @@ noncomputable def CartSp.toEuclOp : CartSp ⥤ EuclOp where
   obj n := ⟨n, ⊤⟩
   map f := ⟨_, f.2.restrict (mapsTo_univ f univ)⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Open subsets of cartesian spaces can be covered with cartesian spaces. -/
 instance : CartSp.toEuclOp.IsCoverDense EuclOp.openCoverTopology := by
   constructor; intro u
@@ -207,6 +208,7 @@ instance : CartSp.toEuclOp.Full := CartSp.toEuclOp_fullyFaithful.full
 
 instance : CartSp.toEuclOp.Faithful := CartSp.toEuclOp_fullyFaithful.faithful
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `CartSp.toEuclOp` exhibits `CartSp` as a dense sub-site of `EuclOp` with respect to the
 open cover topologies.
 In particular, the sheaf topoi of the two sites are equivalent via `IsDenseSubsite.sheafEquiv`. -/

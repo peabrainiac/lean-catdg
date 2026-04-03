@@ -6,6 +6,8 @@ import Mathlib.CategoryTheory.Limits.FunctorCategory.EpiMono
 Lemmas that should go into `Mathlib.CategoryTheory.Adjunction.Triple`.
 -/
 
+set_option backward.isDefEq.respectTransparency false
+
 open CategoryTheory Limits
 
 namespace CategoryTheory.Adjunction.Triple

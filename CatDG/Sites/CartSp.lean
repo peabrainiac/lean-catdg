@@ -67,7 +67,7 @@ Since mathlib apparently doesn't have smooth embeddings yet, diffeological induc
 used instead. -/
 def openCoverCoverage : Coverage CartSp where
   coverings n := {s | (∀ (m : _) (f : m ⟶ n), s f → IsOpenInduction f) ∧
-    ⋃ (m : CartSp) (f ∈ s (Y := m)), range f.1 = univ}
+    ⋃ (m : CartSp) (f : m ⟶ n) (_ : s f), range f.1 = univ}
   pullback n m g s hs := by
     use fun k ↦ {f | (∃ (k : _) (f' : k ⟶ n), s f' ∧ range (g.1 ∘ f.1) ⊆ range f'.1)
       ∧ IsOpenInduction f}
@@ -95,7 +95,7 @@ def openCoverCoverage : Coverage CartSp where
       dsimp; exact congrArg Subtype.val <| f''.apply_symm_apply _
 
 /-- The open cover grothendieck topology on `CartSp`. -/
-def openCoverTopology : GrothendieckTopology CartSp :=
+noncomputable def openCoverTopology : GrothendieckTopology CartSp :=
   openCoverCoverage.toGrothendieck
 
 /-- A sieve belongs to `CartSp.openCoverTopology` iff it contains a presieve from
@@ -115,11 +115,11 @@ lemma openCoverTopology.mem_sieves_iff {n : CartSp} {s : Sieve n} :
     refine ⟨fun k f ↦ r f ∧ IsOpenInduction f, fun _ _ h ↦ h.1, fun _ _ h ↦ h.2, ?_⟩
     rw [← univ_subset_iff, ← hs'.2.2]
     refine iUnion_subset fun m ↦ iUnion₂_subset fun f hf ↦ ?_
-    let ⟨r', hr'⟩ := hr (hs'.1 _ hf)
+    let ⟨r', hr'⟩ := hr (hs'.1 _ _ hf)
     simp_rw [← image_univ, ← hr'.2.2, image_iUnion]
     refine iUnion_subset fun k ↦ iUnion₂_subset fun g hg ↦ ?_
     refine subset_iUnion_of_subset k <| subset_iUnion₂_of_subset (g ≫ f) ⟨?_, ?_⟩ ?_
-    · exact hr'.1 _ hg
+    · exact hr'.1 _ _ hg
     · exact (hs'.2.1 _ _ hf).comp (hr'.2.1 _ _ hg)
     · rw [← range_comp, image_univ]; rfl
 
@@ -131,7 +131,7 @@ lemma openCoverTopology.mem_sieves_iff' {n : CartSp} {s : Sieve n} :
   refine mem_sieves_iff.trans ⟨fun ⟨r, hr⟩ ↦ ?_, fun h ↦ ?_⟩
   · rw [← univ_subset_iff, ← hr.2.2]
     exact iUnion_subset fun m ↦ iUnion₂_subset fun f hf ↦ subset_iUnion_of_subset m <|
-      subset_iUnion₂_of_subset f ⟨hr.1 _ hf, hr.2.1 m f hf⟩ subset_rfl
+      subset_iUnion₂_of_subset f ⟨hr.1 _ _ hf, hr.2.1 m f hf⟩ subset_rfl
   · exact ⟨fun m f ↦ s f ∧ IsOpenInduction f, fun _ _ h ↦ h.1, fun _ _ h ↦ h.2, h⟩
 
 /-- The `0`-dimensional cartesian space is terminal in `CartSp`. -/

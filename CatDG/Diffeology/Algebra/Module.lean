@@ -52,6 +52,7 @@ instance : DiffeologicalRing ℝ where
   dsmooth_neg := contDiff_neg.dsmooth
   dsmooth_mul := contDiff_mul.dsmooth
 
+set_option backward.isDefEq.respectTransparency false in
 instance : DiffeologicalRing ℂ where
   dsmooth_add := contDiff_add.dsmooth
   dsmooth_neg := contDiff_neg.dsmooth
@@ -199,6 +200,7 @@ section FineDiffeology
 
 /-- The finest diffeology turning a given module over a diffeological ring into a
 diffeological module. -/
+@[implicit_reducible]
 def fineDiffeology (R : Type*) [DiffeologicalSpace R] [Ring R] [DiffeologicalRing R]
     (X : Type*) [AddCommGroup X] [Module R X] : DiffeologicalSpace X :=
   (⊥ : ModuleDiffeology R X).toDiffeologicalSpace

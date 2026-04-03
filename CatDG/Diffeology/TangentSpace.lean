@@ -47,6 +47,7 @@ def PreInternalTangentSpace (x : X) := ⨁ p : pointedPlots x, Eucl p.1.1
 instance {x : X} : AddCommGroup (PreInternalTangentSpace x) := by
   unfold PreInternalTangentSpace; infer_instance
 
+set_option backward.isDefEq.respectTransparency false in
 instance {x : X} : Module ℝ (PreInternalTangentSpace x) := by
   unfold PreInternalTangentSpace; infer_instance
 
@@ -64,6 +65,7 @@ def InternalTangentSpace (x : X) := PreInternalTangentSpace x ⧸ Submodule.span
 instance {x : X} : AddCommGroup (InternalTangentSpace x) := by
   unfold InternalTangentSpace; infer_instance
 
+set_option backward.isDefEq.respectTransparency false in
 instance {x : X} : Module ℝ (InternalTangentSpace x) := by
   unfold InternalTangentSpace; infer_instance
 
@@ -122,12 +124,14 @@ lemma pointedPlots_map_comp {f : X → Y} {g : Y → Z} (hf : DSmooth f) (hg : D
     pointedPlots_map (hg.comp hf) x = pointedPlots_map hg (f x) ∘ pointedPlots_map hf x  := by
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp]
 lemma preInternalTangentMap_id (x : X) : preInternalTangentMap id x = LinearMap.id := by
   simp_rw [preInternalTangentMap, dsmooth_id, dite_true]
   apply linearMap_ext; intro p; ext x
   simp; rfl -- rfl used to not be necessary because one could rewrite with `pointedPlots_map_id`
 
+set_option backward.isDefEq.respectTransparency false in
 lemma preInternalTangentMap_comp {f : X → Y} {g : Y → Z} (hf : DSmooth f) (hg : DSmooth g) (x : X) :
     preInternalTangentMap (g ∘ f) x =
       preInternalTangentMap g (f x) ∘ₗ preInternalTangentMap f x := by
@@ -161,12 +165,12 @@ def vectorSpaceToInternalTangentSpace [AddCommGroup X] [Module ℝ X] [Diffeolog
     exact (proj (𝕜 := ℝ) (0 : Fin 1)).dsmooth
   map_add' v w := by
     let i₁ : Eucl 1 →L[ℝ] Eucl 2 := ⟨⟨⟨fun t ↦ .single (0 : Fin 2) (t 0), fun _ _ ↦
-      by simp [← toLp_single, Pi.single_add]⟩, fun a _ ↦
-      by simp [← toLp_single, Pi.single_smul, - smul_eq_mul]⟩,
+      by simp [← PiLp.toLp_single, Pi.single_add]⟩, fun a _ ↦
+      by simp [← PiLp.toLp_single, Pi.single_smul, - smul_eq_mul]⟩,
         (LinearMap.dsmooth _ _).continuous⟩
     let i₂ : Eucl 1 →L[ℝ] Eucl 2 := ⟨⟨⟨fun t ↦ .single (1 : Fin 2) (t 0), fun _ _ ↦
-      by simp [← toLp_single, Pi.single_add]⟩, fun a _ ↦
-      by simp [← toLp_single, Pi.single_smul, - smul_eq_mul]⟩,
+      by simp [← PiLp.toLp_single, Pi.single_add]⟩, fun a _ ↦
+      by simp [← PiLp.toLp_single, Pi.single_smul, - smul_eq_mul]⟩,
         (LinearMap.dsmooth _ _).continuous⟩
     let p : pointedPlots x := ⟨⟨2, fun t ↦ x + t 0 • v + t 1 • w⟩, by
       -- TODO get fun_prop to handle this

@@ -20,6 +20,7 @@ that are smooth in the sense of mathlib's `ContMDiff`-API.
 This can not be an instance because `IsManifold I M` depends on `I` while
 `DiffeologicalSpace M` does not, and because it would probably lead to instance diamonds on
 things like products even if some workaround was found. -/
+@[implicit_reducible]
 def IsManifold.toDiffeology {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     {H : Type*} [TopologicalSpace H] (I : ModelWithCorners ℝ E H) (M : Type*)
     [TopologicalSpace M] [ChartedSpace H M] [IsManifold I ∞ M] :
@@ -73,7 +74,7 @@ instance {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimension
     let _ := m.toDiffeology; DTopCompatible M := let _ := m.toDiffeology; ⟨by
   let dE := euclideanDiffeology (X := E); let dH := dE.induced I
   have : DTopCompatible H := ⟨by
-    dsimp [dH]; rw [show ↑I = (↑) ∘ I.toHomeomorphTarget by rfl,←dE.induced_compose,
+     unfold dH; rw [show ↑I = (↑) ∘ I.toHomeomorphTarget by rfl,←dE.induced_compose,
       dTop_induced_comm (by convert isOpen_univ; exact Equiv.range_eq_univ _),dTop_eq _,
       Homeomorph.induced_eq]⟩
   ext u; refine ⟨fun h ↦ ?_,fun hu n p hp ↦ IsOpen.preimage (hp.continuous) hu⟩
@@ -82,7 +83,8 @@ instance {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimension
   have _ := (chartAt H x).open_target.dTopCompatible
   refine Subtype.image_preimage_val _ _ ▸ (chartAt H x).open_source.isOpenMap_subtype_val _ ?_
   rw [←(chartAt H x).toHomeomorphSourceTarget.symm.isOpen_preimage]
-  simp_rw [←dTop_eq (chartAt H x).target]; rw [isOpen_iff_preimages_plots]; intro n p hp
+  simp_rw [←TopologicalSpace.ext_iff.1 (dTop_eq (chartAt H x).target)]
+  rw [isOpen_iff_preimages_plots]; intro n p hp
   simp_rw [←preimage_comp,Function.comp_assoc]
   rw [isOpen_iff_preimages_plots] at h; refine h n _ ?_; rw [isPlot_iff_contMDiff]
   replace hp := (isPlot_induced_iff.1 <| isPlot_induced_iff.1 hp).contMDiff (n := ∞)
@@ -186,7 +188,7 @@ theorem contMDiff_iff_dsmooth {E : Type*} [NormedAddCommGroup E] [NormedSpace �
 
 /-- The canonical bijection `ContMDiffMap I I' M N ∞ ≃ DSmoothMap M N` stemming from the fact that
 functions between boundaryless manifolds are smooth iff they are diffeologically smooth. -/
-def ContMDiffMap.equivDSmoothMap {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+noncomputable def ContMDiffMap.equivDSmoothMap {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     [FiniteDimensional ℝ E]
     {H : Type*} [TopologicalSpace H] {I : ModelWithCorners ℝ E H} {M : Type*}
     [TopologicalSpace M] [ChartedSpace H M] [m : IsManifold I ∞ M]
@@ -308,6 +310,7 @@ lemma OpenPartialHomeomorph.fromHomeomorphSourceTarget_toPartialEquiv {α β : T
 
 /-- Charted space structure of a diffeological manifold, consisting of all local diffeomorphisms
 between `M` and `Eucl n`. -/
+@[implicit_reducible]
 noncomputable def IsDiffeologicalManifold.toChartedSpace {M : Type*} [DiffeologicalSpace M] {n : ℕ}
     [hM : IsDiffeologicalManifold n M] : @ChartedSpace (Eucl n) _ M DTop := by
   let _ := @DTop M _; let _ : DTopCompatible M := ⟨rfl⟩; exact {

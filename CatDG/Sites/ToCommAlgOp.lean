@@ -33,6 +33,7 @@ noncomputable def CartSp.toCommAlgCatOp : CartSp ⥤ (CommAlgCat ℝ)ᵒᵖ wher
   obj X := .op (.of ℝ (DSmoothMap X ℝ))
   map {n m} f := .op <| CommAlgCat.ofHom f.compRightAlgHom
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The embedding of `CartSp` into `(CommAlgCat ℝ)ᵒᵖ` is fully faithful. Given a homomorphism
 `f : DSmoothMap (Eucl m) ℝ →ₐ[ℝ] DSmoothMap (Eucl n) ℝ` of `ℝ`-algebras, a corresponding smooth
 function `Eucl n → Eucl m` can be constructed by transporting the coordinate functions

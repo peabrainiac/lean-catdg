@@ -44,19 +44,19 @@ variable {FC : C → C → Type w} {CC : C → Type w}
 /-- A presieve `S` on `X` in a concrete category is jointly surjective if every `x : X` is in
 the image of some `f` in `S`. -/
 def IsJointlySurjective (S : Presieve X) : Prop :=
-  ∀ x : ToType X, ∃ Y, ∃ f ∈ S (Y := Y), ∃ y, f y = x
+  ∀ x : ToType X, ∃ Y, ∃ f : Y ⟶ X, S f ∧ ∃ y, f y = x
 
 lemma isJointlySurjective_iff_iUnion_range_eq_univ {S : Presieve X} :
-    IsJointlySurjective S ↔ ⋃ (Y : C) (f ∈ S (Y := Y)), Set.range f = Set.univ := by
+    IsJointlySurjective S ↔ ⋃ (Y : C) (f : Y ⟶ X) (_ : S f), Set.range f = Set.univ := by
   simp [IsJointlySurjective, Set.iUnion_eq_univ_iff]
 
 lemma IsJointlySurjective.iUnion_eq_univ {S : Presieve X} (hS : S.IsJointlySurjective) :
-    ⋃ (Y : C) (f ∈ S (Y := Y)), Set.range f = Set.univ :=
+    ⋃ (Y : C) (f : Y ⟶ X) (_ : S f), Set.range f = Set.univ :=
   isJointlySurjective_iff_iUnion_range_eq_univ.1 hS
 
 lemma IsJointlySurjective.mono {S R : Presieve X} (hR : S ≤ R) (hS : S.IsJointlySurjective) :
     R.IsJointlySurjective :=
-  forall_imp (fun _ ↦ .imp fun _ ↦ .imp fun _ ↦ And.imp_left fun _ ↦ hR _ ‹_›) hS
+  forall_imp (fun _ ↦ .imp fun _ ↦ .imp fun _ ↦ And.imp_left fun _ ↦ hR _ _ ‹_›) hS
 
 end Presieve
 
@@ -126,11 +126,15 @@ def Presheaf.IsConcrete (P :  Cᵒᵖ ⥤ Type w) : Prop :=
 
 /-- The category of concrete sheaves. -/
 structure ConcreteSheaf extends Sheaf J (Type w) where
-  concrete : Presheaf.IsConcrete J val
+  concrete : Presheaf.IsConcrete J obj
+
+-- TODO: figure out how to generate this directly instead of `ConcreteSheaf.toFullSubcategory`
+variable {J} in
+abbrev ConcreteSheaf.toSheaf (P : ConcreteSheaf J) : Sheaf J (Type w) := P.toFullSubcategory
 
 /-- Morphisms of concrete sheaves are simply morphisms of sheaves. -/
 instance : Category (ConcreteSheaf J) :=
-  InducedCategory.instCategory (F := ConcreteSheaf.toSheaf)
+  InducedCategory.instCategory (F := ConcreteSheaf.toFullSubcategory)
 
 /-- The forgetful functor from concrete sheaves to sheaves. -/
 def concreteSheafToSheaf : ConcreteSheaf J ⥤ Sheaf J (Type w) :=

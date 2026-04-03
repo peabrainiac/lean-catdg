@@ -552,19 +552,19 @@ theorem toDiffeologicalSpace_iInf {ι : Type*} (s : ι → GroupDiffeology G) :
 
 @[to_additive]
 instance : CompleteSemilatticeInf (GroupDiffeology G) :=
-  { inferInstanceAs (InfSet (GroupDiffeology G)),
-    inferInstanceAs (PartialOrder (GroupDiffeology G)) with
-    sInf_le := fun S a haS ↦ toDiffeologicalSpace_le.1 <| sInf_le ⟨a, haS, rfl⟩
-    le_sInf := by
-      intro S a hab
-      apply (inferInstanceAs (CompleteLattice (DiffeologicalSpace G))).le_sInf
+  { (inferInstance : InfSet (GroupDiffeology G)),
+    (inferInstance : PartialOrder (GroupDiffeology G)) with
+    isGLB_sInf S := by
+      refine ⟨fun a haS ↦ toDiffeologicalSpace_le.1 <| sInf_le ⟨a, haS, rfl⟩, ?_⟩
+      intro a hab
+      apply ((inferInstance : CompleteLattice (DiffeologicalSpace G)).isGLB_sInf _).2
       rintro _ ⟨b, hbS, rfl⟩
-      exact hab b hbS }
+      exact hab hbS }
 
 @[to_additive]
 instance : CompleteLattice (GroupDiffeology G) :=
-  { inferInstanceAs (BoundedOrder (GroupDiffeology G)),
-    inferInstanceAs (SemilatticeInf (GroupDiffeology G)),
+  { (inferInstance : BoundedOrder (GroupDiffeology G)),
+    (inferInstance : SemilatticeInf (GroupDiffeology G)),
     completeLatticeOfCompleteSemilatticeInf _ with
     inf := (· ⊓ ·)
     top := ⊤

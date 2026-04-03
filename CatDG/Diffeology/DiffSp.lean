@@ -237,6 +237,7 @@ def dTopAdj : dTop ⊣ topToDiff :=
       app := fun X ↦ @TopCat.ofHom _ _ (_) (_) <| @ContinuousMap.mk _ _ (_) (_) id <|
         continuous_iff_coinduced_le.mpr deltaGenerated_le } }
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Adjunction between the D-topology and continuous diffeology as functors between
 `DiffSp` and `DeltaGenerated`. -/
 def dTopAdj' : diffToDeltaGenerated ⊣ deltaGeneratedToDiff :=
@@ -399,6 +400,7 @@ def binaryProductFunctor : DiffSp.{u} ⥤ DiffSp.{u} ⥤ DiffSp.{u} where
   map_id := fun X ↦ rfl
   map_comp := fun {X Y Z} f g ↦ rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The explicit products we defined are naturally isomorphic to the products coming from
 the `HasLimits` instance on DiffSp. This is needed because the `HasLimits`
 instance only stores proof that all limits exist, not the explicit constructions,
