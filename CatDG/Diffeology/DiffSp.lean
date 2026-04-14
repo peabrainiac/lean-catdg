@@ -445,4 +445,15 @@ noncomputable instance cartesianClosed : MonoidalClosed DiffSp.{u} where
 
 end Cartesian
 
+section ULift
+
+attribute [local fun_prop] dsmooth_uLift_down dsmooth_uLift_up in
+/-- The functor lifting diffeological spaces from `Type u` to `Type max u v`. -/
+@[simps obj map]
+def uliftFunctor : DiffSp.{u} ⥤ DiffSp.{max u v} where
+  obj X := .of (ULift X)
+  map f := ofHom ⟨ULift.map f, by unfold ULift.map; fun_prop⟩
+
+end ULift
+
 end DiffSp

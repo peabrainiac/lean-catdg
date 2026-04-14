@@ -21,6 +21,7 @@ import CatDG.Diffeology.MfldToDiffSp
 import CatDG.Diffeology.Reflexive
 import CatDG.Diffeology.SmoothSp
 import CatDG.Diffeology.TangentSpace
+import CatDG.Diffeology.ToSSet
 import CatDG.ForMathlib.BiseparatedPresheaf
 import CatDG.ForMathlib.Classifier
 import CatDG.ForMathlib.CoconstantSheaf
